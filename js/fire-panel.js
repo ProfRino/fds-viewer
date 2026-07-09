@@ -792,6 +792,9 @@ function buildCodePanel(text, filename) {
                 <div class="fp-card-btns" id="fp-view-btns">
                     <button class="fp-copy-btn" id="fp-copy-fds">Copy all</button>
                     <button class="fp-copy-btn fp-save-btn" id="fp-save-annotated">&#x2913; Save annotated</button>
+                    <button class="fp-copy-btn fp-debug-btn" id="fp-run-linter" title="Run static linter and show findings alongside the source">&#x26A1; Linter</button>
+                    <label class="fp-copy-btn fp-out-btn" for="fp-out-input" title="Load FDS .out diagnostic log to show runtime errors and warnings">&#x1F4C4; Load .out</label>
+                    <input type="file" id="fp-out-input" accept=".out,.txt" hidden>
                     <button class="fp-copy-btn fp-edit-btn" id="fp-edit-fds">&#x270E; Edit</button>
                 </div>
                 <div class="fp-card-btns" id="fp-edit-btns" style="display:none">
@@ -816,6 +819,7 @@ function buildCodePanel(text, filename) {
                             autocomplete="off"></textarea>
                     </div>
                 </div>
+                <div class="fp-debug-results" id="fp-debug-results" style="display:none;"></div>
             </div>
         </div>`;
 
@@ -981,6 +985,104 @@ function buildCodePanel(text, filename) {
             }
             if (firstMatch) firstMatch.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         });
+    }
+
+    // ── Linter & .out debug panel ─────────────────────────────────────────────
+    const debugPanel = document.getElementById('fp-debug-results');
+
+    function _showDebugPanel(innerHtml) {
+        if (!debugPanel) return;
+        debugPanel.innerHTML = innerHtml;
+        debugPanel.style.display = 'flex';
+        // Close button
+        debugPanel.querySelectorAll('.fp-debug-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                debugPanel.style.display = 'none';
+                _clearLintHighlights();
+            });
+        });
+        // Click on a finding → scroll to source line and highlight it
+        debugPanel.querySelectorAll('.fp-finding[data-line]').forEach(el => {
+            el.addEventListener('click', () => {
+                const lineNum = parseInt(el.dataset.line, 10);
+                if (!lineNum) return;
+                debugPanel.querySelectorAll('.fp-finding.fp-finding-active')
+                    .forEach(e => e.classList.remove('fp-finding-active'));
+                el.classList.add('fp-finding-active');
+                const lineEl = document.querySelector(`.fp-fds-line[data-line="${lineNum}"]`);
+                if (lineEl) {
+                    lineEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    _clearLintHighlights();
+                    lineEl.classList.add('fp-lint-active');
+                }
+            });
+        });
+    }
+
+    // Static linter button
+    const linterBtn = document.getElementById('fp-run-linter');
+    if (linterBtn) {
+        linterBtn.addEventListener('click', () => {
+            const findings = (typeof fdsLint === 'function') ? fdsLint(liveText) : [];
+            _applyLintHighlights(findings);
+            const sourceHtml = `<div class="fp-out-source">
+                <span>Static linter &mdash; <code>${esc(filename || 'untitled.fds')}</code></span>
+            </div>`;
+            _showDebugPanel(sourceHtml + _renderLintResults(findings));
+        });
+    }
+
+    // .out file loader
+    const outInput = document.getElementById('fp-out-input');
+    if (outInput) {
+        outInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => _loadOutResults(ev.target.result, file.name);
+            reader.readAsText(file);
+            outInput.value = '';
+        });
+    }
+
+    function _loadOutResults(outText, outFilename) {
+        if (typeof parseFdsOut !== 'function') {
+            alert('parseFdsOut not available — check that fds-out-parser.js loaded correctly.');
+            return;
+        }
+        const { findings, summary } = parseFdsOut(outText, liveText);
+        _applyLintHighlights(findings);
+
+        // Status badge
+        const statusClass = summary.completedOk
+            ? 'fp-sev-info'
+            : (summary.errorCount > 0 ? 'fp-sev-error' : 'fp-sev-warning');
+        const statusLabel = summary.completedOk
+            ? 'COMPLETED OK'
+            : (summary.status === 'failure' ? 'FAILED'
+              : summary.status === 'incomplete' ? 'INCOMPLETE'
+              : summary.status.toUpperCase());
+
+        const metas = [];
+        if (summary.version)      metas.push(`<span class="fp-out-meta">FDS ${esc(summary.version)}</span>`);
+        if (summary.chid)         metas.push(`<span class="fp-out-meta">CHID: ${esc(summary.chid)}</span>`);
+        if (summary.mpiProcs)     metas.push(`<span class="fp-out-meta">${summary.mpiProcs} MPI</span>`);
+        if (summary.totalTimeSec != null)
+            metas.push(`<span class="fp-out-meta">${summary.totalTimeSec.toFixed(1)} s wall-clock</span>`);
+
+        const summaryHtml = `<div class="fp-out-summary">
+            <div class="fp-out-summary-row">
+                <span class="fp-sev-badge ${statusClass}">${statusLabel}</span>
+                ${metas.join(' ')}
+            </div>
+            ${summary.jobTitle ? `<div class="fp-out-meta" style="margin-top:4px;display:inline-block;">${esc(summary.jobTitle)}</div>` : ''}
+        </div>`;
+
+        const sourceHtml = `<div class="fp-out-source">
+            <span>Runtime log &mdash; <code>${esc(outFilename)}</code></span>
+        </div>`;
+
+        _showDebugPanel(sourceHtml + summaryHtml + _renderLintResults(findings));
     }
 }
 

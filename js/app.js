@@ -37,7 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
         e.preventDefault();
         dropZone.classList.remove('drag-over');
-        loadFile(e.dataTransfer.files[0]);
+        const files = Array.from(e.dataTransfer.files);
+        const csvFiles = files.filter(f => /\.csv$/i.test(f.name));
+        const otherFiles = files.filter(f => !/\.csv$/i.test(f.name));
+        if (csvFiles.length && typeof window.chartsPanelHandleFiles === 'function') {
+            window.chartsPanelHandleFiles(csvFiles);
+        }
+        if (otherFiles.length) {
+            loadFile(otherFiles[0]);
+        }
     };
     document.addEventListener('dragover', onDocDragOver);
     document.addEventListener('dragleave', onDocDragLeave);
@@ -297,21 +305,21 @@ document.addEventListener('DOMContentLoaded', () => {
             t.classList.toggle('active', t.dataset.page === page);
         });
 
-        const appLayout   = document.getElementById('app-layout');
-        const meshPanel   = document.getElementById('mesh-panel');
-        const firePanel   = document.getElementById('fire-panel');
-        const codePanel   = document.getElementById('fds-code-panel');
-        const outputPanel = document.getElementById('output-panel');
-        const helpPanel   = document.getElementById('help-panel');
-        const footerBar   = document.querySelector('.footer-bar');
+        const appLayout    = document.getElementById('app-layout');
+        const meshPanel    = document.getElementById('mesh-panel');
+        const firePanel    = document.getElementById('fire-panel');
+        const codePanel    = document.getElementById('fds-code-panel');
+        const outputPanel  = document.getElementById('output-panel');
+        const helpPanel    = document.getElementById('help-panel');
+        const footerBar    = document.querySelector('.footer-bar');
 
         // Reset all
         appLayout.style.display = '';
         meshPanel.classList.remove('active');
         firePanel.classList.remove('active');
         codePanel.classList.remove('active');
-        if (outputPanel) outputPanel.classList.remove('active');
-        if (helpPanel)   helpPanel.classList.remove('active');
+        if (outputPanel)  outputPanel.classList.remove('active');
+        if (helpPanel)    helpPanel.classList.remove('active');
         footerBar.style.display = '';
 
         if (page === 'mesh') {

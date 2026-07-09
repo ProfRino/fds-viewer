@@ -3085,3 +3085,585 @@ kbd {
     border-radius: 3px;
     font-size: 12px;
 }
+
+/* ═══════════════════════════════════════════
+   CHARTS PANEL
+   ═══════════════════════════════════════════ */
+
+#charts-panel {
+    display: none;
+    position: relative;
+    grid-column: 1 / 3;
+    grid-row: 1;
+    background: var(--bg-primary);
+    overflow: hidden;
+}
+#charts-panel.active { display: block; }
+
+.chart-mixed-warn {
+    background: rgba(255, 150, 0, 0.12);
+    border: 1px solid rgba(255, 150, 0, 0.4);
+    border-radius: 4px;
+    color: #ffb347;
+    font-size: 11px;
+    padding: 5px 10px;
+    margin: 0 12px 6px;
+}
+
+.charts-layout {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+/* Left sidebar */
+.charts-sidebar {
+    width: 260px;
+    min-width: 220px;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.charts-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.5;
+}
+.charts-hint code {
+    font-size: 10.5px;
+    background: var(--bg-tertiary);
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: var(--text-secondary);
+}
+
+.charts-ch-section {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Channel list: dataset groups */
+.charts-ds-group {
+    padding: 8px 0 4px;
+    border-bottom: 1px solid var(--border);
+}
+.charts-ds-group:last-child { border-bottom: none; }
+
+.charts-ds-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px 6px;
+}
+.charts-ds-name {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.charts-ds-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.charts-ds-remove:hover { color: var(--accent); background: var(--bg-tertiary); }
+
+.charts-ds-bulk {
+    display: flex;
+    gap: 4px;
+    padding: 0 4px 6px;
+}
+.charts-bulk-btn {
+    flex: 1;
+    font-size: 10px;
+    padding: 2px 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.charts-bulk-btn:hover { color: var(--text-primary); border-color: var(--accent); }
+
+/* Individual channel row */
+.charts-ch-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 4px;
+    border-radius: 4px;
+    font-size: 11px;
+    transition: background 0.12s;
+}
+.charts-ch-item:hover { background: var(--bg-tertiary); }
+
+/* Line style dropdown */
+.charts-ch-style {
+    font-family: monospace;
+    font-size: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    padding: 1px 2px;
+    width: 52px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.charts-ch-style:focus { border-color: var(--accent); outline: none; }
+
+/* Line width select */
+.charts-ch-width {
+    font-family: inherit;
+    font-size: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    padding: 1px 2px;
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+    cursor: pointer;
+}
+.charts-ch-width:focus { border-color: var(--accent); outline: none; }
+
+.charts-ch-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+.charts-ch-item input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.charts-ch-item input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: #fff;
+    font-size: 10px;
+    top: -1px;
+    left: 1px;
+}
+
+.charts-ch-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.charts-ch-swatch:hover {
+    transform: scale(1.5);
+    box-shadow: 0 0 0 2px var(--accent);
+}
+.charts-ch-label {
+    flex: 1;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.charts-ch-unit {
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.charts-empty-msg {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 8px 4px;
+    line-height: 1.5;
+}
+
+/* Right: chart area */
+.charts-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.charts-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.charts-canvas-wrap {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+#charts-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Hover tooltip */
+.chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 7px 10px;
+    font-size: 11px;
+    line-height: 1.5;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+    min-width: 120px;
+    max-width: 220px;
+    z-index: 30;
+}
+.chart-tip-time {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3px;
+}
+.chart-tip-row {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.chart-tip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+}
+.chart-tip-label { color: var(--text-muted); flex-shrink: 0; }
+.chart-tip-val   { color: var(--text-primary); font-weight: 600; }
+.chart-tip-unit  { color: var(--text-muted); font-size: 10px; }
+
+/* ── .out button in Code panel card ── */
+.fp-out-btn {
+    background: rgba(255,152,0,0.12);
+    color: #ff9800;
+    border: 1px solid #ff9800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+.fp-out-btn:hover { background: rgba(255,152,0,0.28); }
+
+/* ═══════════════════════════════════════════════════════════════
+   CHARTS — per-dataset card layout
+   ═══════════════════════════════════════════════════════════════ */
+
+.charts-cards-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 12px;
+}
+
+.charts-empty-cards-msg {
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 40px 16px;
+}
+
+.chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* Left side of card header: filename label + editable title input */
+.chart-card-title-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.chart-card-filename {
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+    flex-shrink: 0;
+}
+
+.chart-title-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 1px 4px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.chart-title-input:hover,
+.chart-title-input:focus {
+    border-bottom-color: var(--accent);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .chart-title-input:hover,
+[data-theme="light"] .chart-title-input:focus {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.chart-title-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+
+.chart-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.chart-card-actions .fp-copy-btn {
+    font-size: 10px;
+    padding: 2px 8px;
+}
+
+.chart-canvas-wrap {
+    position: relative;
+    height: 380px;
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+.chart-canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHARTS — per-card options panel (⚙ toggle)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ⚙ toggle button active state */
+.chart-opts-toggle {
+    font-size: 12px !important;
+    padding: 2px 6px !important;
+}
+
+.chart-opts-active {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent) !important;
+}
+
+/* Collapsible options strip below the card header */
+.chart-card-opts {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-primary);
+    padding: 7px 10px;
+    flex-shrink: 0;
+}
+
+.chart-opts-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: center;
+}
+
+/* One logical group: label + controls */
+.chart-opt-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: inherit;
+}
+
+.chart-opt-group label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.chart-opts-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+/* Text and select inputs inside per-card options */
+.opt-text-input,
+.chart-opt-group select {
+    font-family: inherit;
+    font-size: 11px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    padding: 2px 5px;
+    outline: none;
+}
+
+.opt-text-input {
+    width: 76px;
+}
+
+.opt-text-input:focus,
+.chart-opt-group select:focus {
+    border-color: var(--accent);
+    outline: 1px solid var(--accent);
+}
+
+.chart-opt-group input[type="radio"],
+.chart-opt-group input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHARTS — colour picker popup
+   ═══════════════════════════════════════════════════════════════ */
+
+.chart-color-picker {
+    position: absolute;
+    z-index: 200;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+    width: 184px;
+}
+
+.ccp-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.ccp-preset {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-block;
+    border: 2px solid transparent;
+    transition: border-color 0.1s, transform 0.1s;
+    flex-shrink: 0;
+}
+
+.ccp-preset:hover {
+    border-color: var(--text-primary);
+    transform: scale(1.2);
+}
+
+.ccp-native {
+    width: 100%;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px;
+    cursor: pointer;
+    background: var(--bg-tertiary);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.ccp-hex-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ccp-hash {
+    color: var(--text-muted);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.ccp-hex-input {
+    flex: 1;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    font-size: 12px;
+    padding: 3px 6px;
+    font-family: monospace;
+    min-width: 0;
+}
+
+.ccp-hex-input:focus {
+    outline: 1px solid var(--accent);
+    border-color: var(--accent);
+}

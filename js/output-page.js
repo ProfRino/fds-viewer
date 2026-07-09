@@ -26,7 +26,7 @@
     let boundaryPlaybackTimer = null;
     let agentOverlay = null;
     let agentFile = null;
-    let mode = 'smoke'; // 'slice' | 'smoke' | 'boundary'
+    let mode = 'smoke'; // 'slice' | 'smoke' | 'boundary' | 'charts'
     // Module-level handle to wireModeToggle's inner applyMode so other
     // module functions (handleSimulationFolder) can re-run it without
     // refactoring it out of the closure.
@@ -121,6 +121,17 @@
      */
     window.outputPageDeactivate = function () {
         if (outputViewer && outputViewer.walkMode) outputViewer.exitWalkMode();
+        // Reset to Soot/Smoke mode on re-entry so Charts doesn't stay "stuck"
+        // active across tab switches. Reuse the same applyMode the mode-toggle
+        // buttons call, so every panel/sidebar/mainArea/colorbar toggle it
+        // performs stays in sync instead of duplicating that logic by hand.
+        if (mode === 'charts') {
+            if (typeof applyModeRef === 'function') {
+                applyModeRef('smoke');
+            } else {
+                mode = 'smoke';
+            }
+        }
     };
 
     /**
@@ -297,14 +308,19 @@
         }
     }
 
-    // ── Mode toggle (Slice / Smoke / Boundary) ─────────────────────────────
+    // ── Mode toggle (Slice / Smoke / Boundary / Charts) ───────────────────
     function wireModeToggle(viewer) {
         const sliceBtn = document.getElementById('output-mode-slice');
         const smokeBtn = document.getElementById('output-mode-smoke');
         const boundaryBtn = document.getElementById('output-mode-boundary');
+        const chartsBtn = document.getElementById('output-mode-charts');
         const slicePanel = document.getElementById('output-slice-controls');
         const smokePanel = document.getElementById('output-smoke-controls');
         const boundaryPanel = document.getElementById('output-boundary-controls');
+        const chartsControlsPanel = document.getElementById('output-charts-controls');
+        const agentsPanel = document.getElementById('output-agents-panel');
+        const chartsPanel = document.getElementById('charts-panel');
+        const sidebarLeft = document.querySelector('.output-sidebar-left');
         if (!sliceBtn || !smokeBtn) return;
 
         function applyMode(next) {
@@ -312,9 +328,30 @@
             sliceBtn.classList.toggle('active', mode === 'slice');
             smokeBtn.classList.toggle('active', mode === 'smoke');
             if (boundaryBtn) boundaryBtn.classList.toggle('active', mode === 'boundary');
-            if (slicePanel) slicePanel.style.display = mode === 'slice' ? '' : 'none';
-            if (smokePanel) smokePanel.style.display = mode === 'smoke' ? '' : 'none';
-            if (boundaryPanel) boundaryPanel.style.display = mode === 'boundary' ? '' : 'none';
+            if (chartsBtn)   chartsBtn.classList.toggle('active', mode === 'charts');
+            if (slicePanel)          slicePanel.style.display          = mode === 'slice'    ? '' : 'none';
+            if (smokePanel)          smokePanel.style.display          = mode === 'smoke'    ? '' : 'none';
+            if (boundaryPanel)       boundaryPanel.style.display       = mode === 'boundary' ? '' : 'none';
+            if (chartsControlsPanel) chartsControlsPanel.style.display = mode === 'charts'   ? '' : 'none';
+            // Agents overlay is a 3D-scene control; it stays visible across
+            // Soot/Slice/Boundary but makes no sense while Charts (2D CSV
+            // plotting) has hidden the 3D viewport entirely.
+            if (agentsPanel) agentsPanel.style.display = mode === 'charts' ? 'none' : '';
+
+            // Left sidebar (Layers/Camera/Walk/Background) and the 3D
+            // viewport are meaningless while Charts mode is active — hide
+            // both so #charts-panel can occupy their grid columns.
+            if (sidebarLeft) sidebarLeft.style.display = mode === 'charts' ? 'none' : '';
+            const mainArea = document.querySelector('.output-main-area');
+            if (mainArea) mainArea.style.display = mode === 'charts' ? 'none' : '';
+
+            // Charts panel takes over the freed-up grid columns when active
+            if (chartsPanel) {
+                chartsPanel.classList.toggle('active', mode === 'charts');
+                if (mode === 'charts' && typeof window.buildChartsPanel === 'function') {
+                    window.buildChartsPanel();
+                }
+            }
 
             // Hide the inactive overlay; keep colours intact
             if (sliceOverlay) {
@@ -379,6 +416,7 @@
         sliceBtn.addEventListener('click', () => applyMode('slice'));
         smokeBtn.addEventListener('click', () => applyMode('smoke'));
         if (boundaryBtn) boundaryBtn.addEventListener('click', () => applyMode('boundary'));
+        if (chartsBtn)   chartsBtn.addEventListener('click', () => applyMode('charts'));
 
         // Expose to module scope so handleSimulationFolder can replay the
         // current-mode setup after the slice auto-load mucks with the

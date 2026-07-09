@@ -564,6 +564,52 @@
                     <h4>Agents &mdash; JuPedSim trajectories</h4>
                     <p>In the <strong>Agents</strong> panel, load a JuPedSim <code>.sqlite</code> trajectory to overlay evacuation agents on the scene. Agents are coloured by <strong>Speed</strong>, or by <strong>FED</strong> dose when the file carries an optional <code>agent_scalars(frame, id, fed, speed)</code> table. The colorbar shows the scale &mdash; Speed in m/s (0&ndash;1.5), FED as a dimensionless dose (0&ndash;1, where 1 is the incapacitation threshold). The overlay is <em>persistent</em> &mdash; it stays visible across the Soot/Slice/Boundary modes &mdash; and is time-synced to them: agents and smoke always show the same simulation second.</p>
                     <p>Playback runs off the main timeline, so load a smoke, slice, or boundary set to drive the play button &mdash; or scrub the agent slider in the panel directly. The sqlite is produced by <a href="https://github.com/PedestrianDynamics/pyFDS-Evac" target="_blank" rel="noopener">pyFDS-Evac</a> with <code>--output-sqlite</code> (the base JuPedSim schema is read unchanged, so any trajectory sqlite works; without <code>agent_scalars</code>, agents are coloured by a speed derived from successive positions).</p>
+
+                    <h4>Charts &mdash; CSV time-series plotter</h4>
+                    <p>Click <strong>Charts</strong> in the Data panel (right sidebar) to switch to the Charts view. It plots FDS CSV output files as interactive time-series charts and works independently &mdash; no <code>.fds</code> file needs to be loaded first. Click <strong>&larr; Back to Output</strong> (top of the left sidebar) to return to the 3D viewer.</p>
+
+                    <h5>Getting started</h5>
+                    <ol>
+                        <li>Click <strong>Open CSV file(s)</strong> in the left sidebar, or drag and drop one or more CSV files anywhere in the app. Multiple files can be open at the same time.</li>
+                        <li>Supported format: any FDS CSV file with two header rows (row 1 = units, row 2 = channel names) &mdash; e.g. <code>CHID_devc.csv</code>, <code>CHID_hrr.csv</code>.</li>
+                        <li>Each loaded file gets its own chart card in the main area. Channels from all files are listed together in the left sidebar.</li>
+                    </ol>
+
+                    <h5>Channels (left sidebar)</h5>
+                    <p>For each loaded file the sidebar shows a group containing all of its channels:</p>
+                    <ul>
+                        <li><strong>Checkbox</strong> &mdash; show or hide the channel in the chart. The first ten channels of a newly opened file are enabled automatically.</li>
+                        <li><strong>Colour swatch</strong> &mdash; click to open the colour picker: 15 palette presets, a native browser colour input, and a hex text field.</li>
+                        <li><strong>Line style</strong> &mdash; dropdown with four options: Solid, Dashed, Dotted, Dash-dot.</li>
+                        <li><strong>Line width</strong> &mdash; numeric input from 0.5 to 5 px.</li>
+                        <li><strong>All / None</strong> &mdash; enable or disable all channels of a file at once.</li>
+                        <li><strong>&times;</strong> (remove button) &mdash; removes the entire dataset together with its chart card and all channels.</li>
+                    </ul>
+
+                    <h5>Chart card</h5>
+                    <p>Each loaded file gets its own card with a chart and controls:</p>
+                    <ul>
+                        <li><strong>Chart title</strong> &mdash; free-text field above the chart; the text you enter appears as a heading in the rendered chart.</li>
+                        <li><strong>&#x2699; Options</strong> &mdash; click the gear icon to expand a per-card settings panel:
+                            <ul>
+                                <li><em>Decimal separator</em> &mdash; Period (.) or Comma (,). Switch to Comma for European CSV files that use a semicolon as the column separator and a comma as the decimal mark.</li>
+                                <li><em>Grid</em> &mdash; toggle grid lines on or off; style can be Dashed or Solid.</li>
+                                <li><em>X label</em> &mdash; custom label for the time axis (default: &ldquo;Time (s)&rdquo;).</li>
+                                <li><em>Y label / Y&#x2082; label</em> &mdash; custom axis labels; leave blank and FDS Viewer derives the label automatically from the CSV unit column.</li>
+                                <li><em>Watermark</em> &mdash; show or hide the small &ldquo;FDS Viewer&rdquo; watermark in the corner of the chart.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Dual Y-axis</strong> &mdash; when the active channels have different units, the first unit group is plotted on the left Y-axis and all channels with other units are plotted on the right Y-axis (Y&#x2082;).</li>
+                        <li><strong>Hover tooltip</strong> &mdash; move the mouse over the chart area to see the simulation time and the values of all active channels at the nearest data point.</li>
+                    </ul>
+
+                    <h5>Export</h5>
+                    <p>Each card offers three export formats:</p>
+                    <ul>
+                        <li><strong>&#x2193; PNG</strong> &mdash; saves the current chart as a pixel image (resolution matches the canvas including the device pixel ratio).</li>
+                        <li><strong>&#x2193; SVG</strong> &mdash; generates a vector SVG (white background, 1000 &times; 600 px). Ideal for reports and presentations.</li>
+                        <li><strong>&#x2193; PDF</strong> &mdash; opens a new browser tab with the chart laid out in A4 landscape and triggers the system print dialog. Pop-ups must be allowed in the browser.</li>
+                    </ul>
                 </section>
 
                 <section class="help-page" data-help-page="shortcuts">
@@ -628,6 +674,7 @@
 
     <!-- Output Panel -->
     <div id="output-panel">
+
         <div class="output-layout">
             <!-- Left Sidebar: Layers + Camera -->
             <div class="output-sidebar output-sidebar-left">
@@ -837,6 +884,27 @@
                 </div>
             </div>
 
+            <!-- Charts sub-panel (shown when Charts mode is active in Output) -->
+            <div id="charts-panel">
+                <div class="charts-layout">
+                    <!-- Left: channel selector only (Load CSV now lives in the Data panel) -->
+                    <div class="charts-sidebar">
+                        <div class="sidebar-section charts-ch-section">
+                            <h3>Channels</h3>
+                            <div id="charts-channel-list">
+                                <p class="charts-empty-msg">Open a CSV file to see channels.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right: per-dataset chart cards -->
+                    <div class="charts-main">
+                        <div id="charts-cards-list" class="charts-cards-list">
+                            <p class="charts-empty-cards-msg">Open a CSV file to plot data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Right Sidebar: Slice / Smoke Controls -->
             <div class="output-sidebar output-sidebar-right">
                 <div class="sidebar-section">
@@ -845,6 +913,7 @@
                         <button class="view-btn active" id="output-mode-smoke">Soot</button>
                         <button class="view-btn" id="output-mode-slice">Slice</button>
                         <button class="view-btn" id="output-mode-boundary">Boundary</button>
+                        <button class="view-btn" id="output-mode-charts">Charts</button>
                     </div>
                 </div>
 
@@ -1110,7 +1179,22 @@
                 </div>
                 <!-- /Boundary controls -->
 
-                <!-- Agents overlay (always visible) -->
+                <!-- Charts controls -->
+                <div id="output-charts-controls" style="display: none;">
+                    <div class="sidebar-section">
+                        <h3>Load CSV</h3>
+                        <div class="output-file-actions">
+                            <label class="file-button primary-file-button" for="charts-file-input">Open CSV file(s)</label>
+                        </div>
+                        <input id="charts-file-input" type="file" accept=".csv" multiple hidden>
+                        <p class="charts-hint">Accepts FDS output files:<br>
+                            <code>CHID_devc.csv</code>, <code>CHID_hrr.csv</code>, etc.<br>
+                            Drop CSV files anywhere to load them. Options (decimal, grid, labels, watermark) are set per chart via the &#x2699; button.</p>
+                    </div>
+                </div>
+                <!-- /Charts controls -->
+
+                <!-- Agents overlay (visible in Soot/Slice/Boundary; hidden in Charts, see applyMode() in output-page.js) -->
                 <div id="output-agents-panel" class="sidebar-section">
                     <h3>Agents</h3>
                     <input type="file" id="output-agents-file" accept=".sqlite,.db" />
@@ -1211,9 +1295,11 @@
     <script src="js/smoke3d-overlay.js?v=20260519AM"></script>
     <script src="js/boundary-reader.js?v=20260518a"></script>
     <script src="js/boundary-overlay.js?v=20260520H"></script>
+    <script src="js/fds-out-parser.js?v=20260522A"></script>
+    <script src="js/charts-panel.js?v=20260709A"></script>
     <script src="js/trajectory-reader.js?v=20260607a"></script>
     <script src="js/agent-overlay.js?v=20260607b"></script>
-    <script src="js/output-page.js?v=20260607d"></script>
-    <script src="js/app.js?v=20260520G"></script>
+    <script src="js/output-page.js?v=20260709A"></script>
+    <script src="js/app.js?v=20260608A"></script>
 </body>
 </html>

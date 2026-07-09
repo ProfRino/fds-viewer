@@ -27,6 +27,10 @@ venv/
 *.end
 *.restart
 
+# Local test CSV used for Charts verification, not part of the app
+# (already covered by *.csv above; listed explicitly for clarity)
+sample_room_fire_hrr.csv
+
 # Source video for the README GIF - the rendered assets/demo.gif is committed,
 # but the MP4 source is not. The whole video-demo folder (raw clips +
 # Adobe Premiere .prproj/.prin project files) lives on disk, never in the repo.
