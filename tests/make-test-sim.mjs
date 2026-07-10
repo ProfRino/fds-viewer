@@ -93,39 +93,175 @@ export function buildSliceFile(mesh) {
     return out.buffer;
 }
 
-// ── .smv / .fds text ──────────────────────────────────────────────────────
+// ── .smv / .end / .fds output ─────────────────────────────────────────────
+// The .smv mirrors what FDS 6.8 writes (verified against a real run of the
+// generated .fds): real Smokeview is strict about the sections it expects
+// (TITLE/NMESHES/SURFACE/OBST/VENT/CVENT per mesh, the .end endianness file,
+// exact SLCF entry format), so a minimal file makes it crash.
+
+/** The CHID.end companion file: one Fortran record holding int32 1, used by
+ *  Smokeview to detect the byte order of the binary output files. */
+export function buildEndFile() {
+    const bytes = new Uint8Array(12);
+    const view = new DataView(bytes.buffer);
+    view.setUint32(0, 4, true);
+    view.setInt32(4, 1, true);
+    view.setUint32(8, 4, true);
+    return bytes.buffer;
+}
+
+function fmt(value, width, decimals) {
+    return value.toFixed(decimals).padStart(width);
+}
+
 function trnBlock(axis, mesh) {
     const a = { X: 0, Y: 1, Z: 2 }[axis];
     const lines = ['TRN' + axis, '    0'];
     for (let i = 0; i <= mesh.ijk[a]; i++) {
         const coord = mesh.xb[a * 2] + (mesh.xb[a * 2 + 1] - mesh.xb[a * 2]) * i / mesh.ijk[a];
-        lines.push('  ' + i + '  ' + coord.toFixed(5));
+        lines.push(String(i).padStart(5) + fmt(coord, 14, 5));
     }
-    return lines.join('\n');
+    return lines;
+}
+
+function surfaceBlock(name, type, rgb) {
+    return [
+        'SURFACE',
+        ' ' + name.padEnd(60),
+        ' 5000.00    1.00',
+        (String(type).padStart(2)) + rgb.map(v => fmt(v, 13, 5)).join('') + fmt(1, 13, 5),
+        ' null'.padEnd(61),
+        '',
+    ];
+}
+
+function domainBounds() {
+    const b = MESHES[0].xb.slice();
+    for (const mesh of MESHES) {
+        for (let a = 0; a < 3; a++) {
+            b[a * 2] = Math.min(b[a * 2], mesh.xb[a * 2]);
+            b[a * 2 + 1] = Math.max(b[a * 2 + 1], mesh.xb[a * 2 + 1]);
+        }
+    }
+    return b;
+}
+
+function outlineEdges() {
+    // The 12 edges of the domain bounding box, one "x1 y1 z1 x2 y2 z2" each.
+    const [x0, x1, y0, y1, z0, z1] = domainBounds();
+    const edges = [];
+    for (const z of [z0, z1]) {
+        edges.push([x0, y0, z, x1, y0, z], [x0, y1, z, x1, y1, z],
+                   [x0, y0, z, x0, y1, z], [x1, y0, z, x1, y1, z]);
+    }
+    for (const [x, y] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]]) {
+        edges.push([x, y, z0, x, y, z1]);
+    }
+    return edges;
 }
 
 export function buildSmvText() {
-    const parts = ['SMVVERSION', ' test', '', 'CHID', ' ' + CHID, ''];
-    MESHES.forEach((mesh, m) => {
-        parts.push(
+    const lines = [
+        'TITLE',
+        ' Single multimesh room, small fire, ' + TIMES.length + ' time steps',
+        '',
+        'FDSVERSION',
+        'FDS-6.8.0 (synthetic test data, tests/make-test-sim.mjs)',
+        '',
+        'ENDF',
+        ' ' + CHID + '.end',
+        '',
+        'INPF',
+        ' ' + CHID + '.fds',
+        '',
+        'CHID',
+        ' ' + CHID,
+        '',
+        'NMESHES',
+        '  ' + MESHES.length,
+        '',
+        'TIMES',
+        fmt(TIMES[0], 11, 3) + fmt(TIMES[TIMES.length - 1], 11, 3),
+        '',
+        'VIEWTIMES',
+        fmt(TIMES[0], 10, 2) + fmt(TIMES[TIMES.length - 1], 10, 2) + '  ' + TIMES.length,
+        '',
+        'ALBEDO',
+        '      0.30000',
+        '',
+        'IBLANK',
+        ' 1',
+        '',
+        'GVEC',
+        '      0.00000      0.00000     -9.80665',
+        '',
+        'SURFDEF',
+        ' ' + 'INERT'.padEnd(60),
+        '',
+    ];
+    // Reserved surfaces FDS always writes, plus our fire surface.
+    lines.push(...surfaceBlock('INERT', 0, [1, 1, 1, 0.8, 0.4]));
+    lines.push(...surfaceBlock('fire', 0, [1, 1, 1, 0, 0]));
+    lines.push(...surfaceBlock('OPEN', 2, [1, 1, 1, 0, 1]));
+    lines.push(...surfaceBlock('MIRROR', -2, [1, 1, 1, 0.8, 0.4]));
+    for (const name of ['INTERPOLATED', 'PERIODIC', 'HVAC', 'MASSLESS TRACER', 'DROPLET', 'MASSLESS TARGET']) {
+        lines.push(...surfaceBlock(name, 0, [1, 1, 1, 0.8, 0.4]));
+    }
+    const edges = outlineEdges();
+    lines.push('OUTLINE', '  ' + edges.length);
+    for (const e of edges) lines.push(e.map(v => fmt(v, 14, 4)).join(''));
+    lines.push(
+        '',
+        'TOFFSET',
+        '      0.00000      0.00000      0.00000',
+        '',
+        'HRRPUVCUT',
+        '     1',
+        '    200.00000',
+        '',
+        'PROP',
+        ' null',
+        '  1',
+        ' sensor',
+        '  0',
+        ''
+    );
+    MESHES.forEach(mesh => {
+        lines.push(
+            'OFFSET',
+            '      0.00000      0.00000      0.00000',
+            '',
             'GRID   ' + mesh.id,
-            '   ' + mesh.ijk.join('   ') + '    0',
+            '   ' + mesh.ijk.map(v => String(v).padStart(2)).join('   ') + '    0',
             '',
             'PDIM',
-            ' ' + mesh.xb.map(v => v.toFixed(5)).join('  ') + '  0.0  0.0  0.0',
+            ' ' + [...mesh.xb, 0, 0, 0].map(v => fmt(v, 13, 5)).join(' '),
             '',
-            trnBlock('X', mesh), '',
-            trnBlock('Y', mesh), '',
-            trnBlock('Z', mesh), '',
-            'SLCF  ' + (m + 1) + ' # STRUCTURED &     0   ' + mesh.ijk[0] + '    0   ' + mesh.ijk[1] + '    ' + SLICE_K + '    ' + SLICE_K,
-            ' ' + CHID + '_' + (m + 1) + '_1.sf',
-            ' TEMPERATURE',
-            ' temp',
-            ' C',
+            ...trnBlock('X', mesh), '',
+            ...trnBlock('Y', mesh), '',
+            ...trnBlock('Z', mesh), '',
+            'OBST',
+            '           0',
+            '',
+            'VENT',
+            '    0    0',
+            '',
+            'CVENT',
+            '    0',
             ''
         );
     });
-    return parts.join('\n');
+    MESHES.forEach((mesh, m) => {
+        lines.push(
+            'SLCF     ' + (m + 1) + ' # STRUCTURED &     0    ' + mesh.ijk[0] +
+                '     0    ' + mesh.ijk[1] + '     ' + SLICE_K + '     ' + SLICE_K + ' !      1      0',
+            ' ' + CHID + '_' + (m + 1) + '_1.sf',
+            ' TEMPERATURE',
+            ' temp',
+            ' C'
+        );
+    });
+    return lines.join('\n') + '\n';
 }
 
 export function buildFdsText() {
@@ -155,6 +291,8 @@ export function buildExampleSim() {
         smvText: buildSmvText(),
         fdsName: CHID + '.fds',
         fdsText: buildFdsText(),
+        endName: CHID + '.end',
+        endBuffer: buildEndFile(),
         sliceFiles: MESHES.map((mesh, m) => ({
             name: CHID + '_' + (m + 1) + '_1.sf',
             meshIndex: m + 1,
@@ -177,7 +315,8 @@ if (import.meta.url === new URL('file://' + process.argv[1]).href ||
     const sim = buildExampleSim();
     fs.writeFileSync(path.join(dir, sim.smvName), sim.smvText);
     fs.writeFileSync(path.join(dir, sim.fdsName), sim.fdsText);
+    fs.writeFileSync(path.join(dir, sim.endName), Buffer.from(sim.endBuffer));
     for (const f of sim.sliceFiles) fs.writeFileSync(path.join(dir, f.name), Buffer.from(f.buffer));
-    console.log('Wrote ' + sim.smvName + ', ' + sim.fdsName + ' and ' +
-        sim.sliceFiles.length + ' slice files to ' + dir);
+    console.log('Wrote ' + sim.smvName + ', ' + sim.fdsName + ', ' + sim.endName +
+        ' and ' + sim.sliceFiles.length + ' slice files to ' + dir);
 }
