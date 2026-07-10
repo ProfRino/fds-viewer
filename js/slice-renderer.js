@@ -199,6 +199,15 @@
         return min + (max - min) * index / count;
     }
 
+    /** World coordinate of grid node `index` along `axis` (0=X, 1=Y, 2=Z).
+     *  Uses the mesh's TRN node-coordinate table when available (exact, and
+     *  correct for stretched grids); falls back to linear XB interpolation. */
+    function meshAxisCoordinate(mesh, axis, index) {
+        const trn = mesh.trn && mesh.trn[axis];
+        if (trn && Number.isFinite(trn[index])) return trn[index];
+        return meshCoordinate(mesh.xb[axis * 2], mesh.xb[axis * 2 + 1], mesh.ijk[axis], index);
+    }
+
     function unionBounds(a, b) {
         return {
             x0: Math.min(a.x0, b.x0), x1: Math.max(a.x1, b.x1),
@@ -210,12 +219,12 @@
     function physicalBoundsForPart(dataset, mesh) {
         const idx = dataset.indices;
         return {
-            x0: meshCoordinate(mesh.xb[0], mesh.xb[1], mesh.ijk[0], idx.i1),
-            x1: meshCoordinate(mesh.xb[0], mesh.xb[1], mesh.ijk[0], idx.i2),
-            y0: meshCoordinate(mesh.xb[2], mesh.xb[3], mesh.ijk[1], idx.j1),
-            y1: meshCoordinate(mesh.xb[2], mesh.xb[3], mesh.ijk[1], idx.j2),
-            z0: meshCoordinate(mesh.xb[4], mesh.xb[5], mesh.ijk[2], idx.k1),
-            z1: meshCoordinate(mesh.xb[4], mesh.xb[5], mesh.ijk[2], idx.k2),
+            x0: meshAxisCoordinate(mesh, 0, idx.i1),
+            x1: meshAxisCoordinate(mesh, 0, idx.i2),
+            y0: meshAxisCoordinate(mesh, 1, idx.j1),
+            y1: meshAxisCoordinate(mesh, 1, idx.j2),
+            z0: meshAxisCoordinate(mesh, 2, idx.k1),
+            z1: meshAxisCoordinate(mesh, 2, idx.k2),
         };
     }
 
@@ -371,17 +380,16 @@
             ? fdsContext.meshes[part.meshIndex - 1]
             : null;
         if (!mesh || !mesh.ijk || !mesh.xb) return null;
-        const [xb1, xb2, yb1, yb2, zb1, zb2] = mesh.xb;
-        const [ni, nj, nk] = mesh.ijk;
         const idx = ds.indices;
         // Convert per-mesh integer indices → world coordinates
-        const xMin = xb1 + (xb2 - xb1) * idx.i1 / ni;
-        const xMax = xb1 + (xb2 - xb1) * idx.i2 / ni;
-        const yMin = yb1 + (yb2 - yb1) * idx.j1 / nj;
-        const yMax = yb1 + (yb2 - yb1) * idx.j2 / nj;
-        const zMin = zb1 + (zb2 - zb1) * idx.k1 / nk;
-        const zMax = zb1 + (zb2 - zb1) * idx.k2 / nk;
-        return { xMin, xMax, yMin, yMax, zMin, zMax };
+        return {
+            xMin: meshAxisCoordinate(mesh, 0, idx.i1),
+            xMax: meshAxisCoordinate(mesh, 0, idx.i2),
+            yMin: meshAxisCoordinate(mesh, 1, idx.j1),
+            yMax: meshAxisCoordinate(mesh, 1, idx.j2),
+            zMin: meshAxisCoordinate(mesh, 2, idx.k1),
+            zMax: meshAxisCoordinate(mesh, 2, idx.k2),
+        };
     }
 
     function combinedIndices(indices, dims) {
@@ -500,6 +508,7 @@
 
                 if (unique.length === 1) {
                     // All parts described the same physical plane — return the lone dataset.
+                    unique[0].part.dataset.sourceMeshIndex = unique[0].part.meshIndex;
                     return unique[0].part.dataset;
                 }
 
@@ -514,13 +523,10 @@
                 const xVaries = (ranges.xMin.max - ranges.xMin.min) > KEY_PRECISION || (ranges.xMax.max - ranges.xMax.min) > KEY_PRECISION;
                 const yVaries = (ranges.yMin.max - ranges.yMin.min) > KEY_PRECISION || (ranges.yMax.max - ranges.yMax.min) > KEY_PRECISION;
                 const zVaries = (ranges.zMin.max - ranges.zMin.min) > KEY_PRECISION || (ranges.zMax.max - ranges.zMax.min) > KEY_PRECISION;
-                let axis = -1;
-                if (xVaries && !yVaries && !zVaries) axis = 0;
-                else if (!xVaries && yVaries && !zVaries) axis = 1;
-                else if (!xVaries && !yVaries && zVaries) axis = 2;
-                // Only attempt simple 1D stitching. 2D arrangements (rare for
-                // a single slice plane) fall through to the legacy path below.
-                if (axis >= 0) {
+                const varying = [xVaries, yVaries, zVaries];
+                const varyingAxes = [0, 1, 2].filter(a => varying[a]);
+                if (varyingAxes.length === 1) {
+                    const axis = varyingAxes[0];
                     // Sort parts along the stitch axis so the concatenation
                     // matches physical order regardless of file ordering.
                     const sortKey = axis === 0 ? 'xMin' : (axis === 1 ? 'yMin' : 'zMin');
@@ -528,7 +534,13 @@
                     const orderedParts = unique.map(u => u.part);
                     return _stitchOnAxis(orderedParts, axis);
                 }
-                // Fall through to legacy stitching for 2D / unknown cases
+                if (varyingAxes.length === 2) {
+                    // Meshes tile the slice plane in 2D (rows × columns),
+                    // e.g. a 4×2 mesh arrangement cut by one horizontal slice.
+                    const stitched = _stitch2DGrid(unique, varyingAxes[0], varyingAxes[1], KEY_PRECISION);
+                    if (stitched) return stitched;
+                }
+                // Fall through to legacy stitching for unknown cases
             }
         }
 
@@ -559,6 +571,100 @@
             displayName: parts[0].fileName.replace(/_\d+_(\d+)\.sf$/i, '_all_$1.sf'),
             getFrameData(frameIndex) { return stitchFrame(parts, frameIndex, axis, dims); },
         };
+    }
+
+    /** Assemble parts that tile the slice plane in a 2D grid. `placed` is the
+     *  deduplicated [{ part, fp }] list; `axisA`/`axisB` are the two varying
+     *  axes (0=I/X, 1=J/Y, 2=K/Z). Rows are formed along axisB and each row is
+     *  stitched along axisA, then the row results are stitched along axisB.
+     *  Returns null when the parts don't form a complete rectangular grid, so
+     *  the caller can fall back to legacy stitching. */
+    function _stitch2DGrid(placed, axisA, axisB, tolerance) {
+        const minKeys = ['xMin', 'yMin', 'zMin'];
+        const rowsByStart = new Map();
+        for (const p of placed) {
+            const key = Math.round(p.fp[minKeys[axisB]] / tolerance) * tolerance;
+            if (!rowsByStart.has(key)) rowsByStart.set(key, []);
+            rowsByStart.get(key).push(p);
+        }
+        const rows = Array.from(rowsByStart.keys()).sort((a, b) => a - b)
+            .map(k => rowsByStart.get(k).sort((a, b) => a.fp[minKeys[axisA]] - b.fp[minKeys[axisA]]));
+
+        // Every row must have the same columns at the same positions.
+        const colCount = rows[0].length;
+        if (rows.length * colCount !== placed.length) return null;
+        for (const row of rows) {
+            if (row.length !== colCount) return null;
+            for (let c = 0; c < colCount; c++) {
+                if (Math.abs(row[c].fp[minKeys[axisA]] - rows[0][c].fp[minKeys[axisA]]) > tolerance) return null;
+            }
+        }
+
+        try {
+            const rowParts = rows.map(row => ({
+                dataset: _stitchOnAxis(row.map(u => u.part), axisA),
+                fileName: row[0].part.fileName,
+                meshIndex: row[0].part.meshIndex,
+            }));
+            const combined = _stitchOnAxis(rowParts, axisB);
+            // Expose the flat per-mesh parts (not the synthetic row datasets)
+            // so physical placement can union the real mesh footprints.
+            combined.parts = placed.map(p => p.part);
+            return combined;
+        } catch (e) {
+            console.warn('2D slice stitching failed, falling back to legacy stitching.', e);
+            return null;
+        }
+    }
+
+    // ── FDS context from a Smokeview (.smv) file ──────────────────────────
+    // The .smv is written by FDS itself, so its GRID / PDIM / TRN records are
+    // the authoritative description of the grid the simulation actually ran
+    // on. The .fds input can disagree (edited after the run, MULT expansion,
+    // stretched grids), which mis-places and mis-sizes slices, so a context
+    // built from the .smv is preferred over one parsed from the .fds.
+    function parseSmvTrnAxis(lines, start, nodeCount) {
+        // TRN block layout: a count of stretch entries, that many stretch
+        // lines, then nodeCount+1 lines of "index coordinate".
+        let s = start;
+        const stretchCount = parseInt((lines[s] || '').trim(), 10);
+        s += 1 + (Number.isFinite(stretchCount) && stretchCount > 0 ? stretchCount : 0);
+        const coords = [];
+        for (; s < lines.length && coords.length <= nodeCount; s++) {
+            const m = /^\s*(\d+)\s+([-+0-9.Ee]+)\s*$/.exec(lines[s]);
+            if (!m) break;
+            coords[Number(m[1])] = Number(m[2]);
+        }
+        return coords.length === nodeCount + 1 && coords.every(Number.isFinite) ? coords : null;
+    }
+
+    function fdsContextFromSmvText(text, fileName) {
+        const lines = String(text).split(/\r?\n/);
+        const meshes = [];
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line.startsWith('GRID')) continue;
+            const id = line.replace(/^GRID\s*/i, '').trim() || 'mesh_' + (meshes.length + 1);
+            const ijk = (lines[i + 1] || '').trim().split(/\s+/).map(Number).filter(Number.isFinite).slice(0, 3);
+            if (ijk.length < 3) continue;
+            let xb = null;
+            const trn = [null, null, null];
+            for (let s = i + 2; s < lines.length; s++) {
+                const keyword = lines[s].trim();
+                if (keyword.startsWith('GRID')) break;
+                if (keyword === 'PDIM') {
+                    const values = (lines[s + 1] || '').trim().split(/\s+/).map(Number).filter(Number.isFinite);
+                    if (values.length >= 6) xb = values.slice(0, 6);
+                } else if (/^TRN[XYZ]$/.test(keyword)) {
+                    const axis = { TRNX: 0, TRNY: 1, TRNZ: 2 }[keyword];
+                    trn[axis] = parseSmvTrnAxis(lines, s + 1, ijk[axis]);
+                }
+                if (xb && trn[0] && trn[1] && trn[2]) break;
+            }
+            if (xb) meshes.push({ id, ijk, xb, trn });
+        }
+        if (meshes.length === 0) return null;
+        return { fileName: fileName || 'smv', meshes, source: 'smv' };
     }
 
     // ── FDS context from our parser's data ────────────────────────────────
@@ -822,6 +928,7 @@
         parseSliceFilename, sliceGroupKey, describeSliceGroups,
         combineSliceDatasets,
         fdsContextFromParsedData,
+        fdsContextFromSmvText,
     };
     global.SliceColorMap = { colorMap, COLOR_MAPS };
     global.SliceUtil = {

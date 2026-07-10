@@ -35,12 +35,38 @@
     // Shared FDSParser instance used to refresh geometry from a folder's .fds
     const fdsParserForFolder = (typeof FDSParser === 'function') ? new FDSParser() : null;
 
+    // Mesh context (XB/IJK/TRN per mesh) parsed from a folder's .smv file.
+    // The .smv is written by FDS itself, so it reflects the grid the
+    // simulation actually ran on — the .fds input can disagree (edited after
+    // the run, MULT expansion, stretched grids), which would size and place
+    // slices wrongly. Preferred over the .fds-derived context when available.
+    let smvSliceContext = null;
+
+    function currentSliceContext() {
+        if (smvSliceContext) return smvSliceContext;
+        return lastData ? SliceFiles.fdsContextFromParsedData(lastData) : null;
+    }
+
+    async function refreshSmvContextFromFolder(files) {
+        smvSliceContext = null;
+        const smvFile = files.find(f => /\.smv$/i.test(f.name));
+        if (!smvFile) return;
+        try {
+            const text = await smvFile.text();
+            smvSliceContext = SliceFiles.fdsContextFromSmvText(text, smvFile.name);
+        } catch (e) {
+            console.warn('Could not parse .smv in folder: ' + smvFile.name, e);
+        }
+    }
+
     /**
      * When a folder is opened (slice or smoke mode), look for an .fds file and
      * use it to refresh the greyscale geometry so the loaded simulation matches
-     * the slice/smoke data being visualised.
+     * the slice/smoke data being visualised. Also picks up the .smv mesh
+     * context used to place slices in world coordinates.
      */
     async function refreshGeometryFromFolder(files) {
+        await refreshSmvContextFromFolder(files);
         if (!fdsParserForFolder) return false;
         const fdsFile = files.find(f => /\.fds$/i.test(f.name));
         if (!fdsFile) return false;
@@ -565,7 +591,7 @@
     }
 
     function loadDatasetIntoOverlay(viewer, dataset, displayName) {
-        const fdsContext = lastData ? SliceFiles.fdsContextFromParsedData(lastData) : null;
+        const fdsContext = currentSliceContext();
         const overlay = ensureOverlay(viewer);
         overlay.setDataset(dataset, fdsContext);
 
@@ -667,12 +693,11 @@
                         dataset: FdsSliceReader.parse(buf),
                     });
                 }
-                // Pass the FDS mesh context so combineSliceDatasets can use
+                // Pass the mesh context so combineSliceDatasets can use
                 // physical mesh extents (XB/IJK) to (a) deduplicate per-mesh
                 // boundary slices that point at the same plane, and (b) pick
-                // the correct stitch axis instead of guessing from dims.
-                const fdsContext = lastData ? SliceFiles.fdsContextFromParsedData(lastData) : null;
-                const ds = SliceFiles.combineSliceDatasets(parts, fdsContext);
+                // the correct stitch layout instead of guessing from dims.
+                const ds = SliceFiles.combineSliceDatasets(parts, currentSliceContext());
                 loadDatasetIntoOverlay(viewer, ds, ds.displayName);
             }
         } catch (e) {
