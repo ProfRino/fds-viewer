@@ -504,14 +504,27 @@
         return parseFloat(v.toFixed(2)).toString();
     }
 
-    // Compute the robust range from the current frame and write it into the
-    // Min/Max inputs + overlay. Called on dataset load and by the ↺ Auto button.
+    // Compute the auto range across ALL frames and write it into the Min/Max
+    // inputs + overlay. Called on dataset load, by the ↺ Auto button and when
+    // the range-mode dropdown changes. Two modes: global min/max (the bounds
+    // Smokeview's research mode shows) or a global 2–98 % percentile band for
+    // contrast when outlier cells stretch the full range. Both span the whole
+    // time series — a per-frame range collapses on typical fire slices
+    // (nearly all cells at ambient) and saturates the render.
     function resetRangeToAuto() {
         if (!sliceOverlay || !currentDataset) return;
-        const prev = sliceOverlay.autoRange;
-        sliceOverlay.autoRange = true;
-        sliceOverlay.robustRange = true;
-        const range = sliceOverlay.getCurrentRange();
+        const modeSel = document.getElementById('output-range-mode');
+        const usePercentile = modeSel && modeSel.value === 'percentile';
+        let range = usePercentile
+            ? SliceUtil.computeGlobalPercentileRange(currentDataset, 0.02, 0.98)
+            : SliceUtil.computeGlobalRange(currentDataset);
+        if (!Number.isFinite(range.min) || !Number.isFinite(range.max) || range.max <= range.min) {
+            const prev = sliceOverlay.autoRange;
+            sliceOverlay.autoRange = true;
+            sliceOverlay.robustRange = true;
+            range = sliceOverlay.getCurrentRange();
+            sliceOverlay.autoRange = prev;
+        }
         sliceOverlay.autoRange = false;
         sliceOverlay.setManualRange(range.min, range.max);
         const minIn = document.getElementById('output-range-min');
@@ -857,6 +870,8 @@
 
         const resetRangeBtn = document.getElementById('output-reset-range');
         if (resetRangeBtn) resetRangeBtn.addEventListener('click', resetRangeToAuto);
+        const rangeModeSel = document.getElementById('output-range-mode');
+        if (rangeModeSel) rangeModeSel.addEventListener('change', resetRangeToAuto);
 
     }
 

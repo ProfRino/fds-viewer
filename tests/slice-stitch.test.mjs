@@ -190,6 +190,19 @@ function fakePart(meshIndex, fileName, dims, indices, fillFn) {
     assert.strictEqual(view.physical.y0, 0);
     assert.strictEqual(view.physical.y1, 4);
     assert.ok(Math.abs(view.physical.slabOffset - 1.2) < 1e-9); // k=3, dz=0.4
+
+    // Default color range = global min/max across all frames (like
+    // Smokeview's research mode): ambient 20 at t=0 up to the peak 320 at
+    // the last time step — NOT a per-frame percentile band.
+    const range = SliceUtil.computeGlobalRange(ds);
+    assert.ok(Math.abs(range.min - 20) < 1e-3, 'global min ~20, got ' + range.min);
+    assert.ok(Math.abs(range.max - 320) < 1e-3, 'global max ~320, got ' + range.max);
+
+    // The percentile variant trims the rare hot-spot tail: still floored at
+    // ambient, but the 98th percentile sits well below the 320 peak.
+    const robust = SliceUtil.computeGlobalPercentileRange(ds, 0.02, 0.98);
+    assert.ok(Math.abs(robust.min - 20) < 1e-3, 'percentile min ~20, got ' + robust.min);
+    assert.ok(robust.max > 20 && robust.max < 319, 'percentile max inside (20, 319), got ' + robust.max);
     console.log('ok: synthetic multimesh room stitches to 21x21 spanning 4x4 m at z=1.2');
 }
 

@@ -175,6 +175,69 @@
         };
     }
 
+    /**
+     * Global min/max across the dataset's whole time series (what Smokeview's
+     * research mode shows). A per-frame percentile range collapses on typical
+     * fire slices — >98 % of cells sit at ambient, so the 2–98 % band is a
+     * fraction of a degree and the render saturates into noise. Samples up to
+     * `maxFrames` evenly spaced frames (always including first and last) and
+     * caches the result on the dataset.
+     */
+    function computeGlobalRange(dataset, maxFrames) {
+        if (dataset._globalRange) return dataset._globalRange;
+        const frameCount = dataset.frames.length;
+        const sampleCount = Math.min(frameCount, maxFrames || 60);
+        let min = Infinity, max = -Infinity;
+        for (let s = 0; s < sampleCount; s++) {
+            const index = Math.round((frameCount - 1) * s / Math.max(sampleCount - 1, 1));
+            const stats = computeStats(dataset.getFrameData(index));
+            if (stats.min < min) min = stats.min;
+            if (stats.max > max) max = stats.max;
+        }
+        dataset._globalRange = { min, max };
+        return dataset._globalRange;
+    }
+
+    /**
+     * Percentile range over the dataset's whole time series. Pools values
+     * from up to `maxFrames` evenly spaced frames (value-subsampled to keep
+     * the pool bounded), then takes the [low, high] percentiles. Useful when
+     * outlier cells stretch the global min/max so far that the interesting
+     * band loses contrast. Cached per dataset and percentile pair.
+     */
+    function computeGlobalPercentileRange(dataset, low, high, maxFrames) {
+        const cacheKey = low + ':' + high;
+        dataset._globalPercentileRanges = dataset._globalPercentileRanges || {};
+        if (dataset._globalPercentileRanges[cacheKey]) return dataset._globalPercentileRanges[cacheKey];
+
+        const frameCount = dataset.frames.length;
+        const sampleCount = Math.min(frameCount, maxFrames || 24);
+        const perFrameBudget = Math.max(1, Math.floor(2000000 / sampleCount));
+        const pool = [];
+        for (let s = 0; s < sampleCount; s++) {
+            const index = Math.round((frameCount - 1) * s / Math.max(sampleCount - 1, 1));
+            const values = dataset.getFrameData(index);
+            const stride = Math.max(1, Math.ceil(values.length / perFrameBudget));
+            for (let i = 0; i < values.length; i += stride) {
+                if (Number.isFinite(values[i])) pool.push(values[i]);
+            }
+        }
+        let range;
+        if (pool.length === 0) {
+            range = { min: NaN, max: NaN };
+        } else {
+            pool.sort((a, b) => a - b);
+            const lowIdx = Math.floor((pool.length - 1) * low);
+            const highIdx = Math.ceil((pool.length - 1) * high);
+            range = {
+                min: pool[clamp(lowIdx, 0, pool.length - 1)],
+                max: pool[clamp(highIdx, 0, pool.length - 1)],
+            };
+        }
+        dataset._globalPercentileRanges[cacheKey] = range;
+        return range;
+    }
+
     function hasUsefulRange(stats) {
         if (!Number.isFinite(stats.min) || !Number.isFinite(stats.max)) return false;
         const range = Math.abs(stats.max - stats.min);
@@ -933,6 +996,8 @@
     global.SliceColorMap = { colorMap, COLOR_MAPS };
     global.SliceUtil = {
         buildPlaneView, extractPlaneValues, makeTextureCanvas,
-        computeStats, computePercentileRange, findInitialFrame, hasUsefulRange,
+        computeStats, computePercentileRange, computeGlobalRange,
+        computeGlobalPercentileRange,
+        findInitialFrame, hasUsefulRange,
     };
 })(window);
