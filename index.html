@@ -694,6 +694,11 @@
                             Slices
                         </label>
                         <label class="layer-item">
+                            <input type="checkbox" class="output-layer-toggle" data-layer="vismapRegions" checked>
+                            <span class="layer-color" style="background: #d98e2b"></span>
+                            Visual obst.
+                        </label>
+                        <label class="layer-item">
                             <input type="checkbox" class="output-layer-toggle" data-layer="grid" checked>
                             <span class="layer-color" style="background: #444466"></span>
                             Grid
@@ -845,6 +850,7 @@
                         <button class="view-btn active" id="output-mode-smoke">Soot</button>
                         <button class="view-btn" id="output-mode-slice">Slice</button>
                         <button class="view-btn" id="output-mode-boundary">Boundary</button>
+                        <button class="view-btn" id="output-mode-vismap">Vismap</button>
                     </div>
                 </div>
 
@@ -1114,6 +1120,92 @@
                 </div>
                 <!-- /Boundary controls -->
 
+                <!-- Vismap controls -->
+                <div id="output-vismap-controls" style="display: none;">
+                    <div class="sidebar-section">
+                        <h3>Simulation Folder</h3>
+                        <div class="output-file-actions">
+                            <label class="file-button primary-file-button" for="output-vismap-folder">Open simulation folder</label>
+                        </div>
+                        <input id="output-vismap-folder" type="file" webkitdirectory multiple hidden>
+                        <label class="field-label" for="output-vismap-quantity" title="Slice quantity used as smoke data. Extinction coefficient is used directly; optical density is converted with K = OD·ln(10).">Smoke data</label>
+                        <select id="output-vismap-quantity" disabled>
+                            <option value="">No slice data loaded</option>
+                        </select>
+                        <div class="status-line" id="output-vismap-status">Ready</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Waypoints</h3>
+                        <div id="output-vismap-waypoints"></div>
+                        <p class="vismap-empty-hint" id="output-vismap-wp-hint">No waypoints yet — exit signs along the escape route.</p>
+                        <div class="output-file-actions" style="margin-top:6px;">
+                            <button id="output-vismap-add-wp" class="file-button" type="button">+ Add waypoint</button>
+                            <button id="output-vismap-pick-wp" class="file-button" type="button" title="Add a waypoint by clicking a position in the 3D view">+ By click</button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Visual obstructions</h3>
+                        <div id="output-vismap-regions"></div>
+                        <p class="vismap-empty-hint" id="output-vismap-region-hint" title="Rectangles that override the FDS geometry for the sight-line calculation only.">None — sight lines use the FDS geometry.</p>
+                        <div class="output-file-actions" style="margin-top:6px;">
+                            <button id="output-vismap-add-obst" class="file-button" type="button" title="Blocks sight in addition to the FDS geometry (e.g. a curtain)">+ Obstruction</button>
+                            <button id="output-vismap-add-hole" class="file-button" type="button" title="Clears sight through FDS obstructions (e.g. a window in a wall)">+ Hole</button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Times</h3>
+                        <div class="range-grid">
+                            <label for="output-vismap-t0">Start / s</label>
+                            <input id="output-vismap-t0" type="number" step="any" value="0">
+                            <label for="output-vismap-t1">End / s</label>
+                            <input id="output-vismap-t1" type="number" step="any">
+                            <label for="output-vismap-dt">Step / s</label>
+                            <input id="output-vismap-dt" type="number" step="any">
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Options</h3>
+                        <div class="range-grid">
+                            <label for="output-vismap-minvis" title="Lower bound for local visibility to meet the performance criterion">Min vis / m</label>
+                            <input id="output-vismap-minvis" type="number" step="any" value="0">
+                            <label for="output-vismap-maxvis" title="Upper bound for visibility (Jin: 30 m)">Max vis / m</label>
+                            <input id="output-vismap-maxvis" type="number" step="any" value="30">
+                        </div>
+                        <label class="checkbox-row" style="margin-top:6px;">
+                            <input id="output-vismap-obstructions" type="checkbox" checked>
+                            <span>Consider obstructions</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input id="output-vismap-viewangle" type="checkbox" checked>
+                            <span>Consider view angle</span>
+                        </label>
+                        <button id="output-vismap-compute" class="file-button primary-file-button" style="margin-top:8px;" type="button">Compute visibility maps</button>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Result</h3>
+                        <label class="field-label" for="output-vismap-mapmode">Map</label>
+                        <select id="output-vismap-mapmode" disabled>
+                            <option value="aggregated" selected>Visible at all times</option>
+                            <option value="aset">ASET (first time not visible)</option>
+                            <option value="time">At selected time</option>
+                        </select>
+                        <label class="field-label" for="output-vismap-time-slider" style="margin-top:6px;" title="Steps through the computed time points — only used by the 'At selected time' map">Time</label>
+                        <div class="inline-controls">
+                            <button id="output-vismap-play" class="icon-button" disabled>
+                                <span id="output-vismap-play-label">Play</span>
+                            </button>
+                            <div class="frame-readout" id="output-vismap-time-readout">-- s</div>
+                        </div>
+                        <input id="output-vismap-time-slider" type="range" min="0" max="0" value="0" disabled>
+                    </div>
+                </div>
+                <!-- /Vismap controls -->
+
                 <!-- Agents overlay (always visible) -->
                 <div id="output-agents-panel" class="sidebar-section">
                     <h3>Agents</h3>
@@ -1205,19 +1297,20 @@
     <!-- Application Scripts -->
     <script src="js/sample-data.js?v=20260517p"></script>
     <script src="js/fds-parser.js?v=20260517p"></script>
-    <script src="js/viewer.js?v=20260520G"></script>
+    <script src="js/viewer.js?v=20260711a"></script>
     <script src="js/fds-linter.js?v=20260517p"></script>
     <script src="js/fire-panel.js?v=20260519AE"></script>
     <script src="js/mesh-panel.js?v=20260517p"></script>
     <script src="js/slice-reader.js?v=20260517p"></script>
     <script src="js/slice-renderer.js?v=20260710b"></script>
+    <script src="js/vismap.js?v=20260711h"></script>
     <script src="js/smoke3d-reader.js?v=20260517p"></script>
     <script src="js/smoke3d-overlay.js?v=20260519AM"></script>
     <script src="js/boundary-reader.js?v=20260518a"></script>
     <script src="js/boundary-overlay.js?v=20260520H"></script>
     <script src="js/trajectory-reader.js?v=20260607a"></script>
     <script src="js/agent-overlay.js?v=20260607b"></script>
-    <script src="js/output-page.js?v=20260710b"></script>
+    <script src="js/output-page.js?v=20260711e"></script>
     <script src="js/app.js?v=20260520G"></script>
 </body>
 </html>

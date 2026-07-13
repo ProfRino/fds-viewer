@@ -2046,6 +2046,16 @@ class FDSViewer {
                     if (n._isSliceOverlay) n.visible = visible;
                 });
                 break;
+            // Vismap's manual visual obstruction / hole markers. The overlay
+            // additionally tracks whether its Output mode is active via
+            // _vismapModeVisible, so re-ticking the layer in another mode
+            // doesn't pop the markers back in.
+            case 'vismapRegions':
+                this.scene.userData.vismapRegionsVisible = visible;
+                this.scene.traverse(n => {
+                    if (n._isVisualRegion) n.visible = visible && n._vismapModeVisible !== false;
+                });
+                break;
         }
     }
 
@@ -2110,7 +2120,7 @@ class FDSViewer {
     setGrayscale(enabled) {
         this._grayscale = enabled;
         this.scene.traverse(node => {
-            if (node._isSliceOverlay) return; // never desaturate slice colors
+            if (node._isSliceOverlay || node._isVisualRegion) return; // never desaturate overlay colors
             if (!node.isMesh && !node.isLine && !node.isLineSegments) return;
             const mats = Array.isArray(node.material) ? node.material : [node.material];
             for (const m of mats) {
