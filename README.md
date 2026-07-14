@@ -10,7 +10,8 @@ files and simulation outputs. Drop in any `.fds` file to inspect meshes,
 obstructions, vents, holes, devices, slice planes, fire sources and HVAC
 networks **before** launching a multi-hour FDS run -- then open the
 simulation folder afterwards to play back smoke (`.s3d`), slice (`.sf`)
-and boundary (`.bf`) results without leaving the browser.
+and boundary (`.bf`) results — or compute exit-sign **visibility maps**
+from them — without leaving the browser.
 
 ![FDS Viewer demo](assets/demo2_full_2x.gif)
 
@@ -47,10 +48,27 @@ Point the **Output** page at a simulation folder once — the viewer auto-detect
 - **Smoke** (`.s3d`) — WebGL2 volume rendering with Basic and Solid-aware (depth-sampled) modes; user-tunable transfer functions for soot and HRRPUV
 - **Slices** (`.sf`) — multi-mesh stitching with shared colormap
 - **Boundary patches** (`.bf`) — per-frame auto-range colorbar
+- **Visibility maps** — exit-sign visibility computed from extinction-coefficient slices — see [Visibility maps (Vismap)](#visibility-maps-vismap) below
 
-The Output page also accepts a JuPedSim `.sqlite` to overlay evacuation agents on the same scene — see [JuPedSim Output](#jupsedsim-output) below.
+The Output page also accepts a JuPedSim `.sqlite` to overlay evacuation agents on the same scene — see [JuPedSim Output](#jupedsim-output) below.
 
 **Navigation.** Standard orbit controls plus first-person **Walk mode** (W A S D, mouse-look, Shift run, Space jump, Esc exit) and an **orthographic / perspective** toggle in each 3D view. Per-axis clipping that doesn't cull edge geometry.
+
+### Visibility maps (Vismap)
+
+The Output page **Vismap** mode computes the visibility of escape-route
+signage over time, following the waypoint-based method of
+[Börger, Belt & Arnold (2024)](https://doi.org/10.1016/j.firesaf.2024.104269)
+and its Python reference implementation
+[fdsvismap](https://github.com/FireDynamics/fdsvismap) — no scripting required:
+
+- **Input** — a `SOOT EXTINCTION COEFFICIENT` (or `SOOT OPTICAL DENSITY`) slice from the simulation folder
+- **Waypoints** — exit signs placed via form or by clicking in the 3D view, each with position, orientation angle α and contrast factor C (Jin's visibility model)
+- **Sight lines** — each map position is checked against each sign along a straight line of sight: walls from the FDS geometry block the view, the smoke along the line reduces the visible distance (mean extinction coefficient, per Jin), and a sign only counts as visible from the side it faces (view-angle weighting by α). Additional visual obstructions (e.g. curtains) or see-through openings (e.g. windows) can be defined and are shown in the scene
+- **Results** — three map views rendered on the evaluation plane: sign visible / not visible at a selected time (with playback, side by side with the smoke), aggregated over all times, and an **ASET map** showing the first time each position loses sight of any sign
+
+> The visibility computation is a port of fdsvismap; results should be
+> independently verified before use in any design or regulatory context.
 
 ### JuPedSim Output
 
@@ -125,6 +143,7 @@ inputs for the viewer - they are **not** intended as validated design fires.
 │   ├── smoke3d-*.js        .s3d reader + WebGL2 volume overlay
 │   ├── slice-*.js          .sf reader + multi-mesh slice overlay
 │   ├── boundary-*.js       .bf reader + boundary patch overlay
+│   ├── vismap.js           Visibility map engine + overlay (fdsvismap port)
 │   └── sample-data.js      Embedded sample (for offline Load Sample)
 ├── examples/*.fds      Sample inputs (also editable on disk)
 ├── assets/             Demo GIFs used by this README
@@ -153,3 +172,9 @@ If you use this tool in published work, please cite:
 
 > Lovreglio, R. *FDS Viewer*. Massey University.
 > https://github.com/ProfRino/fds-viewer
+
+If you use the visibility maps, please also cite the underlying method:
+
+> Börger, K., Belt, A., Arnold, L. (2024). *A waypoint based approach to
+> visibility in performance based fire safety design*. Fire Safety Journal.
+> https://doi.org/10.1016/j.firesaf.2024.104269
