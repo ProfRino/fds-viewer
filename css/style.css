@@ -3016,6 +3016,73 @@ kbd {
     font-family: 'Consolas', monospace;
 }
 
+/* Vismap waypoint / visual-region cards */
+.vismap-card {
+    border: 1px solid var(--border-color, #2a2a40);
+    border-radius: 4px;
+    padding: 6px 8px 8px;
+    margin-top: 6px;
+    background: var(--bg-tertiary, #1a1a2e);
+}
+.vismap-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+.vismap-card-title {
+    font-size: 11px;
+    color: var(--text-secondary, #8a8a9a);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.vismap-card-remove {
+    font-size: 11px;
+    padding: 1px 7px;
+    background: transparent;
+    border: 1px solid var(--border-color, #2a2a40);
+    color: var(--text-secondary, #8a8a9a);
+    border-radius: 3px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+.vismap-card-remove:hover {
+    color: #fff;
+    border-color: var(--accent, #e94560);
+    background: var(--accent, #e94560);
+}
+.vismap-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    gap: 4px 8px;
+    align-items: center;
+}
+.vismap-grid label {
+    font-size: 11px;
+    color: var(--text-secondary, #8a8a9a);
+}
+.vismap-grid input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-tertiary, #1a1a2e);
+    border: 1px solid var(--border-color, #2a2a40);
+    color: var(--text-primary, #e8e8f0);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+}
+.vismap-grid input.vismap-invalid {
+    border-color: var(--accent, #e94560);
+    box-shadow: 0 0 0 1px var(--accent, #e94560);
+}
+.vismap-empty-hint {
+    font-size: 11px;
+    color: var(--text-secondary, #8a8a9a);
+    font-style: italic;
+    margin: 6px 0 0;
+}
+
 .smoke-slider-row {
     display: flex;
     align-items: center;
@@ -3076,8 +3143,11 @@ kbd {
     font-size: 12px;
     margin-bottom: 6px;
 }
-#output-slice-set-select {
+#output-slice-set-select,
+#output-vismap-quantity,
+#output-vismap-mapmode {
     width: 100%;
+    max-width: 100%;
     background: var(--bg-tertiary, #1a1a2e);
     border: 1px solid var(--border-color, #2a2a40);
     color: var(--text-primary, #e8e8f0);

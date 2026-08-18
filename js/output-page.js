@@ -26,7 +26,10 @@
     let boundaryPlaybackTimer = null;
     let agentOverlay = null;
     let agentFile = null;
-    let mode = 'smoke'; // 'slice' | 'smoke' | 'boundary'
+    let vismapOverlay = null;
+    let vismapEngine = null;
+    let vismapWaypointSeq = 0;
+    let mode = 'smoke'; // 'slice' | 'smoke' | 'boundary' | 'vismap'
     // Module-level handle to wireModeToggle's inner applyMode so other
     // module functions (handleSimulationFolder) can re-run it without
     // refactoring it out of the closure.
@@ -301,6 +304,8 @@
         // Boundary (BNDF) controls
         wireBoundaryControls(viewer);
 
+        wireVismapControls(viewer);
+
         // Agent trajectory overlay controls
         wireAgents(viewer);
 
@@ -323,14 +328,16 @@
         }
     }
 
-    // ── Mode toggle (Slice / Smoke / Boundary) ─────────────────────────────
+    // ── Mode toggle (Slice / Smoke / Boundary / Vismap) ────────────────────
     function wireModeToggle(viewer) {
         const sliceBtn = document.getElementById('output-mode-slice');
         const smokeBtn = document.getElementById('output-mode-smoke');
         const boundaryBtn = document.getElementById('output-mode-boundary');
+        const vismapBtn = document.getElementById('output-mode-vismap');
         const slicePanel = document.getElementById('output-slice-controls');
         const smokePanel = document.getElementById('output-smoke-controls');
         const boundaryPanel = document.getElementById('output-boundary-controls');
+        const vismapPanel = document.getElementById('output-vismap-controls');
         if (!sliceBtn || !smokeBtn) return;
 
         function applyMode(next) {
@@ -338,9 +345,11 @@
             sliceBtn.classList.toggle('active', mode === 'slice');
             smokeBtn.classList.toggle('active', mode === 'smoke');
             if (boundaryBtn) boundaryBtn.classList.toggle('active', mode === 'boundary');
+            if (vismapBtn) vismapBtn.classList.toggle('active', mode === 'vismap');
             if (slicePanel) slicePanel.style.display = mode === 'slice' ? '' : 'none';
             if (smokePanel) smokePanel.style.display = mode === 'smoke' ? '' : 'none';
             if (boundaryPanel) boundaryPanel.style.display = mode === 'boundary' ? '' : 'none';
+            if (vismapPanel) vismapPanel.style.display = mode === 'vismap' ? '' : 'none';
 
             // Hide the inactive overlay; keep colours intact
             if (sliceOverlay) {
@@ -349,15 +358,18 @@
             }
             if (smokeOverlay) smokeOverlay.setVisible(mode === 'smoke');
             if (boundaryOverlay) boundaryOverlay.setVisible(mode === 'boundary');
+            if (vismapOverlay) vismapOverlay.setVisible(mode === 'vismap');
 
             // Colorbar is meaningful for any quantity-mapped overlay — slice and
             // boundary both have a quantity, units and a value range to legend.
             // Smoke mode has no fixed numeric range (it's a transfer function),
-            // so the bar stays hidden there.
+            // so the bar stays hidden there. Vismap manages the bar itself
+            // (shown for the time-valued ASET map, hidden for boolean maps).
             const cb = document.getElementById('output-colorbar');
             if (cb) cb.style.display = (mode === 'slice' || mode === 'boundary') ? '' : 'none';
             if (mode === 'boundary') refreshBoundaryColorbar();
             else if (mode === 'slice') refreshColorbar();
+            else if (mode === 'vismap') renderVismapMap();
 
             // Sync overlay play bar to newly active mode
             const vpBtn = document.getElementById('output-vp-play-btn');
@@ -400,11 +412,13 @@
             if (mode !== 'slice') stopPlayback();
             if (mode !== 'smoke') stopSmokePlayback();
             if (mode !== 'boundary') stopBoundaryPlayback();
+            if (mode !== 'vismap') stopVismapPlayback();
         }
 
         sliceBtn.addEventListener('click', () => applyMode('slice'));
         smokeBtn.addEventListener('click', () => applyMode('smoke'));
         if (boundaryBtn) boundaryBtn.addEventListener('click', () => applyMode('boundary'));
+        if (vismapBtn) vismapBtn.addEventListener('click', () => applyMode('vismap'));
 
         // Expose to module scope so handleSimulationFolder can replay the
         // current-mode setup after the slice auto-load mucks with the
@@ -654,6 +668,7 @@
                 return;
             }
             populateSliceSetSelector(availableGroups);
+            refreshVismapQuantityOptions();
             // Pick the largest group by default
             const chosen = availableGroups.slice().sort(
                 (a, b) => b.items.length - a.items.length || a.sliceIndex - b.sliceIndex)[0];
@@ -687,32 +702,38 @@
         availableGroups = null;
     }
 
+    /** Read a slice group's files and return the (stitched) dataset plus a
+     *  display name. Shared by the Slice and Vismap modes. */
+    async function datasetFromSliceGroup(group) {
+        const items = group.items.slice().sort((a, b) => a.info.meshIndex - b.info.meshIndex);
+        if (items.length === 1) {
+            const buf = await items[0].file.arrayBuffer();
+            const ds = FdsSliceReader.parse(buf);
+            ds.sourceMeshIndex = items[0].info.meshIndex;
+            return { dataset: ds, displayName: items[0].file.name };
+        }
+        const parts = [];
+        for (const item of items) {
+            const buf = await item.file.arrayBuffer();
+            parts.push({
+                meshIndex: item.info.meshIndex,
+                fileName: item.file.name,
+                dataset: FdsSliceReader.parse(buf),
+            });
+        }
+        // Pass the mesh context so combineSliceDatasets can use physical mesh
+        // extents (XB/IJK) to (a) deduplicate per-mesh boundary slices that
+        // point at the same plane, and (b) pick the correct stitch layout
+        // instead of guessing from dims.
+        const ds = SliceFiles.combineSliceDatasets(parts, currentSliceContext());
+        return { dataset: ds, displayName: ds.displayName };
+    }
+
     async function loadSliceSet(viewer, group) {
         try {
             setStatus('Loading slice set ' + group.sliceIndex + '...');
-            const items = group.items.slice().sort((a, b) => a.info.meshIndex - b.info.meshIndex);
-            if (items.length === 1) {
-                const buf = await items[0].file.arrayBuffer();
-                const ds = FdsSliceReader.parse(buf);
-                ds.sourceMeshIndex = items[0].info.meshIndex;
-                loadDatasetIntoOverlay(viewer, ds, items[0].file.name);
-            } else {
-                const parts = [];
-                for (const item of items) {
-                    const buf = await item.file.arrayBuffer();
-                    parts.push({
-                        meshIndex: item.info.meshIndex,
-                        fileName: item.file.name,
-                        dataset: FdsSliceReader.parse(buf),
-                    });
-                }
-                // Pass the mesh context so combineSliceDatasets can use
-                // physical mesh extents (XB/IJK) to (a) deduplicate per-mesh
-                // boundary slices that point at the same plane, and (b) pick
-                // the correct stitch layout instead of guessing from dims.
-                const ds = SliceFiles.combineSliceDatasets(parts, currentSliceContext());
-                loadDatasetIntoOverlay(viewer, ds, ds.displayName);
-            }
+            const { dataset, displayName } = await datasetFromSliceGroup(group);
+            loadDatasetIntoOverlay(viewer, dataset, displayName);
         } catch (e) {
             console.error(e);
             setStatus(e.message, true);
@@ -1571,6 +1592,572 @@
     }
 
     // ── Agent trajectory overlay ──────────────────────────────────────────
+    // ── Vismap (visibility maps, fdsvismap port) ──────────────────────────
+    function setVismapStatus(msg, isError) {
+        const el = document.getElementById('output-vismap-status');
+        if (!el) return;
+        el.textContent = msg;
+        el.style.color = isError ? '#e94560' : '';
+    }
+
+    function ensureVismapOverlay(viewer) {
+        if (!vismapOverlay) vismapOverlay = new VisMapOverlay(viewer.scene);
+        return vismapOverlay;
+    }
+
+    // Populate the "Smoke data" dropdown from the folder's slice groups and
+    // pre-select an extinction-coefficient slice (fall back to optical density).
+    function refreshVismapQuantityOptions() {
+        const sel = document.getElementById('output-vismap-quantity');
+        if (!sel) return;
+        sel.innerHTML = '';
+        if (!availableGroups || availableGroups.length === 0) {
+            sel.innerHTML = '<option value="">No slice data loaded</option>';
+            sel.disabled = true;
+            return;
+        }
+        let preferredKey = null, preferredIsExt = false;
+        for (const g of availableGroups) {
+            const opt = document.createElement('option');
+            opt.value = g.key;
+            opt.textContent = g.label;
+            sel.appendChild(opt);
+            const q = ((g.header && g.header.quantity) || '').toUpperCase();
+            if (q.includes('EXTINCTION') && !preferredIsExt) { preferredKey = g.key; preferredIsExt = true; }
+            else if (q.includes('OPTICAL DENSITY') && !preferredKey) { preferredKey = g.key; }
+        }
+        sel.disabled = false;
+        if (preferredKey) sel.value = preferredKey;
+        setVismapStatus(preferredKey
+            ? 'Smoke data found. Add waypoints, then compute.'
+            : 'No extinction/optical-density slice found — pick a quantity manually.', !preferredKey);
+        const group = availableGroups.find(g => g.key === sel.value);
+        if (group) fillVismapTimeDefaults(group);
+    }
+
+    // Prefill the Times inputs from the selected slice data: the full time
+    // range of the simulation output and the finest step the data provides.
+    // The user can still narrow the range or coarsen the step afterwards.
+    async function fillVismapTimeDefaults(group) {
+        try {
+            if (!group || !group.items || group.items.length === 0) return;
+            const buf = await group.items[0].file.arrayBuffer();
+            const ds = FdsSliceReader.parse(buf);
+            const times = ds.frames.map(f => f.time);
+            if (times.length === 0) return;
+            let minStep = Infinity;
+            for (let i = 1; i < times.length; i++) {
+                const d = times[i] - times[i - 1];
+                if (d > 1e-9 && d < minStep) minStep = d;
+            }
+            const round = v => Math.round(v * 1000) / 1000;
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+            set('output-vismap-t0', round(times[0]));
+            set('output-vismap-t1', round(times[times.length - 1]));
+            set('output-vismap-dt', Number.isFinite(minStep) ? round(minStep) : 1);
+        } catch (e) {
+            console.warn('Could not read slice times for the vismap time defaults.', e);
+        }
+    }
+
+    // Show the "nothing here yet" hints only while their list is empty.
+    function updateVismapHints() {
+        const pairs = [
+            ['output-vismap-waypoints', 'output-vismap-wp-hint'],
+            ['output-vismap-regions', 'output-vismap-region-hint'],
+        ];
+        for (const [containerId, hintId] of pairs) {
+            const container = document.getElementById(containerId);
+            const hint = document.getElementById(hintId);
+            if (container && hint) hint.style.display = container.children.length ? 'none' : '';
+        }
+    }
+
+    /** Card with a header (title + remove button) and a label/input grid,
+     *  styled like the rest of the sidebar. `fields` = [{cls, label, title, value}]. */
+    function addVismapCard(containerId, title, fields, onChange) {
+        const container = document.getElementById(containerId);
+        if (!container) return null;
+        const card = document.createElement('div');
+        card.className = 'vismap-card';
+
+        const header = document.createElement('div');
+        header.className = 'vismap-card-header';
+        const heading = document.createElement('span');
+        heading.className = 'vismap-card-title';
+        heading.textContent = title;
+        header.appendChild(heading);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'vismap-card-remove';
+        remove.textContent = '✕ Remove';
+        remove.addEventListener('click', () => { card.remove(); updateVismapHints(); onChange(); });
+        header.appendChild(remove);
+        card.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'vismap-grid';
+        for (const field of fields) {
+            const label = document.createElement('label');
+            label.textContent = field.label;
+            label.title = field.title;
+            grid.appendChild(label);
+            const inp = document.createElement('input');
+            inp.type = 'number';
+            inp.step = 'any';
+            inp.className = field.cls;
+            inp.title = field.title;
+            if (Number.isFinite(field.value)) inp.value = field.value;
+            inp.addEventListener('change', onChange);
+            grid.appendChild(inp);
+        }
+        card.appendChild(grid);
+        container.appendChild(card);
+        updateVismapHints();
+        return card;
+    }
+
+    function addVismapWaypointRow(x, y, c, alpha) {
+        const id = ++vismapWaypointSeq;
+        const card = addVismapCard('output-vismap-waypoints', 'Waypoint ' + id, [
+            { cls: 'vismap-wp-x', label: 'X / m', title: 'X coordinate in FDS coordinates', value: x },
+            { cls: 'vismap-wp-y', label: 'Y / m', title: 'Y coordinate in FDS coordinates', value: y },
+            { cls: 'vismap-wp-c', label: 'C', title: 'Contrast factor (Jin): 3 reflecting, 8 illuminated sign', value: c },
+            { cls: 'vismap-wp-a', label: 'α / °', title: 'Sign orientation angle (0° faces +Y, 90° faces +X)', value: alpha },
+        ], pushVismapWaypointsToEngine);
+        if (!card) return null;
+        card.classList.add('vismap-wp-row');
+        card.dataset.wpId = id;
+        return card;
+    }
+
+    /** Union of all mesh footprints — used to validate waypoint coordinates. */
+    function vismapDomainBounds() {
+        const ctx = currentSliceContext();
+        if (!ctx || !ctx.meshes || ctx.meshes.length === 0) return null;
+        const b = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+        for (const m of ctx.meshes) {
+            b.x0 = Math.min(b.x0, m.xb[0]); b.x1 = Math.max(b.x1, m.xb[1]);
+            b.y0 = Math.min(b.y0, m.xb[2]); b.y1 = Math.max(b.y1, m.xb[3]);
+        }
+        return b;
+    }
+
+    function markVismapInput(row, cls, invalid) {
+        const inp = row.querySelector('.' + cls);
+        if (inp) inp.classList.toggle('vismap-invalid', !!invalid);
+    }
+
+    /**
+     * Read and validate the waypoint rows. Every row must be complete and
+     * valid — empty required fields are errors and get their inputs marked.
+     * Returns { waypoints, errors }.
+     */
+    function readVismapWaypointRows() {
+        const rows = document.querySelectorAll('#output-vismap-waypoints .vismap-wp-row');
+        const bounds = vismapDomainBounds();
+        const waypoints = [], errors = [];
+        for (const row of rows) {
+            const id = Number(row.dataset.wpId);
+            const raw = cls => row.querySelector('.' + cls).value.trim();
+            const num = cls => parseFloat(raw(cls));
+            for (const cls of ['vismap-wp-x', 'vismap-wp-y', 'vismap-wp-c', 'vismap-wp-a']) markVismapInput(row, cls, false);
+
+            const x = num('vismap-wp-x'), y = num('vismap-wp-y');
+            let bad = false;
+            if (!Number.isFinite(x)) { errors.push('Waypoint ' + id + ': X is required.'); markVismapInput(row, 'vismap-wp-x', true); bad = true; }
+            if (!Number.isFinite(y)) { errors.push('Waypoint ' + id + ': Y is required.'); markVismapInput(row, 'vismap-wp-y', true); bad = true; }
+            if (!bad && bounds) {
+                if (x < bounds.x0 || x > bounds.x1) {
+                    errors.push('Waypoint ' + id + ': X=' + x + ' is outside the domain (' + bounds.x0 + '…' + bounds.x1 + ').');
+                    markVismapInput(row, 'vismap-wp-x', true); bad = true;
+                }
+                if (y < bounds.y0 || y > bounds.y1) {
+                    errors.push('Waypoint ' + id + ': Y=' + y + ' is outside the domain (' + bounds.y0 + '…' + bounds.y1 + ').');
+                    markVismapInput(row, 'vismap-wp-y', true); bad = true;
+                }
+            }
+            const c = raw('vismap-wp-c') ? num('vismap-wp-c') : 3;
+            if (!Number.isFinite(c) || c <= 0) {
+                errors.push('Waypoint ' + id + ': contrast factor C must be a positive number (Jin: 3 or 8).');
+                markVismapInput(row, 'vismap-wp-c', true); bad = true;
+            }
+            const alpha = num('vismap-wp-a');
+            if (!Number.isFinite(alpha)) {
+                errors.push('Waypoint ' + id + ': orientation angle α is required (degrees).');
+                markVismapInput(row, 'vismap-wp-a', true); bad = true;
+            }
+            if (!bad) waypoints.push({ id, x, y, c, alpha });
+        }
+        return { waypoints, errors };
+    }
+
+    // ── Manual visual obstruction / hole regions ──
+    let vismapRegionSeq = 0;
+
+    function addVismapRegionRow(type) {
+        const id = ++vismapRegionSeq;
+        const title = (type === 'hole' ? 'Hole ' : 'Obstruction ') + id;
+        const card = addVismapCard('output-vismap-regions', title, [
+            { cls: 'vismap-rg-x1', label: 'X1 / m', title: 'Lower X corner', value: null },
+            { cls: 'vismap-rg-x2', label: 'X2 / m', title: 'Upper X corner', value: null },
+            { cls: 'vismap-rg-y1', label: 'Y1 / m', title: 'Lower Y corner', value: null },
+            { cls: 'vismap-rg-y2', label: 'Y2 / m', title: 'Upper Y corner', value: null },
+        ], pushVismapRegionsToOverlay);
+        if (!card) return null;
+        card.classList.add('vismap-region-row');
+        card.dataset.regionType = type;
+        card.dataset.regionId = id;
+        return card;
+    }
+
+    /** Read and validate the region rows — every row must be complete, with a
+     *  non-zero extent. Coordinates are normalized so x1<x2, y1<y2.
+     *  Returns { regions, errors }. */
+    function readVismapRegions() {
+        const rows = document.querySelectorAll('#output-vismap-regions .vismap-region-row');
+        const regions = [], errors = [];
+        for (const row of rows) {
+            const type = row.dataset.regionType === 'hole' ? 'hole' : 'obstruction';
+            const name = (type === 'hole' ? 'Hole ' : 'Obstruction ') + row.dataset.regionId;
+            const values = ['vismap-rg-x1', 'vismap-rg-x2', 'vismap-rg-y1', 'vismap-rg-y2']
+                .map(cls => ({ cls, v: parseFloat(row.querySelector('.' + cls).value) }));
+            let bad = false;
+            for (const { cls, v } of values) {
+                const invalid = !Number.isFinite(v);
+                markVismapInput(row, cls, invalid);
+                if (invalid) bad = true;
+            }
+            if (bad) {
+                errors.push(name + ': all four coordinates (X1, X2, Y1, Y2) are required.');
+                continue;
+            }
+            const [x1v, x2v, y1v, y2v] = values.map(o => o.v);
+            const region = {
+                type,
+                x1: Math.min(x1v, x2v), x2: Math.max(x1v, x2v),
+                y1: Math.min(y1v, y2v), y2: Math.max(y1v, y2v),
+            };
+            if (region.x1 === region.x2 || region.y1 === region.y2) {
+                errors.push(name + ': the rectangle has zero extent.');
+                continue;
+            }
+            regions.push(region);
+        }
+        return { regions, errors };
+    }
+
+    function pushVismapRegionsToOverlay() {
+        if (!outputViewer) return;
+        const overlay = ensureVismapOverlay(outputViewer);
+        const { regions } = readVismapRegions();
+        overlay.updateRegions(regions);
+        overlay.setVisible(mode === 'vismap');
+        if (vismapEngine && vismapEngine.computedTimes.length > 0) {
+            setVismapStatus('Visual regions changed — recompute to update the maps.');
+        }
+    }
+
+    // Live-update engine waypoints + 3D markers after edits. Computed maps
+    // become stale (the engine invalidates them) until the next Compute.
+    function pushVismapWaypointsToEngine() {
+        if (!vismapEngine) return;
+        const hadResults = vismapEngine.computedTimes.length > 0;
+        vismapEngine.waypoints.clear();
+        const { waypoints, errors } = readVismapWaypointRows();
+        for (const wp of waypoints) {
+            vismapEngine.setWaypoint(wp.id, wp.x, wp.y, wp.c, wp.alpha);
+        }
+        if (vismapOverlay) vismapOverlay.updateMarkers();
+        if (errors.length) setVismapStatus(errors[0], true);
+        else if (hadResults) setVismapStatus('Waypoints changed — recompute to update the maps.');
+    }
+
+    async function computeVismap(viewer) {
+        try {
+            stopVismapPlayback();
+            if (!availableGroups || availableGroups.length === 0) {
+                setVismapStatus('Open a simulation folder with slice data first.', true);
+                return;
+            }
+            const qtySel = document.getElementById('output-vismap-quantity');
+            const group = availableGroups.find(g => g.key === (qtySel && qtySel.value)) || availableGroups[0];
+            const { waypoints, errors: wpErrors } = readVismapWaypointRows();
+            const { regions, errors: regionErrors } = readVismapRegions();
+            const errors = wpErrors.concat(regionErrors);
+            if (errors.length) {
+                setVismapStatus(errors.join(' '), true);
+                return;
+            }
+            if (waypoints.length === 0) {
+                setVismapStatus('Add at least one waypoint (X and Y required).', true);
+                return;
+            }
+
+            setVismapStatus('Loading slice data...');
+            const { dataset } = await datasetFromSliceGroup(group);
+            const view = SliceUtil.buildPlaneView(dataset, 0, currentSliceContext());
+            if (!view.physical) {
+                setVismapStatus('No mesh geometry found (.smv or .fds in the folder) — cannot place the slice in space.', true);
+                return;
+            }
+            const [nx, ny] = dataset.dims;
+            const linspace = (a, b, n) => Array.from({ length: n }, (_, i) => n > 1 ? a + (b - a) * i / (n - 1) : a);
+            vismapEngine = new VisMapEngine({
+                dataset,
+                xCoords: linspace(view.physical.x0, view.physical.x1, nx),
+                yCoords: linspace(view.physical.y0, view.physical.y1, ny),
+                height: view.physical.slabOffset || 0,
+            });
+            vismapEngine.setObstructionsFromFds(lastData ? lastData.obsts : []);
+            for (const r of regions) {
+                if (r.type === 'hole') vismapEngine.addVisualHole(r.x1, r.x2, r.y1, r.y2);
+                else vismapEngine.addVisualObstruction(r.x1, r.x2, r.y1, r.y2);
+            }
+            const num = (id, fallback) => {
+                const v = parseFloat((document.getElementById(id) || {}).value);
+                return Number.isFinite(v) ? v : fallback;
+            };
+            for (const wp of waypoints) vismapEngine.setWaypoint(wp.id, wp.x, wp.y, wp.c, wp.alpha);
+
+            const tEndData = dataset.frames[dataset.frames.length - 1].time;
+            const t0 = num('output-vismap-t0', 0);
+            const t1 = num('output-vismap-t1', tEndData);
+            const dt = num('output-vismap-dt', Math.max((t1 - t0) / 10, 1e-6));
+            const times = [];
+            for (let t = t0; t <= t1 + 1e-9 && times.length < 1000; t += dt) times.push(t);
+            vismapEngine.setTimePoints(times);
+            vismapEngine.setVisibilityBounds(num('output-vismap-minvis', 0), num('output-vismap-maxvis', 30));
+
+            const overlay = ensureVismapOverlay(viewer);
+            overlay.setEngine(vismapEngine);
+            overlay.setSignsUpright(!!viewer.walkMode);
+            overlay.updateMarkers();
+            overlay.updateRegions(regions);
+            overlay.setVisible(mode === 'vismap');
+
+            await vismapEngine.computeAll({
+                obstructions: !!(document.getElementById('output-vismap-obstructions') || {}).checked,
+                viewAngle: !!(document.getElementById('output-vismap-viewangle') || {}).checked,
+                onProgress: (done, total) => setVismapStatus('Computing… time step ' + done + ' / ' + total),
+            });
+
+            const slider = document.getElementById('output-vismap-time-slider');
+            const mapSel = document.getElementById('output-vismap-mapmode');
+            const playBtn = document.getElementById('output-vismap-play');
+            const n = vismapEngine.computedTimes.length;
+            if (slider) { slider.min = 0; slider.max = Math.max(n - 1, 0); slider.value = Math.max(n - 1, 0); }
+            if (mapSel) mapSel.disabled = false;
+            if (playBtn) playBtn.disabled = n <= 1;
+            renderVismapMap();
+            setVismapStatus('Computed ' + n + ' time step(s) for ' + waypoints.length + ' waypoint(s).');
+        } catch (e) {
+            console.error(e);
+            setVismapStatus(e.message, true);
+        }
+    }
+
+    function renderVismapMap(fromUser) {
+        if (!vismapOverlay || !vismapEngine || vismapEngine.computedTimes.length === 0) {
+            // Explain why nothing changes instead of silently ignoring the
+            // interaction — results are cleared by any waypoint/region edit.
+            if (fromUser) setVismapStatus('No computed maps — press "Compute visibility maps" first.', true);
+            return;
+        }
+        const mapSel = document.getElementById('output-vismap-mapmode');
+        const slider = document.getElementById('output-vismap-time-slider');
+        const readout = document.getElementById('output-vismap-time-readout');
+        const mapMode = mapSel ? mapSel.value : 'aggregated';
+        const times = vismapEngine.computedTimes;
+        const idx = Math.min(slider ? (parseInt(slider.value, 10) || 0) : times.length - 1, times.length - 1);
+        // The time slider steps through the computed time points; it only
+        // drives the 'At selected time' map, so it stays disabled elsewhere.
+        if (slider) slider.disabled = mapMode !== 'time' || times.length <= 1;
+        let legend;
+        if (mapMode === 'time') {
+            legend = vismapOverlay.showMap('time', times[idx]);
+            if (readout) readout.textContent = times[idx].toFixed(1) + ' s';
+        } else if (mapMode === 'aset') {
+            legend = vismapOverlay.showMap('aset');
+            if (readout) readout.textContent = 'up to ' + times[times.length - 1].toFixed(1) + ' s';
+            if (times.length <= 1) {
+                setVismapStatus('The ASET map needs several time points to show when visibility is lost — extend End or reduce Step, then recompute.', true);
+            }
+        } else {
+            legend = vismapOverlay.showMap('aggregated');
+            if (readout) readout.textContent = 'all times (green = always visible)';
+        }
+        updateVismapColorbar(legend);
+    }
+
+    // ── Vismap time playback (mirrors the slice Play button) ──
+    let vismapPlaybackTimer = null;
+
+    function setVismapPlayIcon(playing) {
+        const lbl = document.getElementById('output-vismap-play-label');
+        if (lbl) lbl.textContent = playing ? 'Pause' : 'Play';
+    }
+
+    function stopVismapPlayback() {
+        if (vismapPlaybackTimer) {
+            clearInterval(vismapPlaybackTimer);
+            vismapPlaybackTimer = null;
+            setVismapPlayIcon(false);
+        }
+    }
+
+    function startVismapPlayback() {
+        if (!vismapEngine || vismapEngine.computedTimes.length <= 1) return;
+        // Playing steps through time points, which only the per-time map shows.
+        const mapSel = document.getElementById('output-vismap-mapmode');
+        if (mapSel && mapSel.value !== 'time') {
+            mapSel.value = 'time';
+        }
+        setVismapPlayIcon(true);
+        vismapPlaybackTimer = setInterval(() => {
+            const slider = document.getElementById('output-vismap-time-slider');
+            if (!slider || !vismapEngine) { stopVismapPlayback(); return; }
+            const n = vismapEngine.computedTimes.length;
+            slider.value = ((parseInt(slider.value, 10) || 0) + 1) % n;
+            renderVismapMap();
+        }, 250);
+    }
+
+    // The shared colorbar shows the ASET time scale; the boolean green/red
+    // maps carry their meaning in the readout text, so the bar hides there.
+    function updateVismapColorbar(legend) {
+        if (mode !== 'vismap') return;
+        const cb = document.getElementById('output-colorbar');
+        if (!cb) return;
+        if (!legend || legend.mode !== 'aset') { cb.style.display = 'none'; return; }
+        cb.style.display = '';
+        const label = document.getElementById('output-colorbar-label');
+        const maxEl = document.getElementById('output-colorbar-max');
+        const minEl = document.getElementById('output-colorbar-min');
+        if (label) label.textContent = 'ASET (s)';
+        if (maxEl) maxEl.textContent = legend.max.toFixed(0);
+        if (minEl) minEl.textContent = legend.min.toFixed(0);
+        const canvas = document.getElementById('output-colorbar-canvas');
+        if (!canvas || typeof VisMapUtil === 'undefined') return;
+        const ctx = canvas.getContext('2d');
+        for (let y = 0; y < canvas.height; y++) {
+            const t = 1 - y / (canvas.height - 1);
+            const c = VisMapUtil.jetReversed(t);
+            ctx.fillStyle = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+            ctx.fillRect(0, y, canvas.width, 1);
+        }
+    }
+
+    let vismapPicking = false;
+
+    function wireVismapControls(viewer) {
+        const folder = document.getElementById('output-vismap-folder');
+        if (folder) folder.addEventListener('change', (e) => {
+            const fs = Array.from(e.target.files || []);
+            if (fs.length) handleSimulationFolder(viewer, fs);
+        });
+
+        // Switching the smoke-data quantity refreshes the time defaults.
+        const qtySel = document.getElementById('output-vismap-quantity');
+        if (qtySel) qtySel.addEventListener('change', () => {
+            const group = availableGroups && availableGroups.find(g => g.key === qtySel.value);
+            if (group) fillVismapTimeDefaults(group);
+        });
+
+        // Creating a new entry first validates the existing ones — no piling
+        // up of incomplete rows.
+        const addBtn = document.getElementById('output-vismap-add-wp');
+        if (addBtn) addBtn.addEventListener('click', () => {
+            const { errors } = readVismapWaypointRows();
+            if (errors.length) {
+                setVismapStatus('Complete the marked waypoint first: ' + errors[0], true);
+                return;
+            }
+            addVismapWaypointRow(null, null, 3, 0);
+            setVismapStatus('Fill in the new waypoint (X and Y required, C default 3, α default 0).');
+        });
+
+        const addRegion = (type) => {
+            const { errors } = readVismapRegions();
+            if (errors.length) {
+                setVismapStatus('Complete the marked region first: ' + errors[0], true);
+                return;
+            }
+            addVismapRegionRow(type);
+            setVismapStatus('Fill in all four corners of the new ' + type + '.');
+        };
+        const addObstBtn = document.getElementById('output-vismap-add-obst');
+        if (addObstBtn) addObstBtn.addEventListener('click', () => addRegion('obstruction'));
+        const addHoleBtn = document.getElementById('output-vismap-add-hole');
+        if (addHoleBtn) addHoleBtn.addEventListener('click', () => addRegion('hole'));
+
+        const playBtn = document.getElementById('output-vismap-play');
+        if (playBtn) playBtn.addEventListener('click', () => {
+            if (vismapPlaybackTimer) stopVismapPlayback();
+            else startVismapPlayback();
+        });
+
+        // Signs lie flat in the orbit view and stand upright in walk mode.
+        const walkContainer = document.getElementById('output-viewer-container');
+        if (walkContainer) walkContainer.addEventListener('walkModeChanged', () => {
+            if (vismapOverlay) vismapOverlay.setSignsUpright(!!viewer.walkMode);
+        });
+        // enterWalkMode doesn't dispatch walkModeChanged — piggyback on the
+        // toggle button (this listener runs after the one that flips the mode).
+        const walkBtn = document.getElementById('output-walk-mode-btn');
+        if (walkBtn) walkBtn.addEventListener('click', () => {
+            if (vismapOverlay) vismapOverlay.setSignsUpright(!!viewer.walkMode);
+        });
+
+        const pickBtn = document.getElementById('output-vismap-pick-wp');
+        if (pickBtn) pickBtn.addEventListener('click', () => {
+            vismapPicking = !vismapPicking;
+            pickBtn.classList.toggle('active', vismapPicking);
+            if (vismapPicking) setVismapStatus('Click a position in the 3D view to place the waypoint.');
+        });
+        if (viewer && viewer.renderer) {
+            viewer.renderer.domElement.addEventListener('pointerdown', (event) => {
+                if (!vismapPicking || mode !== 'vismap') return;
+                const rect = viewer.renderer.domElement.getBoundingClientRect();
+                const ndc = new THREE.Vector2(
+                    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+                    -((event.clientY - rect.top) / rect.height) * 2 + 1
+                );
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(ndc, viewer.camera);
+                // Horizontal plane at the evaluation height (scene Y = FDS Z)
+                const planeY = vismapEngine ? vismapEngine.height : 2;
+                const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -planeY);
+                const hit = new THREE.Vector3();
+                if (raycaster.ray.intersectPlane(plane, hit)) {
+                    const { errors } = readVismapWaypointRows();
+                    if (errors.length) {
+                        setVismapStatus('Complete the marked waypoint first: ' + errors[0], true);
+                    } else {
+                        addVismapWaypointRow(Math.round(hit.x * 100) / 100, Math.round(hit.z * 100) / 100, 3, 0);
+                        pushVismapWaypointsToEngine();
+                        setVismapStatus('Waypoint placed at X=' + hit.x.toFixed(2) + ', Y=' + hit.z.toFixed(2) + '.');
+                    }
+                }
+                vismapPicking = false;
+                pickBtn && pickBtn.classList.remove('active');
+            });
+        }
+
+        const computeBtn = document.getElementById('output-vismap-compute');
+        if (computeBtn) computeBtn.addEventListener('click', () => computeVismap(viewer));
+
+        const mapSel = document.getElementById('output-vismap-mapmode');
+        if (mapSel) mapSel.addEventListener('change', () => {
+            if (mapSel.value !== 'time') stopVismapPlayback();
+            renderVismapMap(true);
+        });
+        const slider = document.getElementById('output-vismap-time-slider');
+        if (slider) slider.addEventListener('input', () => renderVismapMap(true));
+
+        updateVismapHints();
+    }
+
     function wireAgents(viewer) {
         const agentsFile = document.getElementById('output-agents-file');
         const agentsReload = document.getElementById('output-agents-reload');
