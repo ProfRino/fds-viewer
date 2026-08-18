@@ -35,12 +35,38 @@
     // Shared FDSParser instance used to refresh geometry from a folder's .fds
     const fdsParserForFolder = (typeof FDSParser === 'function') ? new FDSParser() : null;
 
+    // Mesh context (XB/IJK/TRN per mesh) parsed from a folder's .smv file.
+    // The .smv is written by FDS itself, so it reflects the grid the
+    // simulation actually ran on — the .fds input can disagree (edited after
+    // the run, MULT expansion, stretched grids), which would size and place
+    // slices wrongly. Preferred over the .fds-derived context when available.
+    let smvSliceContext = null;
+
+    function currentSliceContext() {
+        if (smvSliceContext) return smvSliceContext;
+        return lastData ? SliceFiles.fdsContextFromParsedData(lastData) : null;
+    }
+
+    async function refreshSmvContextFromFolder(files) {
+        smvSliceContext = null;
+        const smvFile = files.find(f => /\.smv$/i.test(f.name));
+        if (!smvFile) return;
+        try {
+            const text = await smvFile.text();
+            smvSliceContext = SliceFiles.fdsContextFromSmvText(text, smvFile.name);
+        } catch (e) {
+            console.warn('Could not parse .smv in folder: ' + smvFile.name, e);
+        }
+    }
+
     /**
      * When a folder is opened (slice or smoke mode), look for an .fds file and
      * use it to refresh the greyscale geometry so the loaded simulation matches
-     * the slice/smoke data being visualised.
+     * the slice/smoke data being visualised. Also picks up the .smv mesh
+     * context used to place slices in world coordinates.
      */
     async function refreshGeometryFromFolder(files) {
+        await refreshSmvContextFromFolder(files);
         if (!fdsParserForFolder) return false;
         const fdsFile = files.find(f => /\.fds$/i.test(f.name));
         if (!fdsFile) return false;
@@ -478,14 +504,27 @@
         return parseFloat(v.toFixed(2)).toString();
     }
 
-    // Compute the robust range from the current frame and write it into the
-    // Min/Max inputs + overlay. Called on dataset load and by the ↺ Auto button.
+    // Compute the auto range across ALL frames and write it into the Min/Max
+    // inputs + overlay. Called on dataset load, by the ↺ Auto button and when
+    // the range-mode dropdown changes. Two modes: global min/max (the bounds
+    // Smokeview's research mode shows) or a global 2–98 % percentile band for
+    // contrast when outlier cells stretch the full range. Both span the whole
+    // time series — a per-frame range collapses on typical fire slices
+    // (nearly all cells at ambient) and saturates the render.
     function resetRangeToAuto() {
         if (!sliceOverlay || !currentDataset) return;
-        const prev = sliceOverlay.autoRange;
-        sliceOverlay.autoRange = true;
-        sliceOverlay.robustRange = true;
-        const range = sliceOverlay.getCurrentRange();
+        const modeSel = document.getElementById('output-range-mode');
+        const usePercentile = modeSel && modeSel.value === 'percentile';
+        let range = usePercentile
+            ? SliceUtil.computeGlobalPercentileRange(currentDataset, 0.02, 0.98)
+            : SliceUtil.computeGlobalRange(currentDataset);
+        if (!Number.isFinite(range.min) || !Number.isFinite(range.max) || range.max <= range.min) {
+            const prev = sliceOverlay.autoRange;
+            sliceOverlay.autoRange = true;
+            sliceOverlay.robustRange = true;
+            range = sliceOverlay.getCurrentRange();
+            sliceOverlay.autoRange = prev;
+        }
         sliceOverlay.autoRange = false;
         sliceOverlay.setManualRange(range.min, range.max);
         const minIn = document.getElementById('output-range-min');
@@ -565,7 +604,7 @@
     }
 
     function loadDatasetIntoOverlay(viewer, dataset, displayName) {
-        const fdsContext = lastData ? SliceFiles.fdsContextFromParsedData(lastData) : null;
+        const fdsContext = currentSliceContext();
         const overlay = ensureOverlay(viewer);
         overlay.setDataset(dataset, fdsContext);
 
@@ -667,12 +706,11 @@
                         dataset: FdsSliceReader.parse(buf),
                     });
                 }
-                // Pass the FDS mesh context so combineSliceDatasets can use
+                // Pass the mesh context so combineSliceDatasets can use
                 // physical mesh extents (XB/IJK) to (a) deduplicate per-mesh
                 // boundary slices that point at the same plane, and (b) pick
-                // the correct stitch axis instead of guessing from dims.
-                const fdsContext = lastData ? SliceFiles.fdsContextFromParsedData(lastData) : null;
-                const ds = SliceFiles.combineSliceDatasets(parts, fdsContext);
+                // the correct stitch layout instead of guessing from dims.
+                const ds = SliceFiles.combineSliceDatasets(parts, currentSliceContext());
                 loadDatasetIntoOverlay(viewer, ds, ds.displayName);
             }
         } catch (e) {
@@ -832,6 +870,8 @@
 
         const resetRangeBtn = document.getElementById('output-reset-range');
         if (resetRangeBtn) resetRangeBtn.addEventListener('click', resetRangeToAuto);
+        const rangeModeSel = document.getElementById('output-range-mode');
+        if (rangeModeSel) rangeModeSel.addEventListener('change', resetRangeToAuto);
 
     }
 

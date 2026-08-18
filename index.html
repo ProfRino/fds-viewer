@@ -906,8 +906,12 @@
 
                     <div class="range-row-header">
                         <span class="field-label">Range</span>
-                        <button id="output-reset-range" class="range-auto-btn" title="Reset to data range">&#8635; Auto</button>
+                        <button id="output-reset-range" class="range-auto-btn" title="Reset to the selected auto range">&#8635; Auto</button>
                     </div>
+                    <select id="output-range-mode" title="How the Auto range is computed (always across all time steps)">
+                        <option value="minmax" selected>Min / max of all frames</option>
+                        <option value="percentile">Percentile 2&ndash;98 % of all frames</option>
+                    </select>
                     <div class="range-grid">
                         <label for="output-range-min">Min</label>
                         <input id="output-range-min" type="number" step="any">
@@ -1206,14 +1210,14 @@
     <script src="js/fire-panel.js?v=20260519AE"></script>
     <script src="js/mesh-panel.js?v=20260517p"></script>
     <script src="js/slice-reader.js?v=20260517p"></script>
-    <script src="js/slice-renderer.js?v=20260520D"></script>
+    <script src="js/slice-renderer.js?v=20260710b"></script>
     <script src="js/smoke3d-reader.js?v=20260517p"></script>
     <script src="js/smoke3d-overlay.js?v=20260519AM"></script>
     <script src="js/boundary-reader.js?v=20260518a"></script>
     <script src="js/boundary-overlay.js?v=20260520H"></script>
     <script src="js/trajectory-reader.js?v=20260607a"></script>
     <script src="js/agent-overlay.js?v=20260607b"></script>
-    <script src="js/output-page.js?v=20260607d"></script>
+    <script src="js/output-page.js?v=20260710b"></script>
     <script src="js/app.js?v=20260520G"></script>
 </body>
 </html>
