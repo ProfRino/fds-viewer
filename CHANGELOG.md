@@ -141,6 +141,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     functional across Soot/Slice/Boundary as originally intended.
   - `js/output-page.js`: version bumped to `20260709A`.
 
+- **Charts: blank chart for CSVs with no time axis (e.g. `CHID_cpu.csv`)** —
+  FDS's `_cpu.csv` (and similar diagnostic CSVs) use `Rank` as column 0
+  instead of `Time`, often with only one data row per MPI rank.
+  `getActiveSeries()` unconditionally treats column 0 as the time axis, so
+  these files rendered as an empty coordinate system with no error or
+  explanation.
+  - The CSV parser now checks whether column 0 is named `Time`
+    (case-insensitive, with or without a `(unit)` suffix) and records the
+    result as `ds.hasTime`.
+  - When `ds.hasTime` is `false`, the chart card shows a plain message
+    ("No "Time" column found — this file doesn't contain a time series and
+    can't be plotted here.") instead of an empty axes box.
+  - The sidebar channel list is unaffected — names and units still populate
+    normally for these files.
+  - `js/charts-panel.js`: version bumped to `20260821B`.
+
 ---
 
 ## [2.0.0] — 2026-05-17

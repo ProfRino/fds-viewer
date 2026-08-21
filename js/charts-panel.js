@@ -51,7 +51,7 @@
         const decComma = opts.decimalSep === ',';
         const lines    = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
         const rows     = lines.filter(l => l.trim() !== '');
-        if (rows.length < 3) return null;
+        if (rows.length < 2) return null;
 
         function splitRow(l) {
             const cols = []; let cur = '', inQ = false;
@@ -65,13 +65,54 @@
             return cols;
         }
 
-        const unitRow   = splitRow(rows[0]);
-        const headerRow = splitRow(rows[1]);
+        function isNumericRow(cells) {
+            let nonEmpty = 0, numeric = 0;
+            for (const cell of cells) {
+                let raw = cell.trim();
+                if (raw === '') continue;
+                nonEmpty++;
+                if (decComma) raw = raw.replace(/,/g, '.');
+                if (raw !== '' && isFinite(parseFloat(raw))) numeric++;
+            }
+            return nonEmpty > 0 && numeric === nonEmpty;
+        }
+
+        function extractUnit(name) {
+            const m = name.match(/\(([^()]*)\)\s*$/);
+            if (m) return { name: name.slice(0, m.index).trim(), unit: m[1].trim() };
+            return { name, unit: '' };
+        }
+
+        // FDS puts the time axis in column 0, named "Time" (optionally with a
+        // unit suffix like "Time (s)"). Files such as _cpu.csv use "Rank" for
+        // column 0 instead and have no usable time axis to plot.
+        function isTimeColumn(name) {
+            return /^time(\s*\([^)]*\))?$/i.test((name || '').trim());
+        }
+
+        const row0 = splitRow(rows[0]);
+        const row1 = splitRow(rows[1]);
+
+        let unitRow, headerRow, dataStart;
+        if (isNumericRow(row1)) {
+            // Single-header-row format (e.g. FDS _cpu.csv): row0 is already the
+            // column-name row, row1 is the first data row.
+            const parsed = row0.map(extractUnit);
+            headerRow = parsed.map(p => p.name);
+            unitRow   = parsed.map(p => p.unit);
+            dataStart = 1;
+        } else {
+            if (rows.length < 3) return null;
+            unitRow   = row0;
+            headerRow = row1;
+            dataStart = 2;
+        }
+
         const n = Math.min(unitRow.length, headerRow.length);
         if (n < 2) return null;
 
         const columns = Array.from({ length: n }, () => []);
-        for (let r = 2; r < rows.length; r++) {
+        for (let r = dataStart; r < rows.length; r++) {
             const cells = splitRow(rows[r]);
             for (let c = 0; c < n; c++) {
                 let raw = (cells[c] || '').trim();
@@ -86,6 +127,7 @@
             units:   unitRow.slice(0, n),
             headers: headerRow.slice(0, n),
             columns,
+            hasTime: isTimeColumn(headerRow[0]),
         };
     }
 
@@ -101,6 +143,7 @@
             units:   data.units,
             headers: data.headers,
             columns: data.columns,
+            hasTime: data.hasTime,
             canvas:  null, ctx: null, tipEl: null, ro: null, _pending: false,
         };
     }
@@ -111,6 +154,7 @@
             ds.units   = data.units;
             ds.headers = data.headers;
             ds.columns = data.columns;
+            ds.hasTime = data.hasTime;
         }
     }
 
@@ -487,6 +531,20 @@
         // Unique name for radio group so multiple cards don't interfere
         const radName = 'dec-' + ds.id.replace(/[^a-zA-Z0-9]/g, '_');
 
+        const canvasAreaHtml = ds.hasTime
+            ? '<div class="chart-canvas-wrap">' +
+                  '<canvas></canvas>' +
+                  '<div class="chart-tooltip" style="display:none;"></div>' +
+              '</div>'
+            : '<div class="chart-canvas-wrap" style="display:none;">' +
+                  '<canvas></canvas>' +
+                  '<div class="chart-tooltip" style="display:none;"></div>' +
+              '</div>' +
+              '<div class="chart-no-time-msg">' +
+                  'No &ldquo;Time&rdquo; column found &mdash; this file doesn&rsquo;t ' +
+                  'contain a time series and can&rsquo;t be plotted here.' +
+              '</div>';
+
         const card = document.createElement('div');
         card.className  = 'chart-card';
         card.dataset.id = ds.id;
@@ -537,10 +595,7 @@
             '<div class="chart-mixed-warn" style="display:none;">' +
                 '&#9888; Right Y-axis shows mixed units &mdash; channels share one scale' +
             '</div>' +
-            '<div class="chart-canvas-wrap">' +
-                '<canvas></canvas>' +
-                '<div class="chart-tooltip" style="display:none;"></div>' +
-            '</div>';
+            canvasAreaHtml;
 
         list.appendChild(card);
 
