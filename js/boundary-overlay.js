@@ -5,7 +5,7 @@
     'use strict';
 
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, y); }
+    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, -y); }
     function lerp(a, b, t) { return a + (b - a) * t; }
 
     // ── Colour maps ──────────────────────────────────────────────────────────
