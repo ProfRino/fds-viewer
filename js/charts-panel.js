@@ -46,12 +46,19 @@
     }
 
     // ── CSV Parser ─────────────────────────────────────────────────────────────
+    // Column separator is read from the header line (quoted parts ignored).
+    // Decimal comma only makes sense in a ';' file, so it is ignored otherwise.
+    function detectSeparator(line) {
+        const unquoted = line.replace(/"[^"]*"/g, '');
+        return unquoted.split(';').length > unquoted.split(',').length ? ';' : ',';
+    }
+
     function parseCSVData(text, opts) {
-        const colSep   = opts.decimalSep === ',' ? ';' : ',';
-        const decComma = opts.decimalSep === ',';
         const lines    = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
         const rows     = lines.filter(l => l.trim() !== '');
         if (rows.length < 2) return null;
+        const colSep   = detectSeparator(rows[0]);
+        const decComma = colSep === ';' && opts.decimalSep === ',';
 
         function splitRow(l) {
             const cols = []; let cur = '', inQ = false;
@@ -1149,6 +1156,7 @@
                 const opts = defaultOpt();
                 const ds   = parseCSV(e.target.result, f.name, opts);
                 if (ds) { addDataset(ds); rebuildChannelList(); }
+                else alert(`Could not read ${f.name}: expected an FDS CSV with a header row, comma- or semicolon-separated.`);
             };
             reader.readAsText(f);
         }
