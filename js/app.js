@@ -41,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const csvFiles = files.filter(f => /\.csv$/i.test(f.name));
         const otherFiles = files.filter(f => !/\.csv$/i.test(f.name));
         if (csvFiles.length && typeof window.chartsPanelHandleFiles === 'function') {
+            // Show the result: go to Output and open Charts, using the same
+            // tab/mode buttons a user would click (so the edit-mode guard in
+            // the tab handler still applies). In edit mode we only load.
+            if (!window._fdsEditMode) {
+                const outTab = document.querySelector('.page-tab[data-page="output"]');
+                if (outTab) outTab.click();
+                const chartsBtn = document.getElementById('output-mode-charts');
+                if (chartsBtn) chartsBtn.click();
+            }
             window.chartsPanelHandleFiles(csvFiles);
         }
         if (otherFiles.length) {
