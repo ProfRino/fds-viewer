@@ -209,6 +209,15 @@
         return { min: Math.floor(min / step) * step, max: Math.ceil(max / step) * step, step };
     }
 
+    // Tick positions for an axis scale. Index-based so it always terminates,
+    // even when step is tiny relative to the value (e.g. 101325 ± 1e-7).
+    function tickValues(s) {
+        const n = Math.round((s.max - s.min) / s.step);
+        const out = [];
+        for (let k = 0; k <= n; k++) out.push(s.min + k * s.step);
+        return out;
+    }
+
     // ── Line style helpers ─────────────────────────────────────────────────────
     function getDash(style) {
         if (style === 'dashed')  return [6, 4];
@@ -362,12 +371,12 @@
         if (ds.opt.showGrid) {
             ctx.strokeStyle = gc; ctx.lineWidth = 1;
             if (ds.opt.gridStyle === 'dashed') ctx.setLineDash([3, 4]);
-            for (let y = ys.min; y <= ys.max + ys.step * 0.01; y = +(y + ys.step).toPrecision(10)) {
+            for (const y of tickValues(ys)) {
                 const py = ty(y);
                 if (py < L.MT - 2 || py > L.MT + L.H + 2) continue;
                 ctx.beginPath(); ctx.moveTo(L.ML, py); ctx.lineTo(L.ML + L.W, py); ctx.stroke();
             }
-            for (let x = xs.min; x <= xs.max + xs.step * 0.01; x = +(x + xs.step).toPrecision(10)) {
+            for (const x of tickValues(xs)) {
                 const px = tx(x);
                 if (px < L.ML - 2 || px > L.ML + L.W + 2) continue;
                 ctx.beginPath(); ctx.moveTo(px, L.MT); ctx.lineTo(px, L.MT + L.H); ctx.stroke();
@@ -387,7 +396,7 @@
 
         // Left Y tick labels
         ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-        for (let y = ys.min; y <= ys.max + ys.step * 0.01; y = +(y + ys.step).toPrecision(10)) {
+        for (const y of tickValues(ys)) {
             const py = ty(y);
             if (py < L.MT - 8 || py > L.MT + L.H + 8) continue;
             ctx.fillText(fmtTick(y), L.ML - 8, py);
@@ -396,7 +405,7 @@
         // Right Y tick labels
         if (hasRight && ys2) {
             ctx.textAlign = 'left';
-            for (let y = ys2.min; y <= ys2.max + ys2.step * 0.01; y = +(y + ys2.step).toPrecision(10)) {
+            for (const y of tickValues(ys2)) {
                 const py = ty2(y);
                 if (py < L.MT - 8 || py > L.MT + L.H + 8) continue;
                 ctx.fillText(fmtTick(y), L.ML + L.W + 8, py);
@@ -405,7 +414,7 @@
 
         // X tick labels
         ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-        for (let x = xs.min; x <= xs.max + xs.step * 0.01; x = +(x + xs.step).toPrecision(10)) {
+        for (const x of tickValues(xs)) {
             const px = tx(x);
             if (px < L.ML - 4 || px > L.ML + L.W + 4) continue;
             ctx.fillText(fmtTick(x), px, L.MT + L.H + 6);
@@ -780,11 +789,11 @@
         // Grid
         if (ds.opt.showGrid) {
             const da = ds.opt.gridStyle === 'dashed' ? ' stroke-dasharray="3,4"' : '';
-            for (let y = ys.min; y <= ys.max + ys.step * 0.01; y = +(y + ys.step).toPrecision(10)) {
+            for (const y of tickValues(ys)) {
                 const py = ty(y).toFixed(1);
                 o += `<line x1="${L.ML}" y1="${py}" x2="${L.ML+L.W}" y2="${py}" stroke="${gc}" stroke-width="1"${da}/>`;
             }
-            for (let x = xs.min; x <= xs.max + xs.step * 0.01; x = +(x + xs.step).toPrecision(10)) {
+            for (const x of tickValues(xs)) {
                 const px = tx(x).toFixed(1);
                 o += `<line x1="${px}" y1="${L.MT}" x2="${px}" y2="${L.MT+L.H}" stroke="${gc}" stroke-width="1"${da}/>`;
             }
@@ -798,21 +807,21 @@
         }
 
         // Left Y ticks
-        for (let y = ys.min; y <= ys.max + ys.step * 0.01; y = +(y + ys.step).toPrecision(10)) {
+        for (const y of tickValues(ys)) {
             const py = ty(y).toFixed(1);
             o += `<text x="${L.ML-8}" y="${py}" text-anchor="end" dominant-baseline="middle"` +
                 ` font-family="${ff}" font-size="11" fill="${fg}">${esc(fmtTick(y))}</text>`;
         }
         // Right Y ticks
         if (hasRight && ys2 && ty2) {
-            for (let y = ys2.min; y <= ys2.max + ys2.step * 0.01; y = +(y + ys2.step).toPrecision(10)) {
+            for (const y of tickValues(ys2)) {
                 const py = ty2(y).toFixed(1);
                 o += `<text x="${L.ML+L.W+8}" y="${py}" text-anchor="start" dominant-baseline="middle"` +
                     ` font-family="${ff}" font-size="11" fill="${fg}">${esc(fmtTick(y))}</text>`;
             }
         }
         // X ticks
-        for (let x = xs.min; x <= xs.max + xs.step * 0.01; x = +(x + xs.step).toPrecision(10)) {
+        for (const x of tickValues(xs)) {
             const px = tx(x).toFixed(1);
             o += `<text x="${px}" y="${L.MT+L.H+16}" text-anchor="middle"` +
                 ` font-family="${ff}" font-size="11" fill="${fg}">${esc(fmtTick(x))}</text>`;
@@ -1115,6 +1124,9 @@
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────
+    // Pure helpers exposed for tests/charts.test.mjs
+    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData };
+
     window.buildChartsPanel = function () {
         if (!_initialized) {
             const fi = document.getElementById('charts-file-input');
