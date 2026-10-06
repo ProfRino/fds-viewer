@@ -20,7 +20,7 @@
         '#ff5722', '#9c27b0', '#03a9f4', '#795548', '#607d8b',
     ];
 
-    const FONT = "'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif";
+    const FONT = "'Segoe UI', system-ui, -apple-system, sans-serif"; // app font (style.css body)
 
     // ── State ──────────────────────────────────────────────────────────────────
     let datasets      = [];
@@ -355,12 +355,15 @@
             ds.canvas.height = bh;
         }
 
-        const light = document.documentElement.getAttribute('data-theme') === 'light';
-        const bg    = light ? '#ffffff'           : '#16213e';
-        const fg    = light ? '#1a1a2e'           : '#c8cce0';
-        const gc    = light ? 'rgba(0,0,0,0.08)'  : 'rgba(255,255,255,0.07)';
-        const ac    = light ? 'rgba(0,0,0,0.25)'  : 'rgba(255,255,255,0.2)';
-        const wmC   = light ? 'rgba(0,0,0,0.16)'  : 'rgba(255,255,255,0.10)';
+        // Colours come from the app's theme tokens so the chart follows
+        // light/dark. Fallbacks match the previous hard-coded dark values.
+        const cs    = getComputedStyle(document.documentElement);
+        const tok   = (name, fallback) => cs.getPropertyValue(name).trim() || fallback;
+        const bg    = tok('--bg-tertiary', '#16213e');
+        const fg    = tok('--text-primary', '#c8cce0');
+        const gc    = tok('--border', '#2a2a4a');
+        const ac    = tok('--text-muted', '#6b7394');
+        const wmC   = tok('--text-muted', '#6b7394');
 
         const ctx = ds.ctx;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -822,8 +825,10 @@
         const hasRight  = rightS.length > 0;
         const hasTitle  = !!ds.title;
         const L  = mkLayout(allSeries, svgW, svgH, hasRight, hasTitle);
+        // Export keeps a white background and dark ink for printing; only the
+        // typeface follows the app.
         const bg = '#ffffff', fg = '#1a1a2e', gc = '#dddddd', ac = '#aaaaaa';
-        const ff = "'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif";
+        const ff = FONT;
 
         let o = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}">`;
         o += `<rect width="${svgW}" height="${svgH}" fill="${bg}"/>`;
