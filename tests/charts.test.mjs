@@ -5,7 +5,7 @@ import fs from 'node:fs';
 const src = fs.readFileSync(new URL('../js/charts-panel.js', import.meta.url), 'utf8');
 const win = {};
 new Function('window', src)(win);
-const { niceScale, tickValues, parseCSVData } = win.chartsPanelTestHooks;
+const { niceScale, tickValues, parseCSVData, plotIndices } = win.chartsPanelTestHooks;
 
 // Regular axis: ticks land on the nice grid and cover the data range.
 assert.deepStrictEqual(tickValues(niceScale(0, 10, 7)), [0, 2, 4, 6, 8, 10], 'regular 0..10 axis');
@@ -36,5 +36,21 @@ assert.strictEqual(dataDot.headers.length, 2, 'semicolon file is not collapsed i
 
 // Unparseable input is reported as null, not as a silent empty dataset.
 assert.strictEqual(parseCSVData('just one line', { decimalSep: '.' }), null, 'garbage input returns null');
+
+// Downsampling above 5000 points must keep a short peak that falls between
+// stride samples (here a single spike at index 12345 of 20000).
+const N = 20000;
+const spikeTime = Array.from({ length: N }, (_, i) => i * 0.01);
+const spikeVals = Array.from({ length: N }, () => 0);
+spikeVals[12345] = 1000;
+const picked = plotIndices(spikeTime, spikeVals, N);
+assert.ok(picked.includes(12345), 'peak sample survives downsampling');
+assert.ok(picked.length < N, 'long series is actually downsampled');
+for (let i = 1; i < picked.length; i++) {
+    assert.ok(picked[i] > picked[i - 1], 'picked indices stay in time order');
+}
+
+// Short series is drawn unchanged.
+assert.deepStrictEqual(plotIndices([0, 1, 2], [5, 6, 7], 3), [0, 1, 2], 'short series not decimated');
 
 console.log('charts: all assertions passed');

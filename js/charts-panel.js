@@ -277,6 +277,28 @@
         };
     }
 
+    // Sample indices to draw for a series. Above 5000 samples each bucket
+    // keeps its min and max (in time order) so short peaks survive; -1 marks
+    // a gap (non-finite sample) so the caller breaks the line there.
+    function plotIndices(time, values, n) {
+        const st = Math.max(1, Math.ceil(n / 5000));
+        const out = [];
+        for (let b = 0; b < n; b += st) {
+            const end = Math.min(n, b + st);
+            let lo = -1, hi = -1, gap = false;
+            for (let i = b; i < end; i++) {
+                if (!isFinite(time[i]) || !isFinite(values[i])) { gap = true; continue; }
+                if (lo < 0 || values[i] < values[lo]) lo = i;
+                if (hi < 0 || values[i] > values[hi]) hi = i;
+            }
+            if (gap) out.push(-1);
+            if (lo < 0) continue;
+            if (lo === hi) out.push(lo);
+            else out.push(...[lo, hi].sort((a, b) => a - b));
+        }
+        return out;
+    }
+
     // ── Layout ─────────────────────────────────────────────────────────────────
     function mkLayout(allSeries, W, H, hasRight, hasTitle) {
         const lc = allSeries.length > 0 ? Math.min(allSeries.length, 3) : 1;
@@ -466,9 +488,8 @@
             ctx.setLineDash(getDash(s.lineStyle));
             let first = true;
             const n = Math.min(s.time.length, s.values.length);
-            const st = Math.max(1, Math.ceil(n / 5000));
-            for (let i = 0; i < n; i += st) {
-                if (!isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
+                        for (const i of plotIndices(s.time, s.values, n)) {
+                if (i < 0 || !isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
                 const px = tx(s.time[i]), py = ty(s.values[i]);
                 if (first) { ctx.moveTo(px, py); first = false; } else ctx.lineTo(px, py);
             }
@@ -483,9 +504,8 @@
                 ctx.setLineDash(getDash(s.lineStyle));
                 let first = true;
                 const n = Math.min(s.time.length, s.values.length);
-                const st = Math.max(1, Math.ceil(n / 5000));
-                for (let i = 0; i < n; i += st) {
-                    if (!isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
+                                for (const i of plotIndices(s.time, s.values, n)) {
+                    if (i < 0 || !isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
                     const px = tx(s.time[i]), py = ty2(s.values[i]);
                     if (first) { ctx.moveTo(px, py); first = false; } else ctx.lineTo(px, py);
                 }
@@ -858,9 +878,8 @@
         for (const s of leftS) {
             let d = '', first = true;
             const n = Math.min(s.time.length, s.values.length);
-            const st = Math.max(1, Math.ceil(n / 5000));
-            for (let i = 0; i < n; i += st) {
-                if (!isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
+                        for (const i of plotIndices(s.time, s.values, n)) {
+                if (i < 0 || !isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
                 const px = tx(s.time[i]).toFixed(2), py = ty(s.values[i]).toFixed(2);
                 d += first ? `M ${px},${py}` : ` L ${px},${py}`;
                 first = false;
@@ -876,9 +895,8 @@
             for (const s of rightS) {
                 let d = '', first = true;
                 const n = Math.min(s.time.length, s.values.length);
-                const st = Math.max(1, Math.ceil(n / 5000));
-                for (let i = 0; i < n; i += st) {
-                    if (!isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
+                                for (const i of plotIndices(s.time, s.values, n)) {
+                    if (i < 0 || !isFinite(s.time[i]) || !isFinite(s.values[i])) { first = true; continue; }
                     const px = tx(s.time[i]).toFixed(2), py = ty2(s.values[i]).toFixed(2);
                     d += first ? `M ${px},${py}` : ` L ${px},${py}`;
                     first = false;
@@ -1132,7 +1150,7 @@
 
     // ── Public API ─────────────────────────────────────────────────────────────
     // Pure helpers exposed for tests/charts.test.mjs
-    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData };
+    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData, plotIndices };
 
     window.buildChartsPanel = function () {
         if (!_initialized) {
