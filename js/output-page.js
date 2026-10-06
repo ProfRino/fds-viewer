@@ -357,6 +357,7 @@
         if (!sliceBtn || !smokeBtn) return;
 
         function applyMode(next) {
+            const prevMode = mode;
             mode = next;
             sliceBtn.classList.toggle('active', mode === 'slice');
             smokeBtn.classList.toggle('active', mode === 'smoke');
@@ -379,6 +380,11 @@
             if (sidebarLeft) sidebarLeft.style.display = mode === 'charts' ? 'none' : '';
             const mainArea = document.querySelector('.output-main-area');
             if (mainArea) mainArea.style.display = mode === 'charts' ? 'none' : '';
+            // The 3D canvas was hidden while in Charts; re-fit it once the
+            // layout has been restored (same deferred pattern as activation).
+            if (prevMode === 'charts' && mode !== 'charts' && outputViewer) {
+                setTimeout(() => outputViewer._onResize(), 0);
+            }
 
             // Charts panel takes over the freed-up grid columns when active
             if (chartsPanel) {
