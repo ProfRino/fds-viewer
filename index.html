@@ -566,22 +566,22 @@
                     <p>Playback runs off the main timeline, so load a smoke, slice, or boundary set to drive the play button &mdash; or scrub the agent slider in the panel directly. The sqlite is produced by <a href="https://github.com/PedestrianDynamics/pyFDS-Evac" target="_blank" rel="noopener">pyFDS-Evac</a> with <code>--output-sqlite</code> (the base JuPedSim schema is read unchanged, so any trajectory sqlite works; without <code>agent_scalars</code>, agents are coloured by a speed derived from successive positions).</p>
 
                     <h4>Charts &mdash; CSV time-series plotter</h4>
-                    <p>Click <strong>Charts</strong> in the Data panel (right sidebar) to switch to the Charts view. It plots FDS CSV output files as interactive time-series charts and works independently &mdash; no <code>.fds</code> file needs to be loaded first. Click <strong>&larr; Back to Output</strong> (top of the left sidebar) to return to the 3D viewer.</p>
+                    <p>Click <strong>Charts</strong> in the mode row at the top of the right sidebar on the Output page. It plots FDS CSV output files as interactive time-series charts and works independently &mdash; no <code>.fds</code> file needs to be loaded first. To return to the 3D viewer, click <strong>Soot</strong>, <strong>Slice</strong>, <strong>Boundary</strong> or <strong>Vismap</strong>.</p>
 
                     <h5>Getting started</h5>
                     <ol>
-                        <li>Click <strong>Open CSV file(s)</strong> in the left sidebar, or drag and drop one or more CSV files anywhere in the app. Multiple files can be open at the same time.</li>
+                        <li>Click <strong>Open CSV file(s)</strong> in the right sidebar while Charts is selected, or drag and drop one or more CSV files anywhere in the app (this switches to Output &rarr; Charts). Multiple files can be open at the same time.</li>
                         <li>Supported format: any FDS CSV file with two header rows (row 1 = units, row 2 = channel names) &mdash; e.g. <code>CHID_devc.csv</code>, <code>CHID_hrr.csv</code>.</li>
-                        <li>Each loaded file gets its own chart card in the main area. Channels from all files are listed together in the left sidebar.</li>
+                        <li>Each loaded file gets its own chart card in the main area. Channels from all files are listed together in the channel list on the left.</li>
                     </ol>
 
-                    <h5>Channels (left sidebar)</h5>
-                    <p>For each loaded file the sidebar shows a group containing all of its channels:</p>
+                    <h5>Channels (left side of the Charts view)</h5>
+                    <p>For each loaded file the channel list shows a group containing all of its channels:</p>
                     <ul>
                         <li><strong>Checkbox</strong> &mdash; show or hide the channel in the chart. The first ten channels of a newly opened file are enabled automatically.</li>
                         <li><strong>Colour swatch</strong> &mdash; click to open the colour picker: 15 palette presets, a native browser colour input, and a hex text field.</li>
                         <li><strong>Line style</strong> &mdash; dropdown with four options: Solid, Dashed, Dotted, Dash-dot.</li>
-                        <li><strong>Line width</strong> &mdash; numeric input from 0.5 to 5 px.</li>
+                        <li><strong>Line width</strong> &mdash; dropdown with whole-pixel values from 1 to 5 px.</li>
                         <li><strong>All / None</strong> &mdash; enable or disable all channels of a file at once.</li>
                         <li><strong>&times;</strong> (remove button) &mdash; removes the entire dataset together with its chart card and all channels.</li>
                     </ul>
@@ -891,7 +891,7 @@
             <!-- Charts sub-panel (shown when Charts mode is active in Output) -->
             <div id="charts-panel">
                 <div class="charts-layout">
-                    <!-- Left: channel selector only (Load CSV now lives in the Data panel) -->
+                    <!-- Left: channel selector only (Load CSV is in the right sidebar) -->
                     <div class="charts-sidebar">
                         <div class="sidebar-section charts-ch-section">
                             <h3>Channels</h3>
