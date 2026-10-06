@@ -155,14 +155,25 @@
         };
     }
 
+    // Re-parse after an option change. Returns false (and changes nothing)
+    // if the text no longer parses. Channel state for columns that disappear
+    // is dropped so no stale colour/style/selection survives.
     function reparse(ds) {
         const data = parseCSVData(ds.rawText, ds.opt);
-        if (data) {
-            ds.units   = data.units;
-            ds.headers = data.headers;
-            ds.columns = data.columns;
-            ds.hasTime = data.hasTime;
+        if (!data) return false;
+        const oldLen = ds.headers.length;
+        ds.units   = data.units;
+        ds.headers = data.headers;
+        ds.columns = data.columns;
+        ds.hasTime = data.hasTime;
+        for (let i = data.headers.length; i < oldLen; i++) {
+            const key = ds.id + '::' + i;
+            selectedKeys.delete(key);
+            delete colorMap[key];
+            delete lineStyleMap[key];
+            delete lineWidthMap[key];
         }
+        return true;
     }
 
     // ── Dataset Management ─────────────────────────────────────────────────────
@@ -704,8 +715,14 @@
         // Decimal separator — re-parses on change
         card.querySelectorAll('.opt-decimal').forEach(r => {
             r.addEventListener('change', () => {
+                const prev = ds.opt.decimalSep;
                 ds.opt.decimalSep = r.value;
-                reparse(ds);
+                if (!reparse(ds)) {
+                    ds.opt.decimalSep = prev;
+                    card.querySelectorAll('.opt-decimal').forEach(o => { o.checked = o.value === prev; });
+                    alert('Could not re-read ' + ds.filename + ' with that decimal separator.');
+                    return;
+                }
                 rebuildChannelList();
                 scheduleRender(ds);
             });
@@ -1036,7 +1053,7 @@
     function applyColor(color) {
         if (!_activeKey) return;
         colorMap[_activeKey] = color;
-        document.querySelectorAll('.charts-ch-swatch[data-key="' + _activeKey + '"]')
+        document.querySelectorAll('.charts-ch-swatch[data-key="' + CSS.escape(_activeKey) + '"]')
             .forEach(sw => { sw.style.background = color; });
         if (_ccpEl && /^#[0-9a-fA-F]{6}$/.test(color)) {
             const ni = _ccpEl.querySelector('#ccp-native');
@@ -1098,10 +1115,10 @@
                     '<option value="' + v + '"' + (width === v ? ' selected' : '') + '>' + v + '</option>'
                 ).join('');
                 html += '<div class="charts-ch-item">' +
-                    '<input type="checkbox" class="charts-ch-check" data-key="' + key + '" ' + (selectedKeys.has(key) ? 'checked' : '') + '>' +
-                    '<span class="charts-ch-swatch" data-key="' + key + '" style="background:' + (colorMap[key] || '#888') + '" title="Click to change colour"></span>' +
-                    '<select class="charts-ch-style" data-key="' + key + '">' + selOpts + '</select>' +
-                    '<select class="charts-ch-width" data-key="' + key + '" title="Line width">' + widthOpts + '</select>' +
+                    '<input type="checkbox" class="charts-ch-check" data-key="' + esc(key) + '" ' + (selectedKeys.has(key) ? 'checked' : '') + '>' +
+                    '<span class="charts-ch-swatch" data-key="' + esc(key) + '" style="background:' + esc(colorMap[key] || '#888') + '" title="Click to change colour"></span>' +
+                    '<select class="charts-ch-style" data-key="' + esc(key) + '">' + selOpts + '</select>' +
+                    '<select class="charts-ch-width" data-key="' + esc(key) + '" title="Line width">' + widthOpts + '</select>' +
                     '<span class="charts-ch-label">' + esc(ds.headers[i]) + '</span>' +
                     (ds.units[i] ? '<span class="charts-ch-unit">' + esc(ds.units[i]) + '</span>' : '') +
                     '</div>';
@@ -1179,7 +1196,7 @@
 
     // ── Public API ─────────────────────────────────────────────────────────────
     // Pure helpers exposed for tests/charts.test.mjs
-    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData, plotIndices, nearestIndex };
+    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData, plotIndices, nearestIndex, esc };
 
     window.buildChartsPanel = function () {
         if (!_initialized) {

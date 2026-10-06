@@ -68,3 +68,12 @@ for (const t of [-5, 0, 0.2, 10.4, 50, 123.456, 184, 999]) {
     assert.strictEqual(nearestIndex(tsorted, t), brute(tsorted, t), `nearestIndex matches brute force at t=${t}`);
 }
 console.log('charts hover lookup: nearestIndex matches brute force');
+
+// Escaping: filenames and channel keys go into attributes and markup, so
+// quotes and angle brackets must not break out of them.
+const { esc } = win.chartsPanelTestHooks;
+assert.strictEqual(esc('a"b<c>&d'), 'a&quot;b&lt;c&gt;&amp;d', 'esc covers quote, angle brackets and ampersand');
+const key = 'weird"name.csv_1700000000::3';
+const markup = `<span data-key="${esc(key)}"></span>`;
+assert.ok(!/data-key="[^"]*"[^>]*"/.test(markup), 'escaped key cannot close the attribute early');
+console.log('charts escaping: esc() covers quotes and brackets');
