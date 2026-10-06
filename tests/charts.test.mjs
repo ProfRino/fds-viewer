@@ -54,3 +54,17 @@ for (let i = 1; i < picked.length; i++) {
 assert.deepStrictEqual(plotIndices([0, 1, 2], [5, 6, 7], 3), [0, 1, 2], 'short series not decimated');
 
 console.log('charts: all assertions passed');
+
+// Hover lookup: nearestIndex (binary search) must agree with a brute-force
+// scan on sorted time data, including targets before, between and after samples.
+const { nearestIndex } = win.chartsPanelTestHooks;
+const tsorted = Array.from({ length: 500 }, (_, i) => i * 0.37 + 0.001 * (i % 7));
+const brute = (arr, t) => {
+    let bi = 0, bd = Infinity;
+    for (let i = 0; i < arr.length; i++) { const d = Math.abs(arr[i] - t); if (d < bd) { bd = d; bi = i; } }
+    return bi;
+};
+for (const t of [-5, 0, 0.2, 10.4, 50, 123.456, 184, 999]) {
+    assert.strictEqual(nearestIndex(tsorted, t), brute(tsorted, t), `nearestIndex matches brute force at t=${t}`);
+}
+console.log('charts hover lookup: nearestIndex matches brute force');

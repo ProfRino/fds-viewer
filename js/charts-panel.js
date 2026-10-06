@@ -299,6 +299,21 @@
         return out;
     }
 
+    // Index of the sample whose time is closest to t. Binary search, so the
+    // time column must be sorted ascending (FDS time always is).
+    function nearestIndex(time, t) {
+        const n = time.length;
+        if (!n) return -1;
+        let lo = 0, hi = n - 1;
+        if (t <= time[0]) return 0;
+        if (t >= time[hi]) return hi;
+        while (hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            if (time[mid] <= t) lo = mid; else hi = mid;
+        }
+        return Math.abs(time[lo] - t) <= Math.abs(time[hi] - t) ? lo : hi;
+    }
+
     // ── Layout ─────────────────────────────────────────────────────────────────
     function mkLayout(allSeries, W, H, hasRight, hasTitle) {
         const lc = allSeries.length > 0 ? Math.min(allSeries.length, 3) : 1;
@@ -653,8 +668,15 @@
         }
         requestAnimationFrame(() => scheduleRender(ds));
 
-        ds.canvas.addEventListener('mousemove',  e => tooltip(e, ds));
-        ds.canvas.addEventListener('mouseleave', () => { if (ds.tipEl) ds.tipEl.style.display = 'none'; });
+        ds.canvas.addEventListener('mousemove', e => {
+            ds._lastMove = e;
+            if (ds._moveRaf) return;
+            ds._moveRaf = requestAnimationFrame(() => {
+                ds._moveRaf = 0;
+                if (ds._lastMove) tooltip(ds._lastMove, ds);
+            });
+        });
+        ds.canvas.addEventListener('mouseleave', () => { ds._lastMove = null; if (ds.tipEl) ds.tipEl.style.display = 'none'; });
 
         card.querySelectorAll('.chart-export-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -712,6 +734,20 @@
     }
 
     // ── Tooltip ────────────────────────────────────────────────────────────────
+    // Time extents for hover, cached per active-series set and data array so
+    // mousemove does not rescan every sample.
+    function hoverCache(ds, allSeries) {
+        const sig = allSeries.map(s => s.key).join(',');
+        const hc  = ds._hover;
+        if (hc && hc.sig === sig && hc.cols === ds.columns) return hc;
+        let tMin = Infinity, tMax = -Infinity;
+        for (const s of allSeries) {
+            for (const v of s.time) { if (isFinite(v)) { if (v < tMin) tMin = v; if (v > tMax) tMax = v; } }
+        }
+        ds._hover = { sig, cols: ds.columns, tMin, tMax };
+        return ds._hover;
+    }
+
     function tooltip(e, ds) {
         if (!ds.tipEl) return;
         const { left: leftS, right: rightS } = getActiveSeriesGrouped(ds);
@@ -724,11 +760,8 @@
         const W  = rect.width;
         const H  = rect.height;
 
-        let tMin = Infinity, tMax = -Infinity, yMin = Infinity, yMax = -Infinity;
-        for (const s of allSeries) {
-            for (const v of s.time)   { if (isFinite(v)) { tMin = Math.min(tMin, v); tMax = Math.max(tMax, v); } }
-            for (const v of s.values) { if (isFinite(v)) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }
-        }
+        const hc = hoverCache(ds, allSeries);
+        const tMin = hc.tMin, tMax = hc.tMax;
         if (!isFinite(tMin)) { ds.tipEl.style.display = 'none'; return; }
 
         const L = mkLayout(allSeries, W, H, rightS.length > 0, !!ds.title);
@@ -739,11 +772,7 @@
         const xs = niceScale(tMin, tMax, 7);
         const t  = xs.min + (mx - L.ML) / L.W * (xs.max - xs.min);
         const ref = allSeries[0];
-        let bi = 0, bd = Infinity;
-        for (let i = 0; i < ref.time.length; i++) {
-            const d = Math.abs(ref.time[i] - t);
-            if (d < bd) { bd = d; bi = i; }
-        }
+        const bi = nearestIndex(ref.time, t);
 
         let html = '<div class="chart-tip-time">t = ' + ref.time[bi].toFixed(3) + ' s</div>';
         for (const s of allSeries) {
@@ -1150,7 +1179,7 @@
 
     // ── Public API ─────────────────────────────────────────────────────────────
     // Pure helpers exposed for tests/charts.test.mjs
-    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData, plotIndices };
+    window.chartsPanelTestHooks = { niceScale, tickValues, parseCSVData, plotIndices, nearestIndex };
 
     window.buildChartsPanel = function () {
         if (!_initialized) {
