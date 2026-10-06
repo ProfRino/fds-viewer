@@ -28,6 +28,7 @@
     let colorMap      = {};
     let lineStyleMap  = {};  // key -> 'solid' | 'dashed' | 'dotted' | 'dashdot'
     let lineWidthMap  = {};  // key -> number (line thickness in CSS px)
+    let _dsSeq        = 0;   // makes dataset ids unique (same filename may be loaded twice)
     let colorCounter  = 0;
     let _initialized  = false;
     let _ccpEl        = null;
@@ -142,7 +143,7 @@
         const data = parseCSVData(text, opts);
         if (!data) return null;
         return {
-            id:      filename + '_' + Date.now(),
+            id:      filename + '_' + (++_dsSeq) + '_' + Date.now(),
             filename,
             rawText: text,
             title:   '',
@@ -178,8 +179,6 @@
 
     // ── Dataset Management ─────────────────────────────────────────────────────
     function addDataset(ds) {
-        const old = datasets.find(d => d.filename === ds.filename);
-        if (old) removeDataset(old.id);
         datasets.push(ds);
         let n = 0;
         for (let i = 1; i < ds.headers.length; i++) {
@@ -187,7 +186,9 @@
             if (!colorMap[key])     { colorMap[key]     = PALETTE[colorCounter % PALETTE.length]; colorCounter++; }
             if (!lineStyleMap[key]) lineStyleMap[key]   = 'solid';
             if (!lineWidthMap[key]) lineWidthMap[key]   = 2;
-            if (n < 10) { selectedKeys.add(key); n++; }
+            // Only files with a Time column have anything to plot, so only
+            // those get channels pre-selected.
+            if (ds.hasTime && n < 10) { selectedKeys.add(key); n++; }
         }
         buildDatasetCard(ds);
     }
@@ -996,7 +997,8 @@
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
         a.href = url; a.download = ds.filename.replace(/\.csv$/i, '') + '.svg'; a.click();
-        URL.revokeObjectURL(url);
+        // Revoking synchronously can cancel the download in some browsers.
+        setTimeout(() => URL.revokeObjectURL(url), 0);
     }
 
     function exportPDF(ds) {
@@ -1094,8 +1096,12 @@
                 '<div class="charts-ds-header">' +
                     '<span class="charts-ds-name" title="' + esc(ds.filename) + '">' + esc(ds.filename) + '</span>' +
                     '<button class="charts-ds-remove" data-id="' + esc(ds.id) + '" title="Remove">&#x2715;</button>' +
-                '</div>' +
-                '<div class="charts-ds-bulk">' +
+                '</div>';
+            if (!ds.hasTime) {
+                html += '<p class="charts-ds-note">No Time column &mdash; nothing to plot.</p></div>';
+                continue;
+            }
+            html += '<div class="charts-ds-bulk">' +
                     '<button class="charts-bulk-btn" data-id="' + esc(ds.id) + '" data-action="all">All</button>' +
                     '<button class="charts-bulk-btn" data-id="' + esc(ds.id) + '" data-action="none">None</button>' +
                 '</div>';

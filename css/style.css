@@ -3228,6 +3228,12 @@ kbd {
     border-bottom: 1px solid var(--border);
 }
 .charts-ds-group:last-child { border-bottom: none; }
+.charts-ds-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 4px 12px 0;
+    line-height: 1.4;
+}
 
 .charts-ds-header {
     display: flex;
