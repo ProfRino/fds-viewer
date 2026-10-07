@@ -13,6 +13,8 @@
     --border: #2a2a4a;
     --bg-hover: #2a2a40;
     --focus-ring: #ff6b81;
+    --accent-fill-hover: #c42a48;
+    --range-track: var(--text-muted);
     --success: #4caf50;
     --warning: #ff9800;
     --info: #2196f3;
@@ -51,6 +53,7 @@
     --border: #d8dae2;
     --bg-hover: #dde0e8;
     --focus-ring: #c42a48;
+    --accent-fill-hover: #b91d3e;
 
     --code-bg:  #f3f4f8;
     --code-fg:  #1a1a2e;
@@ -74,6 +77,37 @@
 
 :focus:not(:focus-visible) {
     outline: none;
+}
+
+/* Range slider: token track and accent thumb in both themes */
+:where(input[type="range"]) {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--range-track);
+    border-radius: 2px;
+}
+:where(input[type="range"])::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+}
+:where(input[type="range"])::-moz-range-track {
+    height: 4px;
+    background: var(--range-track);
+    border-radius: 2px;
+}
+:where(input[type="range"])::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
 }
 
 * {
@@ -379,7 +413,7 @@ a.footer-link:active {
     border-radius: 4px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
 }
 .layer-bulk-btn:hover {
     background: var(--bg-card);
@@ -452,21 +486,6 @@ a.footer-link:active {
 
 .slider-row input[type="range"] {
     flex: 1;
-    height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: var(--border);
-    border-radius: 2px;
-}
-
-.slider-row input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
 }
 
 .slider-row .slider-value {
@@ -497,7 +516,7 @@ a.footer-link:active {
     border-radius: 4px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     text-align: center;
 }
 
@@ -795,7 +814,7 @@ a.footer-link:active {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     font-family: inherit;
 }
 
@@ -920,9 +939,9 @@ kbd {
         scrollbar-width: none;
         flex: 0 1 auto;
         min-width: 0;
+        padding: 4px;
     }
     .page-tabs::-webkit-scrollbar { display: none; }
-    .top-bar .page-tab:focus-visible { outline-offset: -2px; }
     .top-bar .actions { flex-shrink: 0; }
     .page-tab {
         padding: 5px 9px;
@@ -1082,7 +1101,7 @@ kbd {
     border-radius: 4px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     font-family: inherit;
     white-space: nowrap;
 }
@@ -2223,7 +2242,7 @@ kbd {
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     flex-shrink: 0;
 }
 
@@ -2498,6 +2517,11 @@ kbd {
 
 .clip-num-input:focus {
     color: var(--text-primary);
+}
+
+.clip-num-input:focus-visible,
+.clip-step:focus-visible {
+    outline-offset: -2px;
 }
 
 .clip-step {
@@ -2898,7 +2922,10 @@ kbd {
     color: #fff;
     border-color: var(--accent);
 }
-.file-button.primary-file-button:hover { filter: brightness(0.9); }
+.file-button.primary-file-button:hover:not(:disabled) {
+    background: var(--accent-fill-hover);
+    border-color: var(--accent-fill-hover);
+}
 
 .status-line {
     font-size: 11px;
@@ -3144,7 +3171,7 @@ kbd {
     border-radius: 4px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
 }
 .thresh-preset-btn:hover:not(:disabled) {
     background: var(--bg-card);
@@ -3295,7 +3322,7 @@ kbd {
     border-radius: 3px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.12s;
+    transition: all 0.12s, outline 0s, outline-offset 0s;
 }
 .charts-bulk-btn:hover { color: var(--text-primary); border-color: var(--accent); }
 
@@ -3666,7 +3693,6 @@ kbd {
 .opt-text-input:focus,
 .chart-opt-group select:focus {
     border-color: var(--accent);
-    outline: 1px solid var(--accent);
 }
 
 .chart-opt-group input[type="radio"],
@@ -3750,6 +3776,5 @@ kbd {
 }
 
 .ccp-hex-input:focus {
-    outline: 1px solid var(--accent);
     border-color: var(--accent);
 }
