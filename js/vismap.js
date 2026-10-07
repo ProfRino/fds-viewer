@@ -10,7 +10,7 @@
  *   VisMapOverlay  — THREE objects: map plane, evacuation signs, route line
  *
  * FDS-to-Three coordinate convention matches slice-renderer.js:
- *   FDS X -> Three X,  FDS Z -> Three Y (up),  FDS Y -> Three Z
+ *   FDS X -> Three X,  FDS Z -> Three Y (up),  FDS Y -> Three -Z
  */
 
 (function (global) {
@@ -319,7 +319,7 @@
     }
 
     // ── Overlay ───────────────────────────────────────────────────────────
-    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, y); }
+    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, -y); }
 
     // jet-reversed color map for the ASET plane (t=0 → red … t=max → blue)
     function jetReversed(t) {
@@ -603,12 +603,12 @@
                     });
                     mesh = new THREE.Mesh(new THREE.PlaneGeometry(signW, signH), material);
                     if (this.signsUpright) {
-                        // Plane's default normal is scene +Z (= FDS +Y = alpha 0);
-                        // rotating around the vertical axis by alpha makes the
-                        // face normal point along (sin α, cos α) in FDS
-                        // coordinates — the direction the view-angle factor
-                        // favours.
-                        mesh.rotation.y = wp.alpha * Math.PI / 180;
+                        // Plane's default normal is scene +Z (= FDS -Y);
+                        // rotating around the vertical axis by 180° - alpha
+                        // makes the face normal point along (sin α, cos α) in
+                        // FDS coordinates — the direction the view-angle
+                        // factor favours.
+                        mesh.rotation.y = Math.PI - wp.alpha * Math.PI / 180;
                         mesh.position.copy(fdsToScene(wp.x, wp.y, e.height));
                     } else {
                         // Flat floor marker, readable from above, centered on
@@ -619,7 +619,7 @@
                         // it, then continue in the arrow's direction.
                         mesh.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
                         if (wp.alpha !== null) {
-                            mesh.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), wp.alpha * Math.PI / 180);
+                            mesh.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI - wp.alpha * Math.PI / 180);
                         }
                         const pos = fdsToScene(wp.x, wp.y, e.height);
                         pos.y += 0.02; // float just above the map plane
@@ -704,7 +704,7 @@
                     mesh.position.y = boxHeight / 2;
                 }
                 mesh.position.x = (Math.min(r.x1, r.x2) + Math.max(r.x1, r.x2)) / 2;
-                mesh.position.z = (Math.min(r.y1, r.y2) + Math.max(r.y1, r.y2)) / 2;
+                mesh.position.z = -(Math.min(r.y1, r.y2) + Math.max(r.y1, r.y2)) / 2;
                 mesh.renderOrder = 95;
                 mesh._isVisualRegion = true;
                 mesh._vismapModeVisible = this.visible;
