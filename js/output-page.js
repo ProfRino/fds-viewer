@@ -617,7 +617,7 @@
         if (vpTime) vpTime.textContent = timeStr;
     }
 
-    function loadDatasetIntoOverlay(viewer, dataset, displayName) {
+    function loadDatasetIntoOverlay(viewer, dataset, displayName, note) {
         const fdsContext = currentSliceContext();
         const overlay = ensureOverlay(viewer);
         overlay.setDataset(dataset, fdsContext);
@@ -630,7 +630,7 @@
 
         const fileNameEl = document.getElementById('output-slice-file-name');
         if (fileNameEl) fileNameEl.textContent = displayName;
-        setStatus('Loaded ' + dataset.frames.length + ' frame(s) from ' + displayName + '.');
+        setStatus('Loaded ' + dataset.frames.length + ' frame(s) from ' + displayName + (note || '') + '.');
     }
 
     async function handleOpenSf(viewer, file) {
@@ -735,7 +735,7 @@
         try {
             setStatus('Loading slice set ' + group.sliceIndex + '...');
             const { dataset, displayName } = await datasetFromSliceGroup(group);
-            loadDatasetIntoOverlay(viewer, dataset, displayName);
+            loadDatasetIntoOverlay(viewer, dataset, displayName, SliceFiles.sliceGroupMissingNote(group));
         } catch (e) {
             console.error(e);
             setStatus(e.message, true);

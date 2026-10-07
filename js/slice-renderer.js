@@ -379,8 +379,10 @@
         const lines = String(text).split(/\r?\n/);
         const records = [];
         for (let i = 0; i < lines.length; i++) {
-            const m = /^(SLC[A-Z])\s+(\d+)\b(.*)$/.exec(lines[i].trim());
+            const m = /^(SLCF|SLCC|SLCT)\s+(\d+)\b(.*)$/.exec(lines[i].trim());
             if (!m) continue;
+            const fileName = (lines[i + 1] || '').trim();
+            if (!/\.sf$/i.test(fileName)) continue;
             const bounds = /&((?:\s+-?\d+){6})/.exec(m[3]);
             const index = /!\s*(\d+)/.exec(m[3]);
             records.push({
@@ -388,7 +390,7 @@
                 meshIndex: Number(m[2]),
                 sliceIndex: index ? Number(index[1]) : null,
                 indices: bounds ? bounds[1].trim().split(/\s+/).map(Number) : null,
-                fileName: (lines[i + 1] || '').trim(),
+                fileName,
                 quantity: (lines[i + 2] || '').trim(),
                 units: (lines[i + 4] || '').trim(),
             });
@@ -420,21 +422,38 @@
         const missing = group.missing ? group.missing.length : 0;
         const fileCount = (missing ? group.items.length + ' of ' + (group.items.length + missing) + ' files'
             : group.items.length + ' file' + (group.items.length === 1 ? '' : 's'));
-        if (!header) return group.chid + ' | Slice ' + group.sliceIndex + ' | ' + fileCount;
+        const slice = 'Slice ' + group.sliceIndex + (group.unlisted ? ' (not in .smv)' : '');
+        if (!header) return group.chid + ' | ' + slice + ' | ' + fileCount;
         const quantity = header.quantity || 'Slice';
         const units = header.units ? ' (' + header.units + ')' : '';
         return quantity + units + ' | ' + slicePlaneLabel(header.indices) +
-            ' | Slice ' + group.sliceIndex + ' | ' + fileCount;
+            ' | ' + slice + ' | ' + fileCount;
+    }
+
+    // Status suffix for a group whose .smv records name files that are not in
+    // the folder, e.g. " (1 of 2 files; missing: two_2_2.sf)".
+    function sliceGroupMissingNote(group) {
+        const missing = group && group.missing ? group.missing : [];
+        if (!missing.length) return '';
+        return ' (' + group.items.length + ' of ' + (group.items.length + missing.length) +
+            ' files; missing: ' + missing.join(', ') + ')';
     }
 
     // Groups files by their &SLCF line from the .smv records. Files the
     // records do not list, or all files when the .smv lacks the global slice
-    // index, fall back to grouping by the file-name index.
+    // index, fall back to grouping by the file-name index. When the records
+    // are used, fallback groups are marked unlisted: their file-name index is
+    // per mesh and need not match the .smv slice numbers.
     async function describeSliceGroups(files, smvRecords) {
         const groupsByKey = new Map();
         const grouped = new Set();
         const records = smvRecords || [];
-        if (records.length && records.every(r => r.sliceIndex !== null)) {
+        const useRecords = records.length > 0 && records.every(r => r.sliceIndex !== null);
+        if (records.length && !useRecords)
+            console.info('Slice grouping: ' + records.filter(r => r.sliceIndex === null).length + ' of ' +
+                records.length + ' .smv slice records lack the global slice index after "!"; ' +
+                'grouping all slice files by the CHID_M_N.sf file-name index instead.');
+        if (useRecords) {
             const byName = new Map(files.map(f => [f.name.split(/[\\/]/).pop(), f]));
             for (const rec of records) {
                 const parsed = parseSliceFilename(rec.fileName);
@@ -456,13 +475,14 @@
             if (grouped.has(file)) continue;
             const info = parseSliceFilename(file.name);
             if (!info) continue;
-            const key = sliceGroupKey(info);
+            const key = (useRecords ? 'unlisted::' : '') + sliceGroupKey(info);
             if (!groupsByKey.has(key))
-                groupsByKey.set(key, { key, chid: info.chid, sliceIndex: info.sliceIndex, items: [], header: null, label: '' });
+                groupsByKey.set(key, { key, chid: info.chid, sliceIndex: info.sliceIndex, items: [], header: null, label: '', unlisted: useRecords });
             groupsByKey.get(key).items.push({ file, info });
         }
         const groups = Array.from(groupsByKey.values()).sort(
-            (a, b) => a.chid.localeCompare(b.chid) || a.sliceIndex - b.sliceIndex);
+            (a, b) => a.chid.localeCompare(b.chid) || a.sliceIndex - b.sliceIndex ||
+                Number(a.unlisted) - Number(b.unlisted));
         for (const group of groups) {
             group.items.sort((a, b) => a.info.meshIndex - b.info.meshIndex);
             group.header = await readSliceHeader(group.items[0].file);
@@ -1042,7 +1062,7 @@
     global.SliceOverlay = SliceOverlay;
     global.SliceFiles = {
         parseSliceFilename, sliceGroupKey, describeSliceGroups,
-        sliceRecordsFromSmvText,
+        sliceRecordsFromSmvText, sliceGroupMissingNote,
         combineSliceDatasets,
         fdsContextFromParsedData,
         fdsContextFromSmvText,

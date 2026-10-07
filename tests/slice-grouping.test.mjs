@@ -132,6 +132,64 @@ function membership(groups) {
     assert.deepStrictEqual(membership([pbz]), [['two_1_1.sf@1']]);
     assert.deepStrictEqual(pbz.missing, ['two_2_2.sf']);
     assert.match(pbz.label, /1 of 2 files/);
+    assert.strictEqual(SliceFiles.sliceGroupMissingNote(pbz), ' (1 of 2 files; missing: two_2_2.sf)');
+    assert.strictEqual(SliceFiles.sliceGroupMissingNote(groups.find(g => g.sliceIndex === 1)), '');
+}
+
+// ── Files the .smv does not list are kept apart and marked ───────────────
+{
+    const records = SliceFiles.sliceRecordsFromSmvText(SMV);
+    const extra = sliceFile('two_1_3.sf', PBX, 700);
+    const groups = await SliceFiles.describeSliceGroups([...FILES, extra], records);
+    assert.strictEqual(groups.length, 4);
+    const listed = groups.filter(g => !g.unlisted);
+    assert.deepStrictEqual(membership(listed), [
+        ['two_2_1.sf@2'], ['two_1_1.sf@1', 'two_2_2.sf@2'], ['two_1_2.sf@1', 'two_2_3.sf@2'],
+    ]);
+    const unlisted = groups.filter(g => g.unlisted);
+    assert.deepStrictEqual(membership(unlisted), [['two_1_3.sf@1']]);
+    assert.strictEqual(unlisted[0].sliceIndex, 3);
+    assert.match(unlisted[0].label, /Slice 3 \(not in \.smv\)/);
+    assert.doesNotMatch(listed[2].label, /not in \.smv/);
+    assert.strictEqual(new Set(groups.map(g => g.key)).size, 4);
+}
+
+// ── Record parsing: slice records only, file line must be a .sf ──────────
+{
+    const records = SliceFiles.sliceRecordsFromSmvText([
+        'BNDF     1     1', ' two_1_1.bf', ' WALL TEMPERATURE', ' wall_temp', ' C',
+        'SLCT     1 # STRUCTURED &     0    10     0    10     6     6 !      5      0      3',
+        ' t_1_5.sf', ' TEMPERATURE', ' temp', ' C',
+        'SLCF     1 # STRUCTURED &     0    10     0    10     6     6 !      6      0      3',
+        ' not_a_slice.txt', ' TEMPERATURE', ' temp', ' C',
+    ].join('\n'));
+    assert.deepStrictEqual(records.map(r => [r.type, r.sliceIndex, r.fileName]), [['SLCT', 5, 't_1_5.sf']]);
+}
+
+// ── Records without the '!' index: file-name fallback, one console.info ──
+{
+    const noIndex = SMV.replace(/ !\s+2\s+0\s+3/g, '');
+    const records = SliceFiles.sliceRecordsFromSmvText(noIndex);
+    assert.strictEqual(records.filter(r => r.sliceIndex === null).length, 2);
+    const infos = [];
+    const orig = console.info;
+    console.info = (...args) => infos.push(args.join(' '));
+    let groups;
+    try { groups = await SliceFiles.describeSliceGroups(FILES, records); }
+    finally { console.info = orig; }
+    assert.strictEqual(infos.length, 1);
+    assert.match(infos[0], /2 of 5 .*file-name index/);
+    assert.ok(groups.every(g => !g.unlisted));
+    assert.deepStrictEqual(membership(groups), [
+        ['two_1_1.sf@1', 'two_2_1.sf@2'],
+        ['two_1_2.sf@1', 'two_2_2.sf@2'],
+        ['two_2_3.sf@2'],
+    ]);
+    // With complete records nothing is logged.
+    console.info = (...args) => infos.push(args.join(' '));
+    try { await SliceFiles.describeSliceGroups(FILES, SliceFiles.sliceRecordsFromSmvText(SMV)); }
+    finally { console.info = orig; }
+    assert.strictEqual(infos.length, 1);
 }
 
 // ── Without a .smv, file-name grouping is the fallback ───────────────────
