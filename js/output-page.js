@@ -661,7 +661,7 @@
         if (vpTime) vpTime.textContent = timeStr;
     }
 
-    function loadDatasetIntoOverlay(viewer, dataset, displayName) {
+    function loadDatasetIntoOverlay(viewer, dataset, displayName, note) {
         const fdsContext = currentSliceContext();
         const overlay = ensureOverlay(viewer);
         overlay.setDataset(dataset, fdsContext);
@@ -674,7 +674,7 @@
 
         const fileNameEl = document.getElementById('output-slice-file-name');
         if (fileNameEl) fileNameEl.textContent = displayName;
-        setStatus('Loaded ' + dataset.frames.length + ' frame(s) from ' + displayName + '.');
+        setStatus('Loaded ' + dataset.frames.length + ' frame(s) from ' + displayName + (note || '') + '.');
     }
 
     async function handleOpenSf(viewer, file) {
@@ -705,7 +705,16 @@
                 return;
             }
             availableFiles = sliceFiles;
-            availableGroups = await SliceFiles.describeSliceGroups(sliceFiles);
+            // One run per .smv: each slice file is grouped with the records
+            // of the .smv whose CHID prefixes its name.
+            const smvRuns = [];
+            for (const smvFile of files.filter(f => /\.smv$/i.test(f.name))) {
+                smvRuns.push({
+                    chid: smvFile.name.split(/[\\/]/).pop().replace(/\.smv$/i, ''),
+                    records: SliceFiles.sliceRecordsFromSmvText(await smvFile.text()),
+                });
+            }
+            availableGroups = await SliceFiles.describeSliceGroupsForRuns(sliceFiles, smvRuns);
             if (availableGroups.length === 0) {
                 setStatus('No FDS slice files named like CHID_M_N.sf were found.', true);
                 resetSliceSetSelector();
@@ -777,7 +786,7 @@
         try {
             setStatus('Loading slice set ' + group.sliceIndex + '...');
             const { dataset, displayName } = await datasetFromSliceGroup(group);
-            loadDatasetIntoOverlay(viewer, dataset, displayName);
+            loadDatasetIntoOverlay(viewer, dataset, displayName, SliceFiles.sliceGroupMissingNote(group));
         } catch (e) {
             console.error(e);
             setStatus(e.message, true);

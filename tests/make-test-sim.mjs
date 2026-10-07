@@ -93,6 +93,29 @@ export function buildSliceFile(mesh) {
     return out.buffer;
 }
 
+/** Binary slice file with arbitrary header and a constant value per frame.
+ *  `indices` is [i1, i2, j1, j2, k1, k2]; values are written node-based,
+ *  (i2-i1+1)*(j2-j1+1)*(k2-k1+1) per frame. */
+export function buildConstantSliceFile(quantity, shortName, units, indices, times, value) {
+    const [i1, i2, j1, j2, k1, k2] = indices;
+    const count = (i2 - i1 + 1) * (j2 - j1 + 1) * (k2 - k1 + 1);
+    const chunks = [
+        stringRecord(quantity),
+        stringRecord(shortName),
+        stringRecord(units),
+        int32Record(indices),
+    ];
+    for (const t of times) {
+        chunks.push(float32Record([t]));
+        chunks.push(float32Record(new Array(count).fill(value)));
+    }
+    const total = chunks.reduce((s, c) => s + c.length, 0);
+    const out = new Uint8Array(total);
+    let offset = 0;
+    for (const c of chunks) { out.set(c, offset); offset += c.length; }
+    return out.buffer;
+}
+
 // ── .smv / .end / .fds output ─────────────────────────────────────────────
 // The .smv mirrors what FDS 6.8 writes (verified against a real run of the
 // generated .fds): real Smokeview is strict about the sections it expects
