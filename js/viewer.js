@@ -1605,7 +1605,7 @@ class FDSViewer {
                 const wp = Array.isArray(duct.waypoints) ? duct.waypoints : [];
                 for (let w = 0; w < wp.length; w += 3) {
                     if (w + 2 < wp.length) {
-                        points.push(new THREE.Vector3(wp[w], wp[w + 2], wp[w + 1]));
+                        points.push(new THREE.Vector3(wp[w], wp[w + 2], -wp[w + 1]));
                     }
                 }
             }
