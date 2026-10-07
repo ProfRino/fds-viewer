@@ -11,6 +11,10 @@
     --accent: #e94560;
     --accent-hover: #ff6b81;
     --border: #2a2a4a;
+    --bg-hover: #2a2a40;
+    --focus-ring: #ff6b81;
+    --accent-fill-hover: #c42a48;
+    --range-track: var(--text-muted);
     --success: #4caf50;
     --warning: #ff9800;
     --info: #2196f3;
@@ -31,6 +35,8 @@
     --code-line-num: #5a6378;
     --code-line-sep: rgba(255,255,255,.06);
     --code-line-hover: rgba(255,255,255,.03);
+
+    color-scheme: dark;
 }
 
 /* ─── Light theme ─────────────────────────── */
@@ -45,6 +51,9 @@
     --accent: #d63856;
     --accent-hover: #b91d3e;
     --border: #d8dae2;
+    --bg-hover: #dde0e8;
+    --focus-ring: #c42a48;
+    --accent-fill-hover: #b91d3e;
 
     --code-bg:  #f3f4f8;
     --code-fg:  #1a1a2e;
@@ -56,7 +65,61 @@
     --code-line-num: #a0a4ae;
     --code-line-sep: rgba(0,0,0,.08);
     --code-line-hover: rgba(0,0,0,.03);
+
+    color-scheme: light;
 }
+
+/* One keyboard focus indicator for every control */
+:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Range slider: token track and accent thumb in both themes */
+:where(input[type="range"]) {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    background: transparent;
+}
+:where(input[type="range"])::-webkit-slider-runnable-track {
+    height: 4px;
+    background: var(--range-track);
+    border-radius: 2px;
+}
+:where(input[type="range"])::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+}
+:where(input[type="range"])::-moz-range-track {
+    height: 4px;
+    background: var(--range-track);
+    border-radius: 2px;
+}
+:where(input[type="range"])::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+}
+:where(input[type="range"]):disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+:where(input[type="range"]):disabled::-webkit-slider-thumb { cursor: default; }
+:where(input[type="range"]):disabled::-moz-range-thumb { cursor: default; }
 
 * {
     margin: 0;
@@ -361,7 +424,7 @@ a.footer-link:active {
     border-radius: 4px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
 }
 .layer-bulk-btn:hover {
     background: var(--bg-card);
@@ -435,21 +498,6 @@ a.footer-link:active {
 .slider-row input[type="range"] {
     flex: 1;
     height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: var(--border);
-    border-radius: 2px;
-    outline: none;
-}
-
-.slider-row input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
 }
 
 .slider-row .slider-value {
@@ -480,7 +528,7 @@ a.footer-link:active {
     border-radius: 4px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     text-align: center;
 }
 
@@ -778,7 +826,7 @@ a.footer-link:active {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     font-family: inherit;
 }
 
@@ -897,13 +945,17 @@ kbd {
         max-width: 120px;
     }
     #model-title { display: none; }
-    .page-tabs {
+    .top-bar .page-tabs {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        flex-shrink: 1;
+        flex: 0 1 auto;
+        min-width: 0;
+        padding: 4px;
+        margin: 0 -4px; /* room for the focus ring without narrowing the bar */
     }
     .page-tabs::-webkit-scrollbar { display: none; }
+    .top-bar .actions { flex-shrink: 0; }
     .page-tab {
         padding: 5px 9px;
         font-size: 11px;
@@ -1062,7 +1114,7 @@ kbd {
     border-radius: 4px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     font-family: inherit;
     white-space: nowrap;
 }
@@ -2044,7 +2096,7 @@ kbd {
     background: rgba(255,255,255,0.04);
     padding: 1px 5px;
     border-radius: 3px;
-    color: var(--text);
+    color: var(--text-primary);
 }
 .fp-out-reload {
     background: none;
@@ -2203,7 +2255,7 @@ kbd {
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
     flex-shrink: 0;
 }
 
@@ -2232,7 +2284,6 @@ kbd {
     font-size: 12px;
     font-family: 'Consolas', 'Courier New', monospace;
     color: var(--text-primary);
-    outline: none;
     transition: border-color 0.15s;
 }
 
@@ -2478,8 +2529,12 @@ kbd {
 }
 
 .clip-num-input:focus {
-    outline: none;
     color: var(--text-primary);
+}
+
+.clip-num-input:focus-visible,
+.clip-step:focus-visible {
+    outline-offset: -2px;
 }
 
 .clip-step {
@@ -2644,13 +2699,13 @@ kbd {
     border: none;
     padding: 14px 16px 14px 92px;  /* 92px = 76px gutter (4em@12px + 14+14) + 16px highlight-left */
     resize: none;
-    outline: none;
     white-space: pre;
     overflow: auto;
     box-sizing: border-box;
     position: relative;
     z-index: 1;
 }
+.fp-fds-edit:focus-visible { outline-offset: -2px; }
 .fp-fds-edit::selection { background: rgba(99,102,241,0.35); }
 
 /* ─── Tab-guard toast ───────────────────── */
@@ -2699,19 +2754,19 @@ kbd {
 }
 
 .output-sidebar {
-    background: var(--bg-secondary, #0f1020);
+    background: var(--bg-secondary);
     overflow-y: auto;
     padding: 16px 12px;
-    border-right: 1px solid var(--border-color, #2a2a40);
+    border-right: 1px solid var(--border);
 }
 .output-sidebar-right {
     border-right: none;
-    border-left: 1px solid var(--border-color, #2a2a40);
+    border-left: 1px solid var(--border);
 }
 
 .output-main-area {
     position: relative;
-    background: #1a1a2e;
+    background: var(--bg-secondary);
     overflow: hidden;
 }
 
@@ -2727,9 +2782,9 @@ kbd {
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     text-align: center;
-    background: #1a1a2e;
+    background: var(--bg-secondary);
     z-index: 10;
 }
 .output-drop-zone .drop-content {
@@ -2740,7 +2795,7 @@ kbd {
     margin: 0 0 12px;
     font-size: 22px;
     font-weight: 600;
-    color: var(--text-primary, #e8e8f0);
+    color: var(--text-primary);
 }
 .output-drop-zone p {
     margin: 6px 0;
@@ -2770,15 +2825,15 @@ kbd {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    background: var(--bg-secondary, #1a1a2e);
-    border: 1px solid var(--border, #2a2a4a);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
     border-radius: 6px;
     padding: 8px 8px 6px;
     pointer-events: none;
 }
 #output-colorbar-label {
     font-size: 10px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     text-align: center;
     white-space: nowrap;
     max-width: 90px;
@@ -2788,7 +2843,7 @@ kbd {
 }
 #output-colorbar-max {
     font-size: 10px;
-    color: var(--text-primary, #e8e8f0);
+    color: var(--text-primary);
     font-family: monospace;
     order: 1;
 }
@@ -2801,7 +2856,7 @@ kbd {
 }
 #output-colorbar-min {
     font-size: 10px;
-    color: var(--text-primary, #e8e8f0);
+    color: var(--text-primary);
     font-family: monospace;
     order: 3;
 }
@@ -2812,15 +2867,15 @@ kbd {
     align-items: center;
     gap: 8px;
     padding: 8px 14px;
-    background: var(--bg-secondary, #1a1a2e);
-    border-top: 1px solid var(--border, #2a2a4a);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
     pointer-events: all;
     flex-shrink: 0;
 }
 .vp-play-btn {
     background: transparent;
-    border: 1px solid var(--border, #2a2a4a);
-    color: var(--text-primary, #e8e8f0);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -2833,19 +2888,19 @@ kbd {
     padding: 0;
     transition: background 0.15s, border-color 0.15s;
 }
-.vp-play-btn:hover:not(:disabled) { background: var(--bg-primary, #0f0f1a); border-color: var(--accent, #e94560); }
+.vp-play-btn:hover:not(:disabled) { background: var(--bg-primary); border-color: var(--accent); }
 .vp-play-btn:disabled { opacity: 0.35; cursor: default; }
 .vp-slider {
     flex: 1;
     min-width: 0;
-    accent-color: var(--accent, #e94560);
+    accent-color: var(--accent);
     height: 4px;
     cursor: pointer;
 }
 .vp-slider:disabled { opacity: 0.35; cursor: default; }
 .vp-time {
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     font-family: monospace;
     white-space: nowrap;
     width: 72px;
@@ -2869,25 +2924,28 @@ kbd {
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
-    border: 1px solid var(--border-color, #2a2a40);
-    background: var(--bg-tertiary, #1a1a2e);
-    color: var(--text-primary, #e8e8f0);
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
     transition: background 0.15s, border-color 0.15s;
 }
-.file-button:hover { background: var(--bg-hover, #2a2a40); }
+.file-button:hover { background: var(--bg-hover); }
 .file-button.primary-file-button {
-    background: var(--accent-color, #e94560);
+    background: var(--accent);
     color: #fff;
-    border-color: var(--accent-color, #e94560);
+    border-color: var(--accent);
 }
-.file-button.primary-file-button:hover { background: #d83a55; }
+.file-button.primary-file-button:hover:not(:disabled) {
+    background: var(--accent-fill-hover);
+    border-color: var(--accent-fill-hover);
+}
 
 .status-line {
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     margin-top: 6px;
     padding: 4px 6px;
-    background: var(--bg-tertiary, #1a1a2e);
+    background: var(--bg-tertiary);
     border-radius: 3px;
 }
 
@@ -2895,7 +2953,7 @@ kbd {
 .field-label {
     display: block;
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     margin: 6px 0 3px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -2913,14 +2971,14 @@ kbd {
     display: contents;
 }
 .metadata dt {
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     text-transform: uppercase;
     font-size: 10px;
     letter-spacing: 0.3px;
 }
 .metadata dd {
     margin: 0;
-    color: var(--text-primary, #e8e8f0);
+    color: var(--text-primary);
     font-family: 'Consolas', monospace;
 }
 
@@ -2933,7 +2991,7 @@ kbd {
     overflow-y: auto;
     font-family: 'Consolas', monospace;
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
 }
 .file-list li {
     padding: 1px 0;
@@ -2944,7 +3002,7 @@ kbd {
 .file-list li .file-tag {
     display: inline-block;
     min-width: 38px;
-    color: var(--accent, #ff5e6c);
+    color: var(--accent);
     font-weight: 600;
     margin-right: 6px;
 }
@@ -2959,18 +3017,18 @@ kbd {
 .icon-button {
     padding: 4px 10px;
     border-radius: 3px;
-    border: 1px solid var(--border-color, #2a2a40);
-    background: var(--bg-tertiary, #1a1a2e);
-    color: var(--text-primary, #e8e8f0);
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
     font-size: 12px;
     cursor: pointer;
 }
-.icon-button:hover:not(:disabled) { background: var(--bg-hover, #2a2a40); }
+.icon-button:hover:not(:disabled) { background: var(--bg-hover); }
 .icon-button:disabled { opacity: 0.5; cursor: not-allowed; }
 .frame-readout {
     font-family: 'Consolas', monospace;
     font-size: 12px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
 }
 
 /* Display controls */
@@ -2979,7 +3037,7 @@ kbd {
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: var(--text-primary, #e8e8f0);
+    color: var(--text-primary);
     margin: 6px 0;
     cursor: pointer;
 }
@@ -2993,13 +3051,13 @@ kbd {
     font-size: 11px;
     padding: 2px 8px;
     background: transparent;
-    border: 1px solid var(--border-color, #2a2a40);
-    color: var(--text-secondary, #8a8a9a);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     border-radius: 3px;
     cursor: pointer;
     line-height: 1.4;
 }
-.range-auto-btn:hover { color: var(--text-primary, #e8e8f0); border-color: var(--accent, #e94560); }
+.range-auto-btn:hover { color: var(--text-primary); border-color: var(--accent); }
 .range-grid {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -3009,12 +3067,12 @@ kbd {
 }
 .range-grid label {
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
 }
 .range-grid input {
-    background: var(--bg-tertiary, #1a1a2e);
-    border: 1px solid var(--border-color, #2a2a40);
-    color: var(--text-primary, #e8e8f0);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     padding: 3px 6px;
     border-radius: 3px;
     font-size: 11px;
@@ -3023,11 +3081,11 @@ kbd {
 
 /* Vismap waypoint / visual-region cards */
 .vismap-card {
-    border: 1px solid var(--border-color, #2a2a40);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 6px 8px 8px;
     margin-top: 6px;
-    background: var(--bg-tertiary, #1a1a2e);
+    background: var(--bg-tertiary);
 }
 .vismap-card-header {
     display: flex;
@@ -3037,7 +3095,7 @@ kbd {
 }
 .vismap-card-title {
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
@@ -3045,16 +3103,16 @@ kbd {
     font-size: 11px;
     padding: 1px 7px;
     background: transparent;
-    border: 1px solid var(--border-color, #2a2a40);
-    color: var(--text-secondary, #8a8a9a);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     border-radius: 3px;
     cursor: pointer;
     line-height: 1.4;
 }
 .vismap-card-remove:hover {
     color: #fff;
-    border-color: var(--accent, #e94560);
-    background: var(--accent, #e94560);
+    border-color: var(--accent);
+    background: var(--accent);
 }
 .vismap-grid {
     display: grid;
@@ -3064,26 +3122,26 @@ kbd {
 }
 .vismap-grid label {
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
 }
 .vismap-grid input {
     width: 100%;
     box-sizing: border-box;
-    background: var(--bg-tertiary, #1a1a2e);
-    border: 1px solid var(--border-color, #2a2a40);
-    color: var(--text-primary, #e8e8f0);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     padding: 3px 6px;
     border-radius: 3px;
     font-size: 11px;
     font-family: 'Consolas', monospace;
 }
 .vismap-grid input.vismap-invalid {
-    border-color: var(--accent, #e94560);
-    box-shadow: 0 0 0 1px var(--accent, #e94560);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
 }
 .vismap-empty-hint {
     font-size: 11px;
-    color: var(--text-secondary, #8a8a9a);
+    color: var(--text-secondary);
     font-style: italic;
     margin: 6px 0 0;
 }
@@ -3100,7 +3158,7 @@ kbd {
     text-align: right;
     font-size: 11px;
     font-family: 'Consolas', monospace;
-    color: var(--text-secondary, #8888aa);
+    color: var(--text-secondary);
 }
 
 /* HRRPUV threshold preset row (kW/m³ readout + "Smokeview default" button) */
@@ -3126,7 +3184,7 @@ kbd {
     border-radius: 4px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.15s, outline 0s, outline-offset 0s;
 }
 .thresh-preset-btn:hover:not(:disabled) {
     background: var(--bg-card);
@@ -3140,9 +3198,9 @@ kbd {
 
 #output-color-map {
     width: 100%;
-    background: var(--bg-tertiary, #1a1a2e);
-    border: 1px solid var(--border-color, #2a2a40);
-    color: var(--text-primary, #e8e8f0);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     padding: 5px 8px;
     border-radius: 3px;
     font-size: 12px;
@@ -3153,9 +3211,9 @@ kbd {
 #output-vismap-mapmode {
     width: 100%;
     max-width: 100%;
-    background: var(--bg-tertiary, #1a1a2e);
-    border: 1px solid var(--border-color, #2a2a40);
-    color: var(--text-primary, #e8e8f0);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     padding: 5px 8px;
     border-radius: 3px;
     font-size: 12px;
@@ -3277,7 +3335,7 @@ kbd {
     border-radius: 3px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.12s;
+    transition: all 0.12s, outline 0s, outline-offset 0s;
 }
 .charts-bulk-btn:hover { color: var(--text-primary); border-color: var(--accent); }
 
@@ -3306,7 +3364,7 @@ kbd {
     flex-shrink: 0;
     cursor: pointer;
 }
-.charts-ch-style:focus { border-color: var(--accent); outline: none; }
+.charts-ch-style:focus { border-color: var(--accent); }
 
 /* Line width select */
 .charts-ch-width {
@@ -3322,7 +3380,7 @@ kbd {
     text-align: center;
     cursor: pointer;
 }
-.charts-ch-width:focus { border-color: var(--accent); outline: none; }
+.charts-ch-width:focus { border-color: var(--accent); }
 
 .charts-ch-item input[type="checkbox"] {
     appearance: none;
@@ -3523,7 +3581,6 @@ kbd {
     font-size: 13px;
     font-weight: 500;
     padding: 1px 4px;
-    outline: none;
     transition: border-color 0.15s, background 0.15s;
 }
 
@@ -3640,7 +3697,6 @@ kbd {
     border-radius: 3px;
     color: var(--text-primary);
     padding: 2px 5px;
-    outline: none;
 }
 
 .opt-text-input {
@@ -3650,7 +3706,6 @@ kbd {
 .opt-text-input:focus,
 .chart-opt-group select:focus {
     border-color: var(--accent);
-    outline: 1px solid var(--accent);
 }
 
 .chart-opt-group input[type="radio"],
@@ -3734,6 +3789,5 @@ kbd {
 }
 
 .ccp-hex-input:focus {
-    outline: 1px solid var(--accent);
     border-color: var(--accent);
 }
