@@ -467,6 +467,9 @@ class FDSViewer {
     _onResize() {
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
+        // Container is hidden (e.g. Charts mode): keep the last good size
+        // instead of sizing the renderer to 0x0.
+        if (!w || !h) return;
         if (this.camera.isOrthographicCamera) {
             // Preserve the orthographic view's vertical extent and rebuild the
             // horizontal extent from the new aspect, so resizing the window
