@@ -550,6 +550,16 @@ a.footer-link:active {
     font-weight: 600;
 }
 
+/* Reserve the bold label width so switching modes does not shift the row */
+.output-mode-grid .view-btn::after {
+    content: attr(data-label);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 600;
+}
+
 /* Shared disabled state; component rules may add hover guards */
 button:disabled {
     opacity: var(--disabled-opacity);

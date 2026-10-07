@@ -914,11 +914,11 @@
                 <div class="sidebar-section">
                     <h3>Data</h3>
                     <div class="view-grid output-mode-grid">
-                        <button class="view-btn active" id="output-mode-smoke" aria-pressed="true">Soot</button>
-                        <button class="view-btn" id="output-mode-slice" aria-pressed="false">Slice</button>
-                        <button class="view-btn" id="output-mode-boundary" aria-pressed="false">Boundary</button>
-                        <button class="view-btn" id="output-mode-vismap" aria-pressed="false">Vismap</button>
-                        <button class="view-btn" id="output-mode-charts" aria-pressed="false">Charts</button>
+                        <button class="view-btn active" id="output-mode-smoke" data-label="Soot" aria-pressed="true">Soot</button>
+                        <button class="view-btn" id="output-mode-slice" data-label="Slice" aria-pressed="false">Slice</button>
+                        <button class="view-btn" id="output-mode-boundary" data-label="Boundary" aria-pressed="false">Boundary</button>
+                        <button class="view-btn" id="output-mode-vismap" data-label="Vismap" aria-pressed="false">Vismap</button>
+                        <button class="view-btn" id="output-mode-charts" data-label="Charts" aria-pressed="false">Charts</button>
                     </div>
                 </div>
 
@@ -1293,7 +1293,7 @@
                 <div id="output-agents-panel" class="sidebar-section">
                     <h3>Agents</h3>
                     <input type="file" id="output-agents-file" accept=".sqlite,.db" />
-                    <button type="button" id="output-agents-reload" disabled>Reload</button>
+                    <button type="button" id="output-agents-reload" class="icon-button" disabled>Reload</button>
                     <div id="output-agents-status">No trajectory loaded.</div>
                     <label class="field-label" for="output-agents-colorby">Colour by</label>
                     <select id="output-agents-colorby">
