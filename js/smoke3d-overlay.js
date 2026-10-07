@@ -11,7 +11,7 @@
 (function (global) {
     'use strict';
 
-    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, y); }
+    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, -y); }
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 
@@ -820,10 +820,10 @@
                                 depthFade = clamp((sceneViewZ - sampleViewZ) / 0.3, 0.0, 1.0);
                             }
 
-                            vec3 samplePosition = vec3(positionInBox.x, positionInBox.z, positionInBox.y);
+                            vec3 samplePosition = vec3(positionInBox.x, 1.0 - positionInBox.z, positionInBox.y);
                             samplePosition = clamp(samplePosition, halfTexel, vec3(1.0) - halfTexel);
 
-                            // Clip-volume test (FDS coords). After the Y/Z swap above,
+                            // Clip-volume test (FDS coords). After the axis remap above,
                             // samplePosition is ALREADY in FDS axis order:
                             //   samplePosition.x → FDS X, .y → FDS Y, .z → FDS Z
                             if (clipEnabled == 1) {

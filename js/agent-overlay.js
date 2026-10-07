@@ -34,7 +34,7 @@ function colorForValue(value, quantity) {
 (function (global) {
     'use strict';
 
-    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, y); }
+    function fdsToScene(x, y, z) { return new THREE.Vector3(x, z, -y); }
 
     class AgentOverlay {
         constructor(scene) {

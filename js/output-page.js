@@ -2178,9 +2178,9 @@
                     if (errors.length) {
                         setVismapStatus('Complete the marked waypoint first: ' + errors[0], true);
                     } else {
-                        addVismapWaypointRow(Math.round(hit.x * 100) / 100, Math.round(hit.z * 100) / 100, 3, 0);
+                        addVismapWaypointRow(Math.round(hit.x * 100) / 100, Math.round(-hit.z * 100) / 100, 3, 0);
                         pushVismapWaypointsToEngine();
-                        setVismapStatus('Waypoint placed at X=' + hit.x.toFixed(2) + ', Y=' + hit.z.toFixed(2) + '.');
+                        setVismapStatus('Waypoint placed at X=' + hit.x.toFixed(2) + ', Y=' + (-hit.z).toFixed(2) + '.');
                     }
                 }
                 vismapPicking = false;
