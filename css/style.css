@@ -13,7 +13,8 @@
     --border: #2a2a4a;
     --bg-hover: #2a2a40;
     --focus-ring: #ff6b81;
-    --accent-fill-hover: #c42a48;
+    --accent-fill: #c42a48;
+    --accent-fill-hover: #a8203c;
     --range-track: var(--text-muted);
     --success: #4caf50;
     --warning: #ff9800;
@@ -53,7 +54,8 @@
     --border: #d8dae2;
     --bg-hover: #dde0e8;
     --focus-ring: #c42a48;
-    --accent-fill-hover: #b91d3e;
+    --accent-fill: #c42a48;
+    --accent-fill-hover: #a8203c;
 
     --code-bg:  #f3f4f8;
     --code-fg:  #1a1a2e;
@@ -546,14 +548,17 @@ a.footer-link:active {
     padding: 8px 12px;
     font-size: 13px;
     font-weight: 600;
-    background: var(--accent);
+    background: var(--accent-fill);
     color: #fff;
-    border: 1px solid var(--accent);
+    border: 1px solid var(--accent-fill);
     border-radius: 4px;
     cursor: pointer;
-    transition: filter 0.15s;
+    transition: background 0.15s, border-color 0.15s;
 }
-.walk-btn:hover { filter: brightness(1.1); }
+.walk-btn:hover {
+    background: var(--accent-fill-hover);
+    border-color: var(--accent-fill-hover);
+}
 .walk-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .walk-btn.active {
     background: var(--bg-tertiary);
@@ -831,12 +836,12 @@ a.footer-link:active {
 }
 
 .btn-primary {
-    background: var(--accent);
+    background: var(--accent-fill);
     color: white;
 }
 
 .btn-primary:hover {
-    background: var(--accent-hover);
+    background: var(--accent-fill-hover);
 }
 
 .btn-secondary {
@@ -1126,8 +1131,8 @@ kbd {
 }
 
 .page-tab.active {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--accent-fill);
+    border-color: var(--accent-fill);
     color: #fff;
     font-weight: 600;
 }
@@ -2260,9 +2265,9 @@ kbd {
 }
 
 .fp-copy-btn:hover {
-    background: var(--accent);
+    background: var(--accent-fill);
     color: #fff;
-    border-color: var(--accent);
+    border-color: var(--accent-fill);
 }
 
 /* ── Code panel search bar ── */
@@ -2606,14 +2611,20 @@ kbd {
     color: #22c55e;
     border: 1px solid #22c55e;
 }
-.fp-apply-btn:hover { background: rgba(34,197,94,0.28); }
+.fp-apply-btn:hover { background: rgba(34,197,94,0.28); border-color: #22c55e; }
+[data-theme="light"] .fp-edit-btn:hover { color: #f59e0b; }
+[data-theme="light"] .fp-apply-btn:hover { color: #22c55e; }
 
 .fp-view-return-btn {
     background: rgba(99,102,241,0.12);
     color: var(--accent);
     border: 1px solid var(--accent);
 }
-.fp-view-return-btn:hover { background: rgba(99,102,241,0.28); }
+.fp-view-return-btn:hover {
+    background: var(--accent-fill-hover);
+    color: #fff;
+    border-color: var(--accent-fill-hover);
+}
 
 .fp-edit-mode-badge {
     font-size: 10px;
@@ -2931,9 +2942,9 @@ kbd {
 }
 .file-button:hover { background: var(--bg-hover); }
 .file-button.primary-file-button {
-    background: var(--accent);
+    background: var(--accent-fill);
     color: #fff;
-    border-color: var(--accent);
+    border-color: var(--accent-fill);
 }
 .file-button.primary-file-button:hover:not(:disabled) {
     background: var(--accent-fill-hover);
@@ -3111,8 +3122,8 @@ kbd {
 }
 .vismap-card-remove:hover {
     color: #fff;
-    border-color: var(--accent);
-    background: var(--accent);
+    border-color: var(--accent-fill);
+    background: var(--accent-fill);
 }
 .vismap-grid {
     display: grid;
@@ -3636,9 +3647,13 @@ kbd {
 }
 
 .chart-opts-active {
-    background: var(--accent) !important;
+    background: var(--accent-fill) !important;
     color: #fff !important;
-    border-color: var(--accent) !important;
+    border-color: var(--accent-fill) !important;
+}
+.chart-opts-active:hover {
+    background: var(--accent-fill-hover) !important;
+    border-color: var(--accent-fill-hover) !important;
 }
 
 /* Collapsible options strip below the card header */
