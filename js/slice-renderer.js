@@ -13,7 +13,7 @@
  *   SliceUtil             — buildPlaneView, computePercentileRange, etc.
  *
  * FDS-to-Three coordinate convention used by our viewer:
- *   FDS X -> Three X,  FDS Z -> Three Y (up),  FDS Y -> Three Z
+ *   FDS X -> Three X,  FDS Z -> Three Y (up),  FDS Y -> Three -Z
  * (matches viewer.js _xbToBox)
  */
 
@@ -22,7 +22,7 @@
 
     // ── Coordinate mapping (matches viewer.js convention) ─────────────────
     function fdsToScene(x, y, z) {
-        return new THREE.Vector3(x, z, y);
+        return new THREE.Vector3(x, z, -y);
     }
 
     // ── Color maps ────────────────────────────────────────────────────────

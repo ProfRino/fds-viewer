@@ -289,12 +289,12 @@ class FDSViewer {
         window.addEventListener('resize', () => this._onResize());
         this.renderer.domElement.addEventListener('click', (e) => this._onClick(e));
 
-        // Clipping planes: xmin, xmax, ymin(FDS Y=ThreeZ), ymax, zmin(FDS Z=ThreeY), zmax
+        // Clipping planes: xmin, xmax, ymin(FDS Y=Three -Z), ymax, zmin(FDS Z=ThreeY), zmax
         this.clipPlanes = [
             new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
             new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0),
-            new THREE.Plane(new THREE.Vector3(0, 0, 1), 0),
             new THREE.Plane(new THREE.Vector3(0, 0, -1), 0),
+            new THREE.Plane(new THREE.Vector3(0, 0, 1), 0),
             new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
             new THREE.Plane(new THREE.Vector3(0, -1, 0), 0),
         ];
@@ -704,12 +704,12 @@ class FDSViewer {
         }
 
         this.boundingBox = {
-            min: new THREE.Vector3(minX, minZ, minY),
-            max: new THREE.Vector3(maxX, maxZ, maxY),
+            min: new THREE.Vector3(minX, minZ, -maxY),
+            max: new THREE.Vector3(maxX, maxZ, -minY),
             center: new THREE.Vector3(
                 (minX + maxX) / 2,
                 (minZ + maxZ) / 2,
-                (minY + maxY) / 2
+                -(minY + maxY) / 2
             ),
             size: new THREE.Vector3(
                 maxX - minX,
@@ -722,7 +722,7 @@ class FDSViewer {
     /**
      * Convert FDS XB [x1,x2,y1,y2,z1,z2] to Three.js position/size
      * FDS: X=right, Y=forward, Z=up
-     * Three.js: X=right, Y=up, Z=forward(towards camera)
+     * Three.js: X=right, Y=up, Z=backward (FDS -Y)
      */
     _xbToBox(xb) {
         const x1 = xb[0], x2 = xb[1];
@@ -733,10 +733,10 @@ class FDSViewer {
         const depth = Math.abs(y2 - y1);
         const height = Math.abs(z2 - z1);
 
-        // Center position (FDS Y -> Three Z, FDS Z -> Three Y)
+        // Center position (FDS Y -> Three -Z, FDS Z -> Three Y)
         const cx = (x1 + x2) / 2;
         const cy = (z1 + z2) / 2; // FDS Z -> Three.js Y
-        const cz = (y1 + y2) / 2; // FDS Y -> Three.js Z
+        const cz = -(y1 + y2) / 2; // FDS Y -> Three.js -Z
 
         // size is clamped >0 so BoxGeometry doesn't degenerate; rawSize is the
         // original FDS extents, used by callers that need to detect a true
@@ -935,7 +935,7 @@ class FDSViewer {
 
             const box = new THREE.Mesh(geometry, material);
             // Offset thin vents slightly so they don't z-fight with coplanar OBSTs
-            // size: Three.js (X=FDS X, Y=FDS Z, Z=FDS Y)
+            // size: Three.js (X=FDS X, Y=FDS Z, Z=FDS -Y)
             const offset = 0.008;
             if (thinX) position.x += offset;
             if (thinY) position.y += offset;
@@ -1034,7 +1034,7 @@ class FDSViewer {
             if (!devc.xyz) continue;
             const x = devc.xyz[0];
             const y = devc.xyz[2]; // FDS Z -> Three Y
-            const z = devc.xyz[1]; // FDS Y -> Three Z
+            const z = -devc.xyz[1]; // FDS Y -> Three -Z
 
             // Determine if this is a sprinkler (has PROP_ID referencing a sprinkler prop)
             const isSprinkler = this._isSprinklerDevc(devc);
@@ -1174,7 +1174,7 @@ class FDSViewer {
                 // Point source
                 const x = init.xyz[0];
                 const y = init.xyz[2]; // FDS Z -> Three Y
-                const z = init.xyz[1]; // FDS Y -> Three Z
+                const z = -init.xyz[1]; // FDS Y -> Three -Z
 
                 const geometry = new THREE.SphereGeometry(0.04, 8, 8);
                 const material = new THREE.MeshPhongMaterial({ color: color, emissive: 0x221100 });
@@ -1212,7 +1212,7 @@ class FDSViewer {
                     side: THREE.DoubleSide,
                 });
                 const sphere = new THREE.Mesh(geometry, material);
-                sphere.position.set(o[0], o[2], o[1]); // FDS Y→Three Z, FDS Z→Three Y
+                sphere.position.set(o[0], o[2], -o[1]); // FDS Y→Three -Z, FDS Z→Three Y
                 sphere.userData = {
                     type: 'GEOM',
                     subtype: 'SPHERE',
@@ -1251,15 +1251,15 @@ class FDSViewer {
                 });
                 const cyl = new THREE.Mesh(geometry, material);
 
-                // Map FDS axis (xf, yf, zf) -> Three axis (xf, zf, yf)
-                const axisThree = new THREE.Vector3(axisFDS[0], axisFDS[2], axisFDS[1]).normalize();
+                // Map FDS axis (xf, yf, zf) -> Three axis (xf, zf, -yf)
+                const axisThree = new THREE.Vector3(axisFDS[0], axisFDS[2], -axisFDS[1]).normalize();
                 const defaultAxis = new THREE.Vector3(0, 1, 0);
                 if (axisThree.lengthSq() > 0 && Math.abs(1 - axisThree.dot(defaultAxis)) > 1e-9) {
                     const quat = new THREE.Quaternion().setFromUnitVectors(defaultAxis, axisThree);
                     cyl.setRotationFromQuaternion(quat);
                 }
 
-                cyl.position.set(o[0], o[2], o[1]); // FDS Y->Three Z, FDS Z->Three Y
+                cyl.position.set(o[0], o[2], -o[1]); // FDS Y->Three -Z, FDS Z->Three Y
                 cyl.userData = {
                     type: 'GEOM',
                     subtype: 'CYLINDER',
@@ -1298,7 +1298,7 @@ class FDSViewer {
                             const x = x1 + (x2 - x1) * k / (ni - 1);
                             const y = y1 + (y2 - y1) * j / (nj - 1);
                             const z = zvals[j * ni + k];
-                            positions.push(x, z, y); // FDS Y→Three Z, FDS Z→Three Y
+                            positions.push(x, z, -y); // FDS Y→Three -Z, FDS Z→Three Y
                         }
                     }
 
@@ -1392,7 +1392,7 @@ class FDSViewer {
                     const indices = [];
 
                     for (let v = 0; v < verts.length; v += 3) {
-                        vertices.push(verts[v], verts[v + 2], verts[v + 1]);
+                        vertices.push(verts[v], verts[v + 2], -verts[v + 1]);
                     }
 
                     for (let f = 0; f < faces.length; f += stride) {
@@ -1466,11 +1466,11 @@ class FDSViewer {
 
                         // Bottom face vertices (0..n-1)
                         for (const v of polyVerts) {
-                            positions.push(v.x, v.z, v.y); // FDS Y→Three Z, FDS Z→Three Y
+                            positions.push(v.x, v.z, -v.y); // FDS Y→Three -Z, FDS Z→Three Y
                         }
                         // Top face vertices (n..2n-1)
                         for (const v of polyVerts) {
-                            positions.push(v.x + dx, v.z + dz, v.y + dy);
+                            positions.push(v.x + dx, v.z + dz, -(v.y + dy));
                         }
 
                         // Triangulate bottom face using ear-clipping (handles concave polygons)
@@ -1559,7 +1559,7 @@ class FDSViewer {
                 if (xyz) {
                     const x = xyz[0];
                     const y = xyz[2]; // FDS Z → Three Y
-                    const z = xyz[1]; // FDS Y → Three Z
+                    const z = -xyz[1]; // FDS Y → Three -Z
 
                     const nodeColor = 0xffaa00;
                     const geometry = new THREE.SphereGeometry(0.08, 12, 8);
@@ -1598,19 +1598,19 @@ class FDSViewer {
             if (!n1 || !n1.xyz || !n2 || !n2.xyz) continue;
 
             const points = [];
-            points.push(new THREE.Vector3(n1.xyz[0], n1.xyz[2], n1.xyz[1]));
+            points.push(new THREE.Vector3(n1.xyz[0], n1.xyz[2], -n1.xyz[1]));
 
             // Add waypoints if present
             if (duct.waypoints) {
                 const wp = Array.isArray(duct.waypoints) ? duct.waypoints : [];
                 for (let w = 0; w < wp.length; w += 3) {
                     if (w + 2 < wp.length) {
-                        points.push(new THREE.Vector3(wp[w], wp[w + 2], wp[w + 1]));
+                        points.push(new THREE.Vector3(wp[w], wp[w + 2], -wp[w + 1]));
                     }
                 }
             }
 
-            points.push(new THREE.Vector3(n2.xyz[0], n2.xyz[2], n2.xyz[1]));
+            points.push(new THREE.Vector3(n2.xyz[0], n2.xyz[2], -n2.xyz[1]));
 
             // Draw duct as a thick line
             const linePath = new THREE.Line(
@@ -1919,7 +1919,7 @@ class FDSViewer {
             const points = [];
 
             // ── XY plane (floor at z1 and ceiling at z2) ──
-            // FDS X→Three X, FDS Y→Three Z, FDS Z→Three Y.
+            // FDS X→Three X, FDS Y→Three -Z, FDS Z→Three Y.
             // zOff pushes the grid outward (down for floor, up for ceiling)
             // so coplanar OBST walls don't bury it.
             for (const zVal of [z1, z2]) {
@@ -1927,13 +1927,13 @@ class FDSViewer {
                 const zG = zVal + zOff;
                 for (let j = 0; j <= nj; j += skipJ) {
                     const yy = y1 + j * stepY;
-                    points.push(new THREE.Vector3(x1, zG, yy));
-                    points.push(new THREE.Vector3(x2, zG, yy));
+                    points.push(new THREE.Vector3(x1, zG, -yy));
+                    points.push(new THREE.Vector3(x2, zG, -yy));
                 }
                 for (let i = 0; i <= ni; i += skipI) {
                     const xx = x1 + i * stepX;
-                    points.push(new THREE.Vector3(xx, zG, y1));
-                    points.push(new THREE.Vector3(xx, zG, y2));
+                    points.push(new THREE.Vector3(xx, zG, -y1));
+                    points.push(new THREE.Vector3(xx, zG, -y2));
                 }
             }
 
@@ -1943,13 +1943,13 @@ class FDSViewer {
                 const yG = yVal + yOff;
                 for (let k = 0; k <= nk; k += skipK) {
                     const zz = z1 + k * stepZ;
-                    points.push(new THREE.Vector3(x1, zz, yG));
-                    points.push(new THREE.Vector3(x2, zz, yG));
+                    points.push(new THREE.Vector3(x1, zz, -yG));
+                    points.push(new THREE.Vector3(x2, zz, -yG));
                 }
                 for (let i = 0; i <= ni; i += skipI) {
                     const xx = x1 + i * stepX;
-                    points.push(new THREE.Vector3(xx, z1, yG));
-                    points.push(new THREE.Vector3(xx, z2, yG));
+                    points.push(new THREE.Vector3(xx, z1, -yG));
+                    points.push(new THREE.Vector3(xx, z2, -yG));
                 }
             }
 
@@ -1959,13 +1959,13 @@ class FDSViewer {
                 const xG = xVal + xOff;
                 for (let k = 0; k <= nk; k += skipK) {
                     const zz = z1 + k * stepZ;
-                    points.push(new THREE.Vector3(xG, zz, y1));
-                    points.push(new THREE.Vector3(xG, zz, y2));
+                    points.push(new THREE.Vector3(xG, zz, -y1));
+                    points.push(new THREE.Vector3(xG, zz, -y2));
                 }
                 for (let j = 0; j <= nj; j += skipJ) {
                     const yy = y1 + j * stepY;
-                    points.push(new THREE.Vector3(xG, z1, yy));
-                    points.push(new THREE.Vector3(xG, z2, yy));
+                    points.push(new THREE.Vector3(xG, z1, -yy));
+                    points.push(new THREE.Vector3(xG, z2, -yy));
                 }
             }
 
@@ -2196,7 +2196,7 @@ class FDSViewer {
 
     /**
      * Apply 6-plane clipping in FDS coordinates.
-     * FDS Y maps to Three.js Z; FDS Z maps to Three.js Y.
+     * FDS Y maps to Three.js -Z; FDS Z maps to Three.js Y.
      *
      * PER-AXIS ACTIVATION: only enable a clip plane when the user has
      * actually pushed that slider off the model bound. The previous design
@@ -2268,8 +2268,8 @@ class FDSViewer {
         return {
             xmin: this.boundingBox.min.x,
             xmax: this.boundingBox.max.x,
-            ymin: this.boundingBox.min.z,
-            ymax: this.boundingBox.max.z,
+            ymin: -this.boundingBox.max.z,
+            ymax: -this.boundingBox.min.z,
             zmin: this.boundingBox.min.y,
             zmax: this.boundingBox.max.y,
         };
@@ -2281,9 +2281,9 @@ class FDSViewer {
      */
     setBoundsFDSAndFit(xmin, xmax, ymin, ymax, zmin, zmax) {
         this.boundingBox = {
-            min: new THREE.Vector3(xmin, zmin, ymin),
-            max: new THREE.Vector3(xmax, zmax, ymax),
-            center: new THREE.Vector3((xmin+xmax)/2, (zmin+zmax)/2, (ymin+ymax)/2),
+            min: new THREE.Vector3(xmin, zmin, -ymax),
+            max: new THREE.Vector3(xmax, zmax, -ymin),
+            center: new THREE.Vector3((xmin+xmax)/2, (zmin+zmax)/2, -(ymin+ymax)/2),
             size: new THREE.Vector3(xmax-xmin, zmax-zmin, ymax-ymin),
         };
         this._fitCamera();
