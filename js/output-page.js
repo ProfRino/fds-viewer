@@ -661,9 +661,16 @@
                 return;
             }
             availableFiles = sliceFiles;
-            const smvFile = files.find(f => /\.smv$/i.test(f.name));
-            const smvRecords = smvFile ? SliceFiles.sliceRecordsFromSmvText(await smvFile.text()) : null;
-            availableGroups = await SliceFiles.describeSliceGroups(sliceFiles, smvRecords);
+            // One run per .smv: each slice file is grouped with the records
+            // of the .smv whose CHID prefixes its name.
+            const smvRuns = [];
+            for (const smvFile of files.filter(f => /\.smv$/i.test(f.name))) {
+                smvRuns.push({
+                    chid: smvFile.name.split(/[\\/]/).pop().replace(/\.smv$/i, ''),
+                    records: SliceFiles.sliceRecordsFromSmvText(await smvFile.text()),
+                });
+            }
+            availableGroups = await SliceFiles.describeSliceGroupsForRuns(sliceFiles, smvRuns);
             if (availableGroups.length === 0) {
                 setStatus('No FDS slice files named like CHID_M_N.sf were found.', true);
                 resetSliceSetSelector();

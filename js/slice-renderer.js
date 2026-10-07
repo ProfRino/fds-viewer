@@ -383,13 +383,14 @@
             if (!m) continue;
             const fileName = (lines[i + 1] || '').trim();
             if (!/\.sf$/i.test(fileName)) continue;
-            const bounds = /&((?:\s+-?\d+){6})/.exec(m[3]);
-            const index = /!\s*(\d+)/.exec(m[3]);
+            // Read the bounds and the '! index ...' metadata from the end of
+            // the line: a %ID may itself contain '&' or '!'.
+            const tail = /&((?:\s+-?\d+){6})\s*(?:!\s*(\d+)(?:\s+-?\d+)*)?\s*$/.exec(m[3]);
             records.push({
                 type: m[1],
                 meshIndex: Number(m[2]),
-                sliceIndex: index ? Number(index[1]) : null,
-                indices: bounds ? bounds[1].trim().split(/\s+/).map(Number) : null,
+                sliceIndex: tail && tail[2] !== undefined ? Number(tail[2]) : null,
+                indices: tail ? tail[1].trim().split(/\s+/).map(Number) : null,
                 fileName,
                 quantity: (lines[i + 2] || '').trim(),
                 units: (lines[i + 4] || '').trim(),
@@ -443,33 +444,36 @@
     // records do not list, or all files when the .smv lacks the global slice
     // index, fall back to grouping by the file-name index. When the records
     // are used, fallback groups are marked unlisted: their file-name index is
-    // per mesh and need not match the .smv slice numbers.
-    async function describeSliceGroups(files, smvRecords) {
-        const groupsByKey = new Map();
+    // per mesh and need not match the .smv slice numbers. Groups whose files
+    // are all missing are not loadable; they are pushed to `unavailable`.
+    function groupRunFiles(files, records, runChid, groupsByKey, unavailable) {
         const grouped = new Set();
-        const records = smvRecords || [];
         const useRecords = records.length > 0 && records.every(r => r.sliceIndex !== null);
         if (records.length && !useRecords)
-            console.info('Slice grouping: ' + records.filter(r => r.sliceIndex === null).length + ' of ' +
+            console.info('Slice grouping' + (runChid ? ' (' + runChid + '.smv)' : '') + ': ' +
+                records.filter(r => r.sliceIndex === null).length + ' of ' +
                 records.length + ' .smv slice records lack the global slice index after "!"; ' +
                 'grouping all slice files by the CHID_M_N.sf file-name index instead.');
         if (useRecords) {
             const byName = new Map(files.map(f => [f.name.split(/[\\/]/).pop(), f]));
+            const runGroups = new Map();
             for (const rec of records) {
                 const parsed = parseSliceFilename(rec.fileName);
-                const chid = parsed ? parsed.chid : '';
+                const chid = runChid || (parsed ? parsed.chid : '');
                 const key = chid + '::smv::' + rec.sliceIndex + '::' + rec.quantity;
-                if (!groupsByKey.has(key))
-                    groupsByKey.set(key, { key, chid, sliceIndex: rec.sliceIndex, items: [], missing: [], header: null, label: '' });
+                if (!runGroups.has(key))
+                    runGroups.set(key, { key, chid, sliceIndex: rec.sliceIndex, items: [], missing: [], header: null, label: '' });
                 const file = byName.get(rec.fileName);
-                if (!file) { groupsByKey.get(key).missing.push(rec.fileName); continue; }
+                if (!file) { runGroups.get(key).missing.push(rec.fileName); continue; }
                 grouped.add(file);
-                groupsByKey.get(key).items.push({
+                runGroups.get(key).items.push({
                     file, info: { chid, meshIndex: rec.meshIndex, sliceIndex: rec.sliceIndex },
                 });
             }
-            for (const [key, group] of groupsByKey)
-                if (group.items.length === 0) groupsByKey.delete(key);
+            for (const [key, group] of runGroups) {
+                if (group.items.length === 0) unavailable.push(group);
+                else groupsByKey.set(key, group);
+            }
         }
         for (const file of files) {
             if (grouped.has(file)) continue;
@@ -480,15 +484,60 @@
                 groupsByKey.set(key, { key, chid: info.chid, sliceIndex: info.sliceIndex, items: [], header: null, label: '', unlisted: useRecords });
             groupsByKey.get(key).items.push({ file, info });
         }
+    }
+
+    // The run a slice file belongs to: the CHID whose 'CHID_' prefixes the
+    // file name, the longest one when several do. A run with an empty CHID
+    // matches any file.
+    function runForSliceFile(fileName, runs) {
+        const base = fileName.split(/[\\/]/).pop();
+        let best = null;
+        for (const run of runs) {
+            const chid = run.chid || '';
+            if (chid && !base.startsWith(chid + '_')) continue;
+            if (!best || chid.length > (best.chid || '').length) best = run;
+        }
+        return best;
+    }
+
+    // Groups slice files of one or more runs. `runs` is [{ chid, records }],
+    // one entry per .smv (chid = .smv base name); each file is grouped with
+    // the records of its own run, and files of no run by file name.
+    async function describeSliceGroupsForRuns(files, runs) {
+        const groupsByKey = new Map();
+        const unavailable = [];
+        const filesByRun = new Map();
+        const runList = runs || [];
+        for (const file of files) {
+            const run = runForSliceFile(file.name, runList);
+            if (!filesByRun.has(run)) filesByRun.set(run, []);
+            filesByRun.get(run).push(file);
+        }
+        for (const run of runList)
+            groupRunFiles(filesByRun.get(run) || [], run.records || [], run.chid || '', groupsByKey, unavailable);
+        if (filesByRun.has(null))
+            groupRunFiles(filesByRun.get(null), [], '', groupsByKey, unavailable);
+        if (unavailable.length)
+            console.info('Slice grouping: not loadable, no files in the folder: ' +
+                unavailable.map(g => (g.chid ? g.chid + ' ' : '') + 'Slice ' + g.sliceIndex +
+                    ': 0 of ' + g.missing.length + ' files (missing: ' + g.missing.join(', ') + ')').join('; '));
         const groups = Array.from(groupsByKey.values()).sort(
             (a, b) => a.chid.localeCompare(b.chid) || a.sliceIndex - b.sliceIndex ||
                 Number(a.unlisted) - Number(b.unlisted));
+        // Name the run when the folder holds more than one CHID.
+        const multiRun = new Set(groups.map(g => g.chid)).size > 1;
         for (const group of groups) {
             group.items.sort((a, b) => a.info.meshIndex - b.info.meshIndex);
             group.header = await readSliceHeader(group.items[0].file);
-            group.label = sliceGroupLabel(group);
+            group.label = (multiRun && group.header ? group.chid + ' | ' : '') + sliceGroupLabel(group);
         }
+        groups.unavailable = unavailable;
         return groups;
+    }
+
+    // Groups slice files of a single run with the records of its .smv.
+    function describeSliceGroups(files, smvRecords) {
+        return describeSliceGroupsForRuns(files, smvRecords ? [{ chid: '', records: smvRecords }] : []);
     }
 
     // ── Multi-mesh stitching ──────────────────────────────────────────────
@@ -1061,7 +1110,7 @@
     // ── Public API ────────────────────────────────────────────────────────
     global.SliceOverlay = SliceOverlay;
     global.SliceFiles = {
-        parseSliceFilename, sliceGroupKey, describeSliceGroups,
+        parseSliceFilename, sliceGroupKey, describeSliceGroups, describeSliceGroupsForRuns,
         sliceRecordsFromSmvText, sliceGroupMissingNote,
         combineSliceDatasets,
         fdsContextFromParsedData,

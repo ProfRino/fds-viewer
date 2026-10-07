@@ -203,4 +203,61 @@ function membership(groups) {
     ]);
 }
 
+// ── '!' and '&' inside a %ID do not shift the bounds or the index ───────
+{
+    const records = SliceFiles.sliceRecordsFromSmvText(
+        'SLCF     1 # STRUCTURED %LEVEL!2 & 0 1 0 1 0 0 & 3 ! 9 &     0    10     0    10     6     6 !      1      0      3\n' +
+        ' x_1_1.sf\n TEMPERATURE\n temp\n C\n' +
+        'SLCF     1 # STRUCTURED %A!7     &     0    10     0    10     6     6\n' +
+        ' x_1_2.sf\n TEMPERATURE\n temp\n C\n');
+    assert.deepStrictEqual(records.map(r => [r.sliceIndex, r.indices]), [
+        [1, PBZ],
+        [null, PBZ],
+    ]);
+    const codex = SliceFiles.sliceRecordsFromSmvText(
+        'SLCF 1 # STRUCTURED %LEVEL!2 & 0 1 0 1 0 0 ! 1 0 3\n x_1_1.sf\n TEMPERATURE\n temp\n C\n');
+    assert.deepStrictEqual([codex[0].sliceIndex, codex[0].indices], [1, [0, 1, 0, 1, 0, 0]]);
+}
+
+// ── Two runs (two .smv files) in one folder: each run uses its own records ─
+{
+    // Run 'two' as above; run 'two_b' renames every file (CHID 'two_b'), so
+    // 'two_' also prefixes its files and the longest CHID must win.
+    const smvB = SMV.replace(/ two_/g, ' two_b_');
+    const filesB = FILES.map(f => new File([f], f.name.replace(/^two_/, 'two_b_')));
+    const runs = [
+        { chid: 'two', records: SliceFiles.sliceRecordsFromSmvText(SMV) },
+        { chid: 'two_b', records: SliceFiles.sliceRecordsFromSmvText(smvB) },
+    ];
+    for (const order of [runs, runs.slice().reverse()]) {
+        const groups = await SliceFiles.describeSliceGroupsForRuns([...FILES, ...filesB], order);
+        assert.ok(groups.every(g => !g.unlisted));
+        assert.deepStrictEqual(groups.map(g => [g.chid, g.sliceIndex]), [
+            ['two', 1], ['two', 2], ['two', 3], ['two_b', 1], ['two_b', 2], ['two_b', 3],
+        ]);
+        assert.deepStrictEqual(membership(groups), [
+            ['two_2_1.sf@2'], ['two_1_1.sf@1', 'two_2_2.sf@2'], ['two_1_2.sf@1', 'two_2_3.sf@2'],
+            ['two_b_2_1.sf@2'], ['two_b_1_1.sf@1', 'two_b_2_2.sf@2'], ['two_b_1_2.sf@1', 'two_b_2_3.sf@2'],
+        ]);
+        assert.strictEqual(new Set(groups.map(g => g.key)).size, 6);
+        assert.strictEqual(new Set(groups.map(g => g.label)).size, 6);
+        assert.match(groups[3].label, /^two_b \| TEMPERATURE/);
+    }
+}
+
+// ── A group whose files are all missing is not loadable but reported once ─
+{
+    const records = SliceFiles.sliceRecordsFromSmvText(SMV);
+    const infos = [];
+    const orig = console.info;
+    console.info = (...args) => infos.push(args.join(' '));
+    let groups;
+    try { groups = await SliceFiles.describeSliceGroups(FILES.filter(f => f.name !== 'two_2_1.sf'), records); }
+    finally { console.info = orig; }
+    assert.deepStrictEqual(groups.map(g => g.sliceIndex), [2, 3]);
+    assert.deepStrictEqual(groups.unavailable.map(g => [g.sliceIndex, g.missing]), [[1, ['two_2_1.sf']]]);
+    assert.strictEqual(infos.length, 1);
+    assert.match(infos[0], /Slice 1: 0 of 1 files \(missing: two_2_1\.sf\)/);
+}
+
 console.log('slice-grouping tests passed');
