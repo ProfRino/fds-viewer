@@ -360,10 +360,21 @@
             const prevMode = mode;
             mode = next;
             sliceBtn.classList.toggle('active', mode === 'slice');
+            sliceBtn.setAttribute('aria-pressed', String(mode === 'slice'));
             smokeBtn.classList.toggle('active', mode === 'smoke');
-            if (boundaryBtn) boundaryBtn.classList.toggle('active', mode === 'boundary');
-            if (vismapBtn) vismapBtn.classList.toggle('active', mode === 'vismap');
-            if (chartsBtn) chartsBtn.classList.toggle('active', mode === 'charts');
+            smokeBtn.setAttribute('aria-pressed', String(mode === 'smoke'));
+            if (boundaryBtn) {
+                boundaryBtn.classList.toggle('active', mode === 'boundary');
+                boundaryBtn.setAttribute('aria-pressed', String(mode === 'boundary'));
+            }
+            if (vismapBtn) {
+                vismapBtn.classList.toggle('active', mode === 'vismap');
+                vismapBtn.setAttribute('aria-pressed', String(mode === 'vismap'));
+            }
+            if (chartsBtn) {
+                chartsBtn.classList.toggle('active', mode === 'charts');
+                chartsBtn.setAttribute('aria-pressed', String(mode === 'charts'));
+            }
             if (slicePanel) slicePanel.style.display = mode === 'slice' ? '' : 'none';
             if (smokePanel) smokePanel.style.display = mode === 'smoke' ? '' : 'none';
             if (boundaryPanel) boundaryPanel.style.display = mode === 'boundary' ? '' : 'none';
