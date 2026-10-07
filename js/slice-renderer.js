@@ -370,6 +370,33 @@
 
     function sliceGroupKey(info) { return info.chid + '::' + info.sliceIndex; }
 
+    // FDS numbers slice files per mesh: the N in CHID_M_N.sf counts only the
+    // slices that touch mesh M, so equal N on two meshes can belong to two
+    // different &SLCF lines. The .smv names the &SLCF line of every file:
+    //   SLCF  M # STRUCTURED [%ID] & i1 i2 j1 j2 k1 k2 ! index cell orient
+    // followed by the file name, quantity, short name and units lines.
+    function sliceRecordsFromSmvText(text) {
+        const lines = String(text).split(/\r?\n/);
+        const records = [];
+        for (let i = 0; i < lines.length; i++) {
+            const m = /^(SLC[A-Z])\s+(\d+)\b(.*)$/.exec(lines[i].trim());
+            if (!m) continue;
+            const bounds = /&((?:\s+-?\d+){6})/.exec(m[3]);
+            const index = /!\s*(\d+)/.exec(m[3]);
+            records.push({
+                type: m[1],
+                meshIndex: Number(m[2]),
+                sliceIndex: index ? Number(index[1]) : null,
+                indices: bounds ? bounds[1].trim().split(/\s+/).map(Number) : null,
+                fileName: (lines[i + 1] || '').trim(),
+                quantity: (lines[i + 2] || '').trim(),
+                units: (lines[i + 4] || '').trim(),
+            });
+            i += 4;
+        }
+        return records;
+    }
+
     async function readSliceHeader(file) {
         try {
             const buf = await file.slice(0, 8192).arrayBuffer();
@@ -390,7 +417,9 @@
 
     function sliceGroupLabel(group) {
         const header = group.header;
-        const fileCount = group.items.length + ' file' + (group.items.length === 1 ? '' : 's');
+        const missing = group.missing ? group.missing.length : 0;
+        const fileCount = (missing ? group.items.length + ' of ' + (group.items.length + missing) + ' files'
+            : group.items.length + ' file' + (group.items.length === 1 ? '' : 's'));
         if (!header) return group.chid + ' | Slice ' + group.sliceIndex + ' | ' + fileCount;
         const quantity = header.quantity || 'Slice';
         const units = header.units ? ' (' + header.units + ')' : '';
@@ -398,9 +427,33 @@
             ' | Slice ' + group.sliceIndex + ' | ' + fileCount;
     }
 
-    async function describeSliceGroups(files) {
+    // Groups files by their &SLCF line from the .smv records. Files the
+    // records do not list, or all files when the .smv lacks the global slice
+    // index, fall back to grouping by the file-name index.
+    async function describeSliceGroups(files, smvRecords) {
         const groupsByKey = new Map();
+        const grouped = new Set();
+        const records = smvRecords || [];
+        if (records.length && records.every(r => r.sliceIndex !== null)) {
+            const byName = new Map(files.map(f => [f.name.split(/[\\/]/).pop(), f]));
+            for (const rec of records) {
+                const parsed = parseSliceFilename(rec.fileName);
+                const chid = parsed ? parsed.chid : '';
+                const key = chid + '::smv::' + rec.sliceIndex + '::' + rec.quantity;
+                if (!groupsByKey.has(key))
+                    groupsByKey.set(key, { key, chid, sliceIndex: rec.sliceIndex, items: [], missing: [], header: null, label: '' });
+                const file = byName.get(rec.fileName);
+                if (!file) { groupsByKey.get(key).missing.push(rec.fileName); continue; }
+                grouped.add(file);
+                groupsByKey.get(key).items.push({
+                    file, info: { chid, meshIndex: rec.meshIndex, sliceIndex: rec.sliceIndex },
+                });
+            }
+            for (const [key, group] of groupsByKey)
+                if (group.items.length === 0) groupsByKey.delete(key);
+        }
         for (const file of files) {
+            if (grouped.has(file)) continue;
             const info = parseSliceFilename(file.name);
             if (!info) continue;
             const key = sliceGroupKey(info);
@@ -989,6 +1042,7 @@
     global.SliceOverlay = SliceOverlay;
     global.SliceFiles = {
         parseSliceFilename, sliceGroupKey, describeSliceGroups,
+        sliceRecordsFromSmvText,
         combineSliceDatasets,
         fdsContextFromParsedData,
         fdsContextFromSmvText,

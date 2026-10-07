@@ -661,7 +661,9 @@
                 return;
             }
             availableFiles = sliceFiles;
-            availableGroups = await SliceFiles.describeSliceGroups(sliceFiles);
+            const smvFile = files.find(f => /\.smv$/i.test(f.name));
+            const smvRecords = smvFile ? SliceFiles.sliceRecordsFromSmvText(await smvFile.text()) : null;
+            availableGroups = await SliceFiles.describeSliceGroups(sliceFiles, smvRecords);
             if (availableGroups.length === 0) {
                 setStatus('No FDS slice files named like CHID_M_N.sf were found.', true);
                 resetSliceSetSelector();
