@@ -245,6 +245,46 @@ function membership(groups) {
     }
 }
 
+// ── CHIDs that prefix each other: the listing .smv owns the file ─────────
+{
+    // run.smv lists run_2_1.sf (mesh 2, slice 7); run_2.smv lists
+    // run_2_1_1.sf. Longest-prefix alone would give run_2_1.sf to run_2.
+    const smvRun = 'SLCF     2 # STRUCTURED &     0    10     0    10     6     6 !      7      0      3\n' +
+        ' run_2_1.sf\n TEMPERATURE\n temp\n C\n';
+    const smvRun2 = 'SLCF     1 # STRUCTURED &     0    10     0    10     6     6 !      1      0      3\n' +
+        ' run_2_1_1.sf\n TEMPERATURE\n temp\n C\n';
+    const files = [sliceFile('run_2_1.sf', PBZ, 100), sliceFile('run_2_1_1.sf', PBZ, 200),
+        sliceFile('run_2_2_1.sf', PBZ, 300)];
+    const runs = [
+        { chid: 'run', records: SliceFiles.sliceRecordsFromSmvText(smvRun) },
+        { chid: 'run_2', records: SliceFiles.sliceRecordsFromSmvText(smvRun2) },
+    ];
+    for (const order of [runs, runs.slice().reverse()]) {
+        const groups = await SliceFiles.describeSliceGroupsForRuns(files, order);
+        assert.deepStrictEqual(groups.map(g => [g.chid, g.sliceIndex, !!g.unlisted]), [
+            ['run', 7, false], ['run_2', 1, false], ['run_2', 1, true],
+        ]);
+        assert.deepStrictEqual(membership(groups), [
+            ['run_2_1.sf@2'], ['run_2_1_1.sf@1'], ['run_2_2_1.sf@2'],
+        ]);
+        assert.deepStrictEqual(groups.unavailable, []);
+    }
+}
+
+// ── The run prefix is shown when another run has no loadable slices ──────
+{
+    const runs = [
+        { chid: 'two', records: SliceFiles.sliceRecordsFromSmvText(SMV) },
+        { chid: 'other', records: [] },
+    ];
+    const groups = await SliceFiles.describeSliceGroupsForRuns(FILES, runs);
+    assert.deepStrictEqual([...new Set(groups.map(g => g.chid))], ['two']);
+    assert.ok(groups.every(g => /^two \| TEMPERATURE/.test(g.label)), groups.map(g => g.label).join('; '));
+    // A single run keeps the plain label.
+    const single = await SliceFiles.describeSliceGroupsForRuns(FILES, runs.slice(0, 1));
+    assert.ok(single.every(g => /^TEMPERATURE/.test(g.label)));
+}
+
 // ── A group whose files are all missing is not loadable but reported once ─
 {
     const records = SliceFiles.sliceRecordsFromSmvText(SMV);

@@ -486,11 +486,18 @@
         }
     }
 
-    // The run a slice file belongs to: the CHID whose 'CHID_' prefixes the
-    // file name, the longest one when several do. A run with an empty CHID
-    // matches any file.
-    function runForSliceFile(fileName, runs) {
+    // The run a slice file belongs to: the run whose .smv lists it; for a
+    // file no .smv lists, the CHID whose 'CHID_' prefixes the file name, the
+    // longest one when several do. A run with an empty CHID matches any file.
+    // `listedBy` maps a file name to the runs whose records list it.
+    function runForSliceFile(fileName, runs, listedBy) {
         const base = fileName.split(/[\\/]/).pop();
+        const listing = listedBy.get(base) || [];
+        if (listing.length) return runByChidPrefix(base, listing) || listing[0];
+        return runByChidPrefix(base, runs);
+    }
+
+    function runByChidPrefix(base, runs) {
         let best = null;
         for (const run of runs) {
             const chid = run.chid || '';
@@ -508,8 +515,14 @@
         const unavailable = [];
         const filesByRun = new Map();
         const runList = runs || [];
+        const listedBy = new Map();
+        for (const run of runList)
+            for (const rec of run.records || []) {
+                if (!listedBy.has(rec.fileName)) listedBy.set(rec.fileName, []);
+                if (!listedBy.get(rec.fileName).includes(run)) listedBy.get(rec.fileName).push(run);
+            }
         for (const file of files) {
-            const run = runForSliceFile(file.name, runList);
+            const run = runForSliceFile(file.name, runList, listedBy);
             if (!filesByRun.has(run)) filesByRun.set(run, []);
             filesByRun.get(run).push(file);
         }
@@ -524,8 +537,11 @@
         const groups = Array.from(groupsByKey.values()).sort(
             (a, b) => a.chid.localeCompare(b.chid) || a.sliceIndex - b.sliceIndex ||
                 Number(a.unlisted) - Number(b.unlisted));
-        // Name the run when the folder holds more than one CHID.
-        const multiRun = new Set(groups.map(g => g.chid)).size > 1;
+        // Name the run when the folder holds more than one CHID, counting
+        // every supplied run whether or not it has loadable slices.
+        const chids = new Set(groups.map(g => g.chid));
+        for (const run of runList) if (run.chid) chids.add(run.chid);
+        const multiRun = chids.size > 1;
         for (const group of groups) {
             group.items.sort((a, b) => a.info.meshIndex - b.info.meshIndex);
             group.header = await readSliceHeader(group.items[0].file);
