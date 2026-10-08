@@ -3543,6 +3543,17 @@ kbd {
     width: fit-content;
 }
 
+/* Honour the OS reduced-motion setting. Near-zero durations rather
+   than none so transitionend still fires if a script listens for it. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* ─── Button variants ─────────────────────── */
 /* Colours and hover only; families keep their own size, spacing and
    radius. Secondary rest uses :where() so variant classes such as
