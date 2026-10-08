@@ -17,6 +17,7 @@
     --accent-fill-hover: #a8203c;
     --accent-tint: color-mix(in srgb, var(--accent) 20%, var(--bg-tertiary));
     --disabled-opacity: 0.45;
+    --control-border: #6e769a;
     --range-track: var(--text-muted);
     --success: #4caf50;
     --warning: #ff9800;
@@ -59,6 +60,7 @@
     --accent-fill: #c42a48;
     --accent-fill-hover: #a8203c;
     --accent-tint: color-mix(in srgb, var(--accent) 20%, var(--bg-tertiary));
+    --control-border: #7d8396;
 
     --code-bg:  #f3f4f8;
     --code-fg:  #1a1a2e;
@@ -457,7 +459,7 @@ a.footer-link:active {
     -webkit-appearance: none;
     width: 16px;
     height: 16px;
-    border: 2px solid var(--border);
+    border: 2px solid var(--control-border);
     border-radius: 3px;
     cursor: pointer;
     position: relative;
@@ -561,9 +563,26 @@ a.footer-link:active {
 }
 
 /* Shared disabled state; component rules may add hover guards */
-button:disabled {
+button:disabled,
+select:disabled,
+input:not([type="range"]):disabled {
     opacity: var(--disabled-opacity);
     cursor: not-allowed;
+}
+
+/* Base for native selects; component rules override layout */
+:where(select) {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--control-border);
+    color: var(--text-primary);
+    padding: 5px 8px;
+    border-radius: 3px;
+    font: inherit;
+    font-size: 12px;
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--accent);
 }
 
 /* ─── Walk Mode (FPS) ──────────────────── */
@@ -2308,7 +2327,7 @@ kbd {
 .fp-code-search input {
     flex: 1;
     background: var(--bg-secondary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 4px;
     padding: 5px 10px;
     font-size: 12px;
@@ -2538,7 +2557,7 @@ kbd {
 .clip-num-wrap {
     display: flex;
     align-items: center;
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -3105,7 +3124,7 @@ kbd {
 }
 .range-grid input {
     background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     color: var(--text-primary);
     padding: 3px 6px;
     border-radius: 3px;
@@ -3162,7 +3181,7 @@ kbd {
     width: 100%;
     box-sizing: border-box;
     background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     color: var(--text-primary);
     padding: 3px 6px;
     border-radius: 3px;
@@ -3228,12 +3247,6 @@ kbd {
 
 #output-color-map {
     width: 100%;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    padding: 5px 8px;
-    border-radius: 3px;
-    font-size: 12px;
     margin-bottom: 6px;
 }
 #output-slice-set-select,
@@ -3241,12 +3254,6 @@ kbd {
 #output-vismap-mapmode {
     width: 100%;
     max-width: 100%;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    padding: 5px 8px;
-    border-radius: 3px;
-    font-size: 12px;
 }
 
 /* ═══════════════════════════════════════════
@@ -3386,7 +3393,7 @@ kbd {
     font-family: monospace;
     font-size: 10px;
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 3px;
     color: var(--text-primary);
     padding: 1px 2px;
@@ -3401,7 +3408,7 @@ kbd {
     font-family: inherit;
     font-size: 10px;
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 3px;
     color: var(--text-primary);
     padding: 1px 2px;
@@ -3417,7 +3424,7 @@ kbd {
     -webkit-appearance: none;
     width: 14px;
     height: 14px;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid var(--control-border);
     border-radius: 3px;
     cursor: pointer;
     position: relative;
@@ -3727,7 +3734,7 @@ kbd {
     font-family: inherit;
     font-size: 11px;
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 3px;
     color: var(--text-primary);
     padding: 2px 5px;
@@ -3789,7 +3796,7 @@ kbd {
 .ccp-native {
     width: 100%;
     height: 30px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 3px;
     padding: 2px;
     cursor: pointer;
@@ -3813,7 +3820,7 @@ kbd {
 .ccp-hex-input {
     flex: 1;
     background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     border-radius: 3px;
     color: var(--text-primary);
     font-size: 12px;
