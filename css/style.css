@@ -50,6 +50,7 @@
     --text-muted: #8a92b0;
     --accent: #e94560;
     --accent-hover: #ff6b81;
+    --accent-text: #ff6b81;
     --border: #2a2a4a;
     --bg-hover: #2a2a40;
     --focus-ring: #ff6b81;
@@ -65,6 +66,7 @@
     /* Theme-invariant palette: same value in both themes. The -rgb
        triplets feed rgba() tints. */
     --on-accent: #fff;
+    --hud-accent: #ff6b81;  /* accent text on the always-dark walk HUD */
     --rose: #e94560;
     --rose-rgb: 233, 69, 96;
     --amber: #f59e0b;
@@ -109,6 +111,7 @@
     --range-track: #767e94;
     --accent: #d63856;
     --accent-hover: #b91d3e;
+    --accent-text: #b91d3e;
     --border: #d8dae2;
     --bg-hover: #dde0e8;
     --focus-ring: #c42a48;
@@ -234,7 +237,7 @@ body.has-data .footer-bar { display: none !important; }
 .footer-credit {
     font-size: var(--fs-xs);
     font-weight: 600;
-    color: var(--accent);
+    color: var(--accent-text);
     white-space: nowrap;
 }
 
@@ -255,7 +258,7 @@ a.footer-link:active {
     background: none;
     border: none;
     padding: 0;
-    color: var(--accent);
+    color: var(--accent-text);
     text-decoration: none;
     font: inherit;
     cursor: pointer;
@@ -298,11 +301,11 @@ a.footer-link:active {
 }
 .license-modal-body p { margin: 0 0 10px; }
 .license-disclaimer {
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 600;
 }
 .license-links { margin-top: 16px; font-size: var(--fs-sm); color: var(--text-muted); }
-.license-links a { color: var(--accent); text-decoration: none; }
+.license-links a { color: var(--accent-text); text-decoration: none; }
 .license-links a:hover { text-decoration: underline; }
 
 /* ─── Top Bar ───────────────────────────── */
@@ -328,9 +331,11 @@ a.footer-link:active {
     gap: 8px;
     font-weight: 700;
     font-size: var(--fs-xl);
-    color: var(--accent);
+    color: var(--accent-text);
     white-space: nowrap;
 }
+
+.top-bar .logo svg { color: var(--accent); }
 
 .top-bar .logo svg {
     width: 24px;
@@ -622,7 +627,7 @@ input:not([type="range"]):disabled {
 }
 .walk-btn.active {
     background: var(--bg-tertiary);
-    color: var(--accent);
+    color: var(--accent-text);
     border-color: var(--accent);
 }
 .walk-hint {
@@ -657,7 +662,7 @@ input:not([type="range"]):disabled {
     font-size: var(--fs-lg);
     font-weight: 700;
     margin-bottom: 8px;
-    color: var(--accent);
+    color: var(--hud-accent);
     letter-spacing: 0.5px;
 }
 #walk-hud-instructions, #output-walk-hud-instructions { color: rgba(255,255,255,0.85); }
@@ -1279,7 +1284,7 @@ kbd {
 .fp-mat-name {
     font-size: var(--fs-base);
     font-weight: 700;
-    color: var(--accent);
+    color: var(--accent-text);
     margin-bottom: 12px;
 }
 
@@ -1317,7 +1322,7 @@ kbd {
 .fp-pyro-title {
     font-size: var(--fs-xs);
     font-weight: 700;
-    color: var(--accent);
+    color: var(--accent-text);
     text-transform: uppercase;
     letter-spacing: .9px;
     margin-bottom: 8px;
@@ -1496,7 +1501,7 @@ kbd {
 }
 
 .fp-note a:hover {
-    color: var(--accent-hover);
+    color: var(--accent-text);
 }
 
 .fp-table-wrap {
@@ -1723,7 +1728,7 @@ kbd {
 }
 .help-nav-link.active {
     background: var(--bg-tertiary);
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 600;
 }
 .help-page { display: none; }
@@ -1745,7 +1750,7 @@ kbd {
 .help-article h2 {
     margin: 0 0 8px;
     font-size: var(--fs-3xl);
-    color: var(--accent);
+    color: var(--accent-text);
 }
 .help-article h3 {
     margin: 28px 0 10px;
@@ -1757,7 +1762,7 @@ kbd {
 .help-article h4 {
     margin: 18px 0 6px;
     font-size: var(--fs-base);
-    color: var(--accent);
+    color: var(--accent-text);
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
@@ -1766,7 +1771,7 @@ kbd {
 .help-article li { margin: 4px 0; }
 .help-article code {
     background: var(--bg-tertiary);
-    color: var(--accent);
+    color: var(--accent-text);
     padding: 1px 5px;
     border-radius: var(--radius-sm);
     font-size: var(--fs-md);
@@ -1813,7 +1818,7 @@ kbd {
     color: var(--text-muted);
     font-size: var(--fs-md);
 }
-.help-footer a { color: var(--accent); text-decoration: none; }
+.help-footer a { color: var(--accent-text); text-decoration: none; }
 .help-footer a:hover { text-decoration: underline; }
 
 /* Callout box — used in Troubleshooting to point users at GitHub Issues */
@@ -1841,7 +1846,7 @@ kbd {
 .help-callout-cta:visited,
 .help-callout-cta:hover,
 .help-callout-cta:active {
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 600;
     text-decoration: none;
     font-family: var(--font-mono);
@@ -1859,7 +1864,7 @@ kbd {
 .help-fds-links a:visited,
 .help-fds-links a:hover,
 .help-fds-links a:active {
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 600;
     text-decoration: none;
 }
@@ -1878,7 +1883,7 @@ kbd {
 }
 .help-control-ref dt {
     margin-top: 14px;
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 700;
     font-size: var(--fs-base);
 }
@@ -1920,7 +1925,7 @@ kbd {
     font-family: inherit;
     font-size: 0.75em;
 }
-.help-eq em, .help-eq-block em { font-style: italic; color: var(--accent); }
+.help-eq em, .help-eq-block em { font-style: italic; color: var(--accent-text); }
 .help-article h5 {
     margin: 18px 0 6px;
     color: var(--text-primary);
@@ -2016,7 +2021,7 @@ kbd {
 }
 .fp-sev-error   { background: rgba(var(--red-rgb), 0.15);  color: var(--red); }
 .fp-sev-warning { background: rgba(var(--amber-rgb), 0.15); color: var(--amber); }
-.fp-sev-info    { background: rgba(var(--indigo-rgb), 0.15); color: var(--accent); }
+.fp-sev-info    { background: rgba(var(--indigo-rgb), 0.15); color: var(--accent-text); }
 
 .fp-finding-line {
     font-size: var(--fs-xs);
@@ -2199,7 +2204,7 @@ kbd {
     border-radius: var(--radius-lg);
 }
 
-.fp-badge-fire    { background: rgba(var(--rose-rgb), .2);  color: var(--rose); border: 1px solid rgba(var(--rose-rgb), .4); }
+.fp-badge-fire    { background: rgba(var(--rose-rgb), .2);  color: var(--accent-text); border: 1px solid rgba(var(--rose-rgb), .4); }
 .fp-badge-mat     { background: rgba(68,136,255,.2); color: #4488ff; border: 1px solid rgba(68,136,255,.4); }
 
 /* Mesh resolution quality badges (D*/dx): red → orange → teal → green */
@@ -2251,7 +2256,7 @@ kbd {
     line-height: 1;
 }
 
-#object-info-close:hover { color: var(--accent); }
+#object-info-close:hover { color: var(--accent-text); }
 
 #object-info-content {
     padding: 10px 12px;
@@ -2285,7 +2290,7 @@ kbd {
     padding: 2px 0;
 }
 
-.info-fds-code summary:hover { color: var(--accent); }
+.info-fds-code summary:hover { color: var(--accent-text); }
 
 .info-code-block {
     margin-top: 6px;
@@ -2342,7 +2347,7 @@ kbd {
 .clip-axis-label {
     font-size: var(--fs-md);
     font-weight: 700;
-    color: var(--accent);
+    color: var(--accent-text);
     width: 14px;
 }
 
@@ -2402,7 +2407,7 @@ kbd {
 
 .clip-step:hover {
     background: var(--bg-card);
-    color: var(--accent);
+    color: var(--accent-text);
 }
 
 .clip-slider {
@@ -2426,7 +2431,7 @@ kbd {
 
 #clip-reset-btn:hover {
     border-color: var(--accent);
-    color: var(--accent);
+    color: var(--accent-text);
 }
 
 /* ─── FDS Code Edit Mode ────────────────── */
@@ -2449,7 +2454,7 @@ kbd {
 
 .fp-view-return-btn {
     background: rgba(var(--indigo-rgb), 0.12);
-    color: var(--accent);
+    color: var(--accent-text);
     border: 1px solid var(--accent);
 }
 .fp-view-return-btn:hover {
@@ -2832,7 +2837,7 @@ kbd {
 .file-list li .file-tag {
     display: inline-block;
     min-width: 38px;
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 600;
     margin-right: 6px;
 }
@@ -3580,7 +3585,7 @@ kbd {
 .fp-mesh-metric .fp-text-warn { color: var(--warning); }
 .fp-text-warn-strong { color: var(--warning); font-weight: 800; }
 .fp-text-muted { color: var(--text-muted); }
-.fp-text-accent { color: var(--accent); }
+.fp-text-accent { color: var(--accent-text); }
 .fp-text-vent { color: var(--vent-color); }
 .fp-text-spec { color: #4488ff; }
 .fp-note-sm { color: var(--text-muted); font-size: var(--fs-xs); }
@@ -3605,13 +3610,13 @@ kbd {
     letter-spacing: .5px;
 }
 .fp-burn-chip {
-    background: rgba(var(--rose-rgb), .2);
-    color: var(--accent);
+    background: var(--accent-fill);
+    color: var(--on-accent);
     font-size: var(--fs-2xs);
     font-weight: 700;
     padding: 2px 7px;
     border-radius: var(--radius-xl);
-    border: 1px solid rgba(var(--rose-rgb), .4);
+    border: 1px solid var(--accent-fill);
     letter-spacing: .5px;
 }
 .fp-layer.fp-layer-chip { padding: 3px 10px; margin: 0; display: inline-flex; }
