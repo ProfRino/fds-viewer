@@ -6,7 +6,7 @@
     <title>FDS Viewer</title>
     <!-- Inline SVG favicon (no extra file to ship). Stylised box/wireframe. -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e94560' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="css/style.css?v=20261008k">
+    <link rel="stylesheet" href="css/style.css?v=20261008l">
 </head>
 <body>
     <!-- Top Bar -->
@@ -1016,7 +1016,7 @@
                             <div><dt>HRRPUV</dt><dd id="output-smoke-meta-hrr">--</dd></div>
                         </dl>
                         <details id="output-smoke-files-details" style="margin-top:6px;display:none;">
-                            <summary class="field-label" style="cursor:pointer;">Files in folder</summary>
+                            <summary class="field-label folder-files-summary">Files in folder</summary>
                             <ul id="output-smoke-files-list" class="file-list"></ul>
                         </details>
                     </div>
@@ -1029,7 +1029,7 @@
                             <option value="soot">SOOT DENSITY</option>
                             <option value="hrrpuv">HRRPUV</option>
                         </select>
-                        <button id="output-smoke-load" class="file-button primary-file-button" disabled style="margin-top:6px;">Load selected data</button>
+                        <button id="output-smoke-load" class="file-button primary-file-button" disabled>Load selected data</button>
 
                         <label class="field-label" for="output-smoke-render" title="Basic: smoke always wins (can bleed through walls). Solid-aware: scene depth is sampled inside the ray-march so OBSTs correctly hide the smoke behind them.">Rendering</label>
                         <select id="output-smoke-render">
@@ -1141,7 +1141,7 @@
                         <select id="output-boundary-set" disabled>
                             <option value="">No boundary data loaded</option>
                         </select>
-                        <button id="output-boundary-load" class="file-button primary-file-button" disabled style="margin-top:6px;">Load selected data</button>
+                        <button id="output-boundary-load" class="file-button primary-file-button" disabled>Load selected data</button>
 
                         <div class="inline-controls" style="margin-top:8px;">
                             <button id="output-boundary-play" class="icon-button" disabled>
@@ -1301,7 +1301,7 @@
                         <option value="fed">FED</option>
                     </select>
                     <canvas id="output-agents-colorbar" width="160" height="14"></canvas>
-                    <div class="inline-controls" style="justify-content:space-between; font-size:11px; opacity:0.85;">
+                    <div class="inline-controls agents-legend-row">
                         <span id="output-agents-cbar-min">0</span>
                         <span id="output-agents-cbar-max">1.5 m/s</span>
                     </div>
@@ -1382,8 +1382,8 @@
     <script src="js/fds-parser.js?v=20260517p"></script>
     <script src="js/viewer.js?v=20261007f"></script>
     <script src="js/fds-linter.js?v=20260517p"></script>
-    <script src="js/fire-panel.js?v=20260519AE"></script>
-    <script src="js/mesh-panel.js?v=20260517p"></script>
+    <script src="js/fire-panel.js?v=20261008a"></script>
+    <script src="js/mesh-panel.js?v=20261008a"></script>
     <script src="js/slice-reader.js?v=20260517p"></script>
     <script src="js/slice-renderer.js?v=20261007h"></script>
     <script src="js/vismap.js?v=20261002a"></script>
