@@ -777,7 +777,9 @@ function buildCodePanel(text, filename) {
         </div>`;
 
     // Highlight the whole file in one pass (comments + namelists)
-    const highlighted = highlightFds(text);
+    // Split on the same line endings as the linter (CRLF, CR or LF) so
+    // data-line matches the line numbers in its findings.
+    const highlighted = highlightFds(text.replace(/\r\n?/g, '\n'));
     // Wrap each line in a span so CSS counters render line numbers.
     // IMPORTANT: don't join with "\n" — the spans are display:block and
     // <pre> would render the newline as an extra blank line between them.
@@ -790,6 +792,8 @@ function buildCodePanel(text, filename) {
             <div class="fp-card-title">
                 Source Code
                 <div class="fp-card-btns" id="fp-view-btns">
+                    <button type="button" class="fp-copy-btn fp-lint-toggle" id="fp-lint-toggle"
+                        aria-controls="fp-debug-results" aria-expanded="false" hidden>Issues</button>
                     <button class="fp-copy-btn" id="fp-copy-fds">Copy all</button>
                     <button class="fp-copy-btn fp-save-btn" id="fp-save-annotated">&#x2913; Save annotated</button>
                     <button class="fp-copy-btn fp-edit-btn" id="fp-edit-fds">&#x270E; Edit</button>
@@ -816,6 +820,8 @@ function buildCodePanel(text, filename) {
                             autocomplete="off"></textarea>
                     </div>
                 </div>
+                <div class="fp-debug-results" id="fp-debug-results"
+                    role="region" aria-label="Linter findings" hidden></div>
             </div>
         </div>`;
 
@@ -824,8 +830,64 @@ function buildCodePanel(text, filename) {
     // ── Edit mode ─────────────────────────────────────────────────────────────
     let liveText = text;
 
+    // ── Linter: findings sidebar + highlighted source lines ──────────────────
+    let lintFindings = [];
+    let lintPanelClosed = false;
+    const lintPanel  = document.getElementById('fp-debug-results');
+    const lintToggle = document.getElementById('fp-lint-toggle');
+
+    function setLintPanelOpen(open) {
+        if (lintPanel) lintPanel.hidden = !open;
+        if (lintToggle) lintToggle.setAttribute('aria-expanded', String(open));
+    }
+
+    function runLint() {
+        lintFindings = (typeof fdsLint === 'function') ? fdsLint(liveText) : [];
+        if (lintPanel) lintPanel.innerHTML = _renderLintResults(lintFindings);
+        _applyLintHighlights(lintFindings);
+        if (lintToggle) {
+            const n = lintFindings.length;
+            lintToggle.textContent = n ? `${n} issue${n !== 1 ? 's' : ''}` : 'No issues';
+            lintToggle.hidden = false;
+        }
+        setLintPanelOpen(lintFindings.length > 0 && !lintPanelClosed);
+    }
+
+    if (lintToggle) lintToggle.addEventListener('click', () => {
+        const open = !!(lintPanel && lintPanel.hidden);
+        lintPanelClosed = !open;
+        setLintPanelOpen(open);
+        // On narrow screens the panel stacks below the code; bring it into view
+        const split = document.getElementById('fp-code-split');
+        if (open && split && getComputedStyle(split).flexDirection === 'column') {
+            lintPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+    });
+
+    if (lintPanel) lintPanel.addEventListener('click', e => {
+        if (e.target.closest('#fp-debug-close')) {
+            lintPanelClosed = true;
+            setLintPanelOpen(false);
+            if (lintToggle) lintToggle.focus();
+            return;
+        }
+        const row = e.target.closest('.fp-finding[data-line]');
+        if (!row) return;
+        lintPanel.querySelectorAll('.fp-finding-active')
+            .forEach(el => el.classList.remove('fp-finding-active'));
+        row.classList.add('fp-finding-active');
+        const code = document.getElementById('fp-fds-source-code');
+        if (!code) return;
+        code.querySelectorAll('.fp-lint-active').forEach(el => el.classList.remove('fp-lint-active'));
+        const lineEl = code.querySelector(`.fp-fds-line[data-line="${row.dataset.line}"]`);
+        if (lineEl) {
+            lineEl.classList.add('fp-lint-active');
+            lineEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    });
+
     function renderSource(t) {
-        const h = highlightFds(t);
+        const h = highlightFds(t.replace(/\r\n?/g, '\n'));
         const lh = h.split('\n')
             .map((l, i) => `<span class="fp-fds-line" data-line="${i + 1}">${l || ' '}</span>`)
             .join('');
@@ -848,6 +910,7 @@ function buildCodePanel(text, filename) {
         const cc = document.getElementById('fp-code-card');
         if (cc) cc.classList.add('fp-edit-mode');
         _clearLintHighlights();
+        setLintPanelOpen(false);
         const ea = document.getElementById('fp-fds-edit-area');
         if (ea) ea.value = liveText;
         const hl = document.getElementById('fp-edit-highlight');
@@ -883,6 +946,7 @@ function buildCodePanel(text, filename) {
         if (vb) vb.style.display = 'flex';
         const eb = document.getElementById('fp-edit-btns');
         if (eb) eb.style.display = 'none';
+        runLint();
     }
 
     const editBtn = document.getElementById('fp-edit-fds');
@@ -952,8 +1016,7 @@ function buildCodePanel(text, filename) {
     const saveBtn = document.getElementById('fp-save-annotated');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
-            const findings = (typeof fdsLint === 'function') ? fdsLint(liveText) : [];
-            _doSaveAnnotated(findings);
+            _doSaveAnnotated(lintFindings);
             saveBtn.textContent = '✓ Saved!';
             setTimeout(() => { saveBtn.innerHTML = '&#x2913; Save annotated'; }, 1500);
         });
@@ -982,12 +1045,14 @@ function buildCodePanel(text, filename) {
             if (firstMatch) firstMatch.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         });
     }
+
+    runLint();
 }
 
 // ─── Linter UI helpers ────────────────────────────────────────────────────────
 
-function _applyLintHighlights(findings) {
-    _clearLintHighlights();
+// Map each source line to the most severe finding that covers it.
+function _lintLineMap(findings) {
     const lineMap = {};
     const rank = { ERROR: 3, WARNING: 2, INFO: 1 };
     for (const f of findings) {
@@ -997,15 +1062,69 @@ function _applyLintHighlights(findings) {
             if (!lineMap[ln] || rank[f.severity] > rank[lineMap[ln]]) lineMap[ln] = f.severity;
         }
     }
-    for (const [lineNum, sev] of Object.entries(lineMap)) {
-        const el = document.querySelector(`.fp-fds-line[data-line="${lineNum}"]`);
+    return lineMap;
+}
+
+function _applyLintHighlights(findings) {
+    _clearLintHighlights();
+    const root = document.getElementById('fp-fds-source-code');
+    if (!root) return;
+    for (const [lineNum, sev] of Object.entries(_lintLineMap(findings))) {
+        const el = root.querySelector(`.fp-fds-line[data-line="${lineNum}"]`);
         if (el) el.classList.add(`fp-lint-${sev.toLowerCase()}`);
     }
 }
 
 function _clearLintHighlights() {
-    document.querySelectorAll('.fp-fds-line.fp-lint-error, .fp-fds-line.fp-lint-warning, .fp-fds-line.fp-lint-info, .fp-fds-line.fp-lint-active')
+    const root = document.getElementById('fp-fds-source-code');
+    if (!root) return;
+    root.querySelectorAll('.fp-fds-line.fp-lint-error, .fp-fds-line.fp-lint-warning, .fp-fds-line.fp-lint-info, .fp-fds-line.fp-lint-active')
         .forEach(el => el.classList.remove('fp-lint-error', 'fp-lint-warning', 'fp-lint-info', 'fp-lint-active'));
+}
+
+function _renderLintResults(findings) {
+    const counts = { ERROR: 0, WARNING: 0, INFO: 0 };
+    for (const f of findings) counts[f.severity] = (counts[f.severity] || 0) + 1;
+
+    const badges = [];
+    if (counts.ERROR)   badges.push(`<span class="fp-sev-badge fp-sev-error">${counts.ERROR} error${counts.ERROR   !== 1 ? 's' : ''}</span>`);
+    if (counts.WARNING) badges.push(`<span class="fp-sev-badge fp-sev-warning">${counts.WARNING} warning${counts.WARNING !== 1 ? 's' : ''}</span>`);
+    if (counts.INFO)    badges.push(`<span class="fp-sev-badge fp-sev-info">${counts.INFO} info</span>`);
+
+    if (!findings.length) {
+        return `<div class="fp-debug-clean">
+            <button type="button" class="fp-debug-close" id="fp-debug-close" title="Close" aria-label="Close findings">&#x2715;</button>
+            <div class="fp-no-issues">&#x2713; No issues found — file looks clean.</div>
+        </div>`;
+    }
+
+    const rows = findings.map(f => {
+        const sc = f.severity.toLowerCase();
+        const lineAttr = f.line > 0 ? ` data-line="${f.line}"` : '';
+        const lineRange = f.line > 0
+            ? (f.lineEnd && f.lineEnd > f.line ? `lines ${f.line}–${f.lineEnd}` : `line ${f.line}`)
+            : '';
+        const lineLabel = lineRange ? `<span class="fp-finding-line">${lineRange}</span>` : '';
+        const hint = f.hint ? `<span class="fp-finding-hint">→ ${esc(f.hint)}</span>` : '';
+        const tag = f.line > 0 ? 'button' : 'div';
+        const typeAttr = f.line > 0 ? ' type="button"' : '';
+        return `<${tag}${typeAttr} class="fp-finding"${lineAttr}>
+            <span class="fp-finding-top">
+                <span class="fp-sev-badge fp-sev-${sc}">${f.severity}</span>
+                ${lineLabel}
+            </span>
+            <span class="fp-finding-text">
+                <span class="fp-finding-msg">${esc(f.message)}</span>
+                ${hint}
+            </span>
+        </${tag}>`;
+    }).join('');
+
+    return `<div class="fp-debug-header">
+        <div class="fp-debug-badges">${badges.join('')}</div>
+        <button type="button" class="fp-debug-close" id="fp-debug-close" title="Close" aria-label="Close findings">&#x2715;</button>
+    </div>
+    <div class="fp-findings-list">${rows}</div>`;
 }
 
 function _annotatedFds(text, findings, filename) {
