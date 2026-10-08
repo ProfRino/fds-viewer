@@ -41,18 +41,18 @@ function buildMeshPanel(data) {
     // Build interface-issue HTML (shown after table)
     const ifaceHtml = ifaceIssues.length ? `
         <div class="fp-mesh-iface-warn">
-            <div class="fp-section-label" style="color:var(--warning);margin-bottom:8px">
+            <div class="fp-section-label fp-section-warn">
                 ⚠ Mesh Interface Compatibility (${ifaceIssues.length} issue${ifaceIssues.length !== 1 ? 's' : ''})
             </div>
             <table class="fp-prop-table">
                 ${ifaceIssues.map(iss => `<tr>
-                    <td><strong style="color:var(--warning)">${esc(iss.meshA)}</strong> ↔ <strong style="color:var(--warning)">${esc(iss.meshB)}</strong></td>
-                    <td>${esc(iss.axis)}-face · d${esc(iss.dim.toLowerCase())} ratio <strong style="color:var(--warning)">${iss.ratio.toFixed(1)}×</strong>
-                        <span style="color:var(--text-muted);font-size:11px">(${meshFmtLength(iss.cellA)} vs ${meshFmtLength(iss.cellB)})</span>
+                    <td><strong class="fp-text-warn">${esc(iss.meshA)}</strong> ↔ <strong class="fp-text-warn">${esc(iss.meshB)}</strong></td>
+                    <td>${esc(iss.axis)}-face · d${esc(iss.dim.toLowerCase())} ratio <strong class="fp-text-warn">${iss.ratio.toFixed(1)}×</strong>
+                        <span class="fp-note-sm">(${meshFmtLength(iss.cellA)} vs ${meshFmtLength(iss.cellB)})</span>
                     </td>
                 </tr>`).join('')}
             </table>
-            <p class="fp-note" style="margin-top:8px;margin-bottom:0">
+            <p class="fp-note fp-note-tight">
                 FDS requires cell sizes at abutting mesh boundaries to be within a 2:1 ratio for accurate interpolation. Larger ratios can cause mass-conservation errors at the interface.
             </p>
         </div>` : '';
@@ -78,7 +78,7 @@ function buildMeshPanel(data) {
                 </div>
                 <div class="fp-mesh-metric">
                     <span class="fp-ov-lbl">MPI Load Imbalance</span>
-                    <strong style="${imbalance.ok ? '' : 'color:var(--warning)'}">${imbalance.text}</strong>
+                    <strong${imbalance.ok ? '' : ' class="fp-text-warn"'}>${imbalance.text}</strong>
                 </div>
                 <div class="fp-mesh-metric">
                     <span class="fp-ov-lbl">Peak HRR Used</span>

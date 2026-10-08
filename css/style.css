@@ -3557,6 +3557,62 @@ kbd {
 #output-boundary-load {
     display: flex;
     width: fit-content;
+    margin-top: 6px;
+}
+
+/* Fire, Mesh and Output panel text styles (formerly inline in JS) */
+.fp-text-warn,
+.fp-mesh-metric .fp-text-warn { color: var(--warning); }
+.fp-text-warn-strong { color: var(--warning); font-weight: 800; }
+.fp-text-muted { color: var(--text-muted); }
+.fp-text-accent { color: var(--accent); }
+.fp-text-vent { color: var(--vent-color); }
+.fp-text-spec { color: #4488ff; }
+.fp-note-sm { color: var(--text-muted); font-size: var(--fs-xs); }
+.fp-note-xs { color: var(--text-muted); font-size: var(--fs-2xs); }
+.fp-mono { font-family: var(--font-mono); }
+.fp-ov-val.fp-ov-title {
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+    max-width: 420px;
+    white-space: normal;
+}
+.fp-reac-eq {
+    background: rgba(233,69,96,.06);
+    border: 1px solid rgba(233,69,96,.2);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-base);
+    color: var(--text-primary);
+    text-align: center;
+    letter-spacing: .5px;
+}
+.fp-burn-chip {
+    background: rgba(233,69,96,.2);
+    color: var(--accent);
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(233,69,96,.4);
+    letter-spacing: .5px;
+}
+.fp-layer.fp-layer-chip { padding: 3px 10px; margin: 0; display: inline-flex; }
+.fp-section-label.fp-section-warn { color: var(--warning); margin-bottom: 8px; }
+.fp-section-label.fp-section-spaced { margin-top: 18px; }
+.fp-note.fp-note-tight { margin-top: 8px; margin-bottom: 0; }
+.fp-note.fp-note-after { margin: 12px 0 0; }
+.fp-prop-table.fp-prop-table-spaced { margin-top: 6px; }
+.fp-prop-table td.fp-out-slcf { color: #22dd88; width: 22%; }
+.fp-prop-table td.fp-out-bndf { color: #ff8800; width: 22%; }
+.fp-badge.fp-badge-sm { font-size: var(--fs-2xs); }
+.folder-files-summary { cursor: pointer; }
+.inline-controls.agents-legend-row {
+    justify-content: space-between;
+    font-size: var(--fs-xs);
+    opacity: 0.85;
 }
 
 /* Honour the OS reduced-motion setting. Near-zero durations rather
