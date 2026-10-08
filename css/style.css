@@ -18,6 +18,14 @@
     --fs-4xl: 24px;
     --fs-display: 36px;
 
+    /* Corner radius */
+    --radius-sm: 3px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+    --radius-xl: 8px;
+    --radius-round: 50%;
+    --radius-pill: 999px;
+
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
@@ -113,7 +121,7 @@
 :where(input[type="range"])::-webkit-slider-runnable-track {
     height: 4px;
     background: var(--range-track);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 :where(input[type="range"])::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -121,20 +129,20 @@
     width: 14px;
     height: 14px;
     margin-top: -5px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     background: var(--accent);
     cursor: pointer;
 }
 :where(input[type="range"])::-moz-range-track {
     height: 4px;
     background: var(--range-track);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 :where(input[type="range"])::-moz-range-thumb {
     width: 14px;
     height: 14px;
     border: none;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     background: var(--accent);
     cursor: pointer;
 }
@@ -257,7 +265,7 @@ a.footer-link:active {
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     max-width: 640px;
     width: calc(100% - 40px);
     max-height: calc(100vh - 80px);
@@ -395,14 +403,14 @@ a.footer-link:active {
     gap: 8px;
     padding: 6px 8px;
     background: var(--bg-tertiary);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     font-size: var(--fs-sm);
 }
 
 .stat-dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     flex-shrink: 0;
 }
 
@@ -446,7 +454,7 @@ a.footer-link:active {
     padding: 4px 6px;
     font-size: var(--fs-xs);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
 }
@@ -456,7 +464,7 @@ a.footer-link:active {
     align-items: center;
     gap: 8px;
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     font-size: var(--fs-md);
     cursor: pointer;
     transition: background 0.15s;
@@ -472,7 +480,7 @@ a.footer-link:active {
     width: 16px;
     height: 16px;
     border: 2px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     position: relative;
     flex-shrink: 0;
@@ -495,7 +503,7 @@ a.footer-link:active {
 .layer-color {
     width: 12px;
     height: 12px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
 }
 
@@ -543,7 +551,7 @@ a.footer-link:active {
     padding: 6px 4px;
     font-size: var(--fs-xs);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
     text-align: center;
@@ -581,7 +589,7 @@ input:not([type="range"]):disabled {
     border: 1px solid var(--control-border);
     color: var(--text-primary);
     padding: 5px 8px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     font: inherit;
     font-size: var(--fs-sm);
 }
@@ -599,7 +607,7 @@ input:not([type="range"]):disabled {
     font-size: var(--fs-md);
     font-weight: 600;
     border: 1px solid var(--accent-fill);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
 }
@@ -628,7 +636,7 @@ input:not([type="range"]):disabled {
     background: rgba(15, 15, 30, 0.85);
     color: #fff;
     padding: 16px 22px;
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 255, 255, 0.15);
     text-align: center;
     max-width: 380px;
@@ -678,7 +686,7 @@ input:not([type="range"]):disabled {
     min-width: 56px;
     height: 30px;
     padding: 0 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background: rgba(20, 30, 48, 0.78);
     border: 1px solid rgba(140, 160, 200, 0.35);
     color: #e0e6f0;
@@ -725,7 +733,7 @@ input:not([type="range"]):disabled {
 .output-bg-option {
     width: 28px;
     height: 28px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     cursor: pointer;
     border: 2px solid var(--border);
     transition: border-color 0.15s;
@@ -872,7 +880,7 @@ input:not([type="range"]):disabled {
     font-size: var(--fs-2xl);
     font-weight: 500;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
     font-family: inherit;
@@ -910,7 +918,7 @@ kbd {
     padding: 4px 8px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     font-family: inherit;
     font-size: var(--fs-md);
     min-width: 24px;
@@ -929,7 +937,7 @@ kbd {
 
 ::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -1143,7 +1151,7 @@ kbd {
     font-weight: 500;
     background: transparent;
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
@@ -1202,7 +1210,7 @@ kbd {
 .fp-overview {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     padding: 18px 24px;
     display: flex;
     gap: 36px;
@@ -1234,7 +1242,7 @@ kbd {
 .fp-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     padding: 20px 24px;
     margin-bottom: 18px;
 }
@@ -1279,7 +1287,7 @@ kbd {
 .fp-mat-card {
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     padding: 16px 18px;
 }
 
@@ -1299,7 +1307,7 @@ kbd {
     gap: 10px;
     font-size: var(--fs-md);
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     border-left: 4px solid;
 }
 
@@ -1316,7 +1324,7 @@ kbd {
 .fp-pyro-box {
     background: rgba(233,69,96,.08);
     border: 1px solid rgba(233,69,96,.25);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 12px 14px;
     margin-top: 12px;
 }
@@ -1365,7 +1373,7 @@ kbd {
     display: inline-block;
     margin-right: 6px;
     padding: 1px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--border);
     color: var(--text-secondary);
     background: var(--bg-tertiary);
@@ -1391,7 +1399,7 @@ kbd {
 .fp-hrr-card {
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 12px;
 }
 
@@ -1420,7 +1428,7 @@ kbd {
     margin: 8px 0 6px;
     background: var(--code-bg);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
 }
 
 .fp-hrr-svg line {
@@ -1465,7 +1473,7 @@ kbd {
 .fp-mesh-metric {
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 11px 12px;
     display: flex;
     flex-direction: column;
@@ -1483,7 +1491,7 @@ kbd {
     color: var(--text-secondary);
     background: rgba(68,136,255,.08);
     border: 1px solid rgba(68,136,255,.22);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 10px 12px;
     margin: 10px 0 14px;
     font-size: var(--fs-sm);
@@ -1550,7 +1558,7 @@ kbd {
 .fp-devc-card {
     padding: 9px 12px;
     background: var(--bg-tertiary);
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     border-left: 3px solid #cc66ff;
     overflow: hidden;
 }
@@ -1578,9 +1586,10 @@ kbd {
 .fp-badge {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-pill);
     font-size: var(--fs-xs);
     font-weight: 600;
+    white-space: nowrap;
     letter-spacing: 0;
     text-transform: none;
 }
@@ -1589,7 +1598,7 @@ kbd {
 .fp-code {
     margin-top: 14px;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background: var(--bg-tertiary);
 }
 
@@ -1638,8 +1647,8 @@ kbd {
     white-space: pre-wrap;
     word-break: break-word;
     overflow-x: auto;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
 }
 
 .fp-code-block .fp-kw,  .fp-fds-source .fp-kw,  .fp-edit-highlight .fp-kw  { color: var(--code-kw);  font-weight: 600; }
@@ -1694,7 +1703,7 @@ kbd {
     top: 16px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     padding: 16px 12px;
     font-size: var(--fs-md);
 }
@@ -1717,7 +1726,7 @@ kbd {
     background: none;
     border: none;
     padding: 7px 10px;
-    border-radius: 5px;
+    border-radius: var(--radius-md);
     color: var(--text-secondary);
     font: inherit;
     cursor: pointer;
@@ -1742,7 +1751,7 @@ kbd {
 .help-article {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     padding: 28px 36px;
     color: var(--text-primary);
     line-height: 1.6;
@@ -1774,7 +1783,7 @@ kbd {
     background: var(--bg-tertiary);
     color: var(--accent);
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     font-size: var(--fs-md);
 }
 .help-article kbd {
@@ -1782,7 +1791,7 @@ kbd {
     color: var(--text-primary);
     border: 1px solid var(--border);
     border-bottom-width: 2px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     padding: 1px 5px;
     font-size: var(--fs-xs);
     font-family: var(--font-mono);
@@ -1828,7 +1837,7 @@ kbd {
     padding: 14px 18px;
     background: var(--bg-tertiary);
     border-left: 3px solid var(--accent);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
 }
 .help-callout h4 {
     margin: 0 0 6px;
@@ -1909,7 +1918,7 @@ kbd {
     color: var(--text-primary);
     padding: 2px 8px;
     margin: 2px 0;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     font-family: var(--font-mono);
     font-size: var(--fs-md);
     line-height: 1.5;
@@ -1942,7 +1951,7 @@ kbd {
     padding: 14px 18px 16px;
     background: var(--bg-tertiary);
     border-left: 3px solid var(--accent);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
 }
 .help-equation > figcaption {
     margin: 0 0 8px;
@@ -1961,7 +1970,7 @@ kbd {
     margin: 6px 0;
     padding: 12px 6px;
     background: var(--bg-secondary);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     font-family: var(--font-math);
     font-size: var(--fs-2xl);
     line-height: 1.4;
@@ -2106,7 +2115,7 @@ kbd {
     color: var(--text-muted);
     background: rgba(255,255,255,0.04);
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border);
 }
 .fp-out-source {
@@ -2120,7 +2129,7 @@ kbd {
 .fp-out-source code {
     background: rgba(255,255,255,0.04);
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
 }
 .fp-out-reload {
@@ -2130,7 +2139,7 @@ kbd {
     cursor: pointer;
     font-size: var(--fs-xs);
     padding: 3px 8px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     transition: background 0.1s;
 }
 .fp-out-reload:hover { background: rgba(99,102,241,0.10); }
@@ -2179,7 +2188,7 @@ kbd {
     font-size: var(--fs-2xs);
     font-weight: 700;
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
     letter-spacing: 0.04em;
     white-space: nowrap;
@@ -2229,7 +2238,7 @@ kbd {
     margin: 0;
     padding: 16px 0;
     background: var(--code-bg);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border);
     overflow-x: auto;
 }
@@ -2271,7 +2280,7 @@ kbd {
     font-size: var(--fs-sm);
     font-weight: 500;
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s, outline 0s, outline-offset 0s;
@@ -2293,7 +2302,7 @@ kbd {
     flex: 1;
     background: var(--bg-secondary);
     border: 1px solid var(--control-border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     padding: 5px 10px;
     font-size: var(--fs-sm);
     font-family: var(--font-mono);
@@ -2368,7 +2377,7 @@ kbd {
     padding: 14px 16px;
     background: rgba(255,152,0,.06);
     border: 1px solid rgba(255,152,0,.3);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
 }
 
 .fp-badge-fire    { background: rgba(233,69,96,.2);  color: #e94560; border: 1px solid rgba(233,69,96,.4); }
@@ -2391,7 +2400,7 @@ kbd {
     width: 260px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-xl);
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     z-index: 20;
     overflow: hidden;
@@ -2523,7 +2532,7 @@ kbd {
     display: flex;
     align-items: center;
     border: 1px solid var(--control-border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     overflow: hidden;
 }
 
@@ -2591,7 +2600,7 @@ kbd {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-secondary);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     white-space: nowrap;
     margin-left: 4px;
@@ -2642,7 +2651,7 @@ kbd {
     color: #f59e0b;
     background: rgba(245,158,11,0.12);
     border: 1px solid rgba(245,158,11,0.35);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     padding: 2px 7px;
     flex-shrink: 0;
     align-self: center;
@@ -2659,7 +2668,7 @@ kbd {
     grid-template: 1fr / 1fr;   /* single cell — both children stack */
     min-height: 60vh;
     border: 2px solid rgba(245,158,11,0.55);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background: var(--code-bg);
     box-sizing: border-box;
     overflow: hidden;
@@ -2740,7 +2749,7 @@ kbd {
     font-size: var(--fs-sm);
     font-weight: 700;
     padding: 7px 18px;
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     z-index: 300;
     opacity: 0;
     pointer-events: none;
@@ -2847,7 +2856,7 @@ kbd {
     gap: 4px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 8px 8px 6px;
     pointer-events: none;
 }
@@ -2869,7 +2878,7 @@ kbd {
 }
 #output-colorbar-canvas {
     order: 2;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     display: block;
     width: 18px;
     height: 180px;
@@ -2898,7 +2907,7 @@ kbd {
     color: var(--text-primary);
     width: 30px;
     height: 30px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     cursor: pointer;
     font-size: var(--fs-xs);
     flex-shrink: 0;
@@ -2939,7 +2948,7 @@ kbd {
     align-items: center;
     justify-content: center;
     padding: 7px 10px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-size: var(--fs-sm);
     font-weight: 500;
@@ -2953,7 +2962,7 @@ kbd {
     margin-top: 6px;
     padding: 4px 6px;
     background: var(--bg-tertiary);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
 }
 
 .slice-set-control { margin-top: 8px; }
@@ -3023,7 +3032,7 @@ kbd {
 }
 .icon-button {
     padding: 4px 10px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     font-size: var(--fs-sm);
     cursor: pointer;
@@ -3054,7 +3063,7 @@ kbd {
     font-size: var(--fs-xs);
     padding: 2px 8px;
     border: 1px solid var(--border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     line-height: 1.4;
 }
@@ -3074,7 +3083,7 @@ kbd {
     border: 1px solid var(--control-border);
     color: var(--text-primary);
     padding: 3px 6px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     font-size: var(--fs-xs);
     font-family: var(--font-mono);
 }
@@ -3082,7 +3091,7 @@ kbd {
 /* Vismap waypoint / visual-region cards */
 .vismap-card {
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     padding: 6px 8px 8px;
     margin-top: 6px;
     background: var(--bg-tertiary);
@@ -3105,7 +3114,7 @@ kbd {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-secondary);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     line-height: 1.4;
 }
@@ -3131,7 +3140,7 @@ kbd {
     border: 1px solid var(--control-border);
     color: var(--text-primary);
     padding: 3px 6px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     font-size: var(--fs-xs);
     font-family: var(--font-mono);
 }
@@ -3180,7 +3189,7 @@ kbd {
     padding: 3px 8px;
     font-size: var(--fs-2xs);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
 }
@@ -3213,7 +3222,7 @@ kbd {
 .chart-mixed-warn {
     background: rgba(255, 150, 0, 0.12);
     border: 1px solid rgba(255, 150, 0, 0.4);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     color: #ffb347;
     font-size: var(--fs-xs);
     padding: 5px 10px;
@@ -3248,7 +3257,7 @@ kbd {
     font-size: var(--fs-2xs);
     background: var(--bg-tertiary);
     padding: 1px 4px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
 }
 
@@ -3289,7 +3298,7 @@ kbd {
     cursor: pointer;
     font-size: var(--fs-xs);
     padding: 2px 4px;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
     line-height: 1;
 }
@@ -3304,7 +3313,7 @@ kbd {
     font-size: var(--fs-2xs);
     padding: 2px 6px;
     border: 1px solid var(--border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.12s, outline 0s, outline-offset 0s;
 }
@@ -3315,7 +3324,7 @@ kbd {
     align-items: center;
     gap: 5px;
     padding: 3px 4px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     font-size: var(--fs-xs);
     transition: background 0.12s;
 }
@@ -3327,7 +3336,7 @@ kbd {
     font-size: var(--fs-2xs);
     background: var(--bg-card);
     border: 1px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 1px 2px;
     width: 52px;
@@ -3342,7 +3351,7 @@ kbd {
     font-size: var(--fs-2xs);
     background: var(--bg-card);
     border: 1px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 1px 2px;
     width: 40px;
@@ -3358,7 +3367,7 @@ kbd {
     width: 14px;
     height: 14px;
     border: 1.5px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     position: relative;
     flex-shrink: 0;
@@ -3379,7 +3388,7 @@ kbd {
 .charts-ch-swatch {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s;
@@ -3429,7 +3438,7 @@ kbd {
     min-height: 0;
     position: relative;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     background: var(--bg-card);
 }
@@ -3446,7 +3455,7 @@ kbd {
     pointer-events: none;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     padding: 7px 10px;
     font-size: var(--fs-xs);
     line-height: 1.5;
@@ -3472,7 +3481,7 @@ kbd {
 .chart-tip-dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     flex-shrink: 0;
     display: inline-block;
 }
@@ -3504,7 +3513,7 @@ kbd {
 .chart-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     flex-shrink: 0;
     display: flex;
@@ -3668,7 +3677,7 @@ kbd {
     font-size: var(--fs-xs);
     background: var(--bg-card);
     border: 1px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 2px 5px;
 }
@@ -3697,7 +3706,7 @@ kbd {
     z-index: 200;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.45);
     width: 184px;
@@ -3713,7 +3722,7 @@ kbd {
 .ccp-preset {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     cursor: pointer;
     display: inline-block;
     border: 2px solid transparent;
@@ -3730,7 +3739,7 @@ kbd {
     width: 100%;
     height: 30px;
     border: 1px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     padding: 2px;
     cursor: pointer;
     background: var(--bg-tertiary);
@@ -3754,7 +3763,7 @@ kbd {
     flex: 1;
     background: var(--bg-tertiary);
     border: 1px solid var(--control-border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-size: var(--fs-sm);
     padding: 3px 6px;
