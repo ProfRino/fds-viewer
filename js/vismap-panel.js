@@ -40,7 +40,7 @@
         const status = el('output-vismap-status');
         if (!status) return;
         status.textContent = msg;
-        status.style.color = isError ? '#e94560' : '';
+        status.style.color = isError ? 'var(--red-text)' : '';
     }
 
     function numberOf(id, fallback) {

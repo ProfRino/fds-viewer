@@ -3049,7 +3049,7 @@ div.fp-finding { cursor: default; }
 /* Route card: waypoints, picking them in the 3D view, choice of signs */
 .vismap-sub-label {
     display: block;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--text-secondary);
     margin: 6px 0 3px;
 }
@@ -3059,37 +3059,37 @@ div.fp-finding { cursor: default; }
     box-sizing: border-box;
     resize: vertical;
     background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--control-border);
     color: var(--text-primary);
     padding: 3px 6px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-family: 'Consolas', monospace;
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-xs);
+    font-family: var(--font-mono);
 }
 .vismap-rt-pick {
     width: 100%;
     margin-top: 6px;
     padding: 4px 10px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
 }
 .vismap-rt-signs {
     padding-left: 18px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     color: var(--text-secondary);
 }
 .vismap-rt-signs .checkbox-row { margin: 3px 0; }
 /* A button whose click into the 3D view is being awaited */
 #output-vismap-controls .file-button.active {
     border-color: var(--accent);
-    color: var(--accent);
+    color: var(--accent-text);
 }
 /* Legend of a map: its colors, then the signs with their parameters */
 .vismap-legend:not(:empty) {
     margin-top: 8px;
     padding: 6px 8px;
     border: 1px solid var(--border);
-    border-radius: 4px;
-    font-size: 11px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-xs);
     color: var(--text-primary);
 }
 .vismap-legend-title {
@@ -3108,7 +3108,7 @@ div.fp-finding { cursor: default; }
     flex: 0 0 18px;
     height: 12px;
     border: 1px solid var(--border);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 .vismap-swatch.vismap-swatch-line {
     height: 4px;
@@ -3122,8 +3122,8 @@ div.fp-finding { cursor: default; }
     text-align: center;
     line-height: 16px;
     border: 1.5px solid;
-    border-radius: 9px;
-    background: #fff;
+    border-radius: var(--radius-pill);
+    background: #fff; /* the white of the sign's ID badge, in both themes */
     font-weight: 600;
 }
 
@@ -3177,12 +3177,8 @@ div.fp-finding { cursor: default; }
 }
 .range-grid select {
     min-width: 0;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
     padding: 3px 6px;
-    border-radius: 3px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
 }
 
 /* ═══════════════════════════════════════════
