@@ -1,6 +1,9 @@
 /* ─── FDS Visualization Tool – Styles ─── */
 
 :root {
+    --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Consolas', ui-monospace, 'SF Mono', Menlo, 'Liberation Mono', 'Courier New', monospace;
+
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
@@ -137,7 +140,7 @@
 html, body {
     height: 100%;
     overflow: hidden;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
     background: var(--bg-primary);
     color: var(--text-primary);
 }
@@ -638,7 +641,7 @@ input:not([type="range"]):disabled {
     transform: translate(-50%, -50%);
     color: rgba(255, 255, 255, 0.6);
     font-size: 22px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     text-shadow: 0 0 4px rgba(0,0,0,0.7);
     display: none;
 }
@@ -754,7 +757,7 @@ input:not([type="range"]):disabled {
 }
 
 .info-value.xb {
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
 }
 
@@ -1289,7 +1292,7 @@ kbd {
 .fp-layer-other{ background: rgba(68,136,255,.10);   border-color: #4488ff; }
 
 .fp-layer-name  { font-weight: 600; flex: 1; color: var(--text-primary); }
-.fp-layer-thick { color: var(--text-muted); margin-left: auto; font-family: monospace; font-size: 12px; }
+.fp-layer-thick { color: var(--text-muted); margin-left: auto; font-family: var(--font-mono); font-size: 12px; }
 
 /* ── Pyrolysis highlight box ── */
 .fp-pyro-box {
@@ -1423,7 +1426,7 @@ kbd {
 .fp-hrr-svg text {
     fill: var(--text-muted);
     font-size: 10px;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
 }
 
 .fp-hrr-svg .fp-hrr-marker-label {
@@ -1470,7 +1473,7 @@ kbd {
 }
 
 .fp-note code {
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     color: var(--code-key);
 }
 
@@ -1514,7 +1517,7 @@ kbd {
 
 /* ── Output sub-tables ── */
 .fp-out-tag {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-weight: 600;
     font-size: 12px;
     white-space: nowrap;
@@ -1536,7 +1539,7 @@ kbd {
 
 .fp-devc-id {
     font-size: 13px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     color: #cc66ff;
     white-space: nowrap;
     overflow: hidden;
@@ -1610,7 +1613,7 @@ kbd {
     padding: 12px 14px;
     border-top: 1px solid var(--border);
     background: var(--code-bg);
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.6;
     color: var(--code-fg);
@@ -1764,7 +1767,7 @@ kbd {
     border-radius: 3px;
     padding: 1px 5px;
     font-size: 11px;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
 }
 .help-article em { font-style: italic; color: var(--text-secondary); }
 .help-lede {
@@ -1829,7 +1832,7 @@ kbd {
     color: var(--accent);
     font-weight: 600;
     text-decoration: none;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 13.5px;
     display: inline-block;
 }
@@ -1889,7 +1892,7 @@ kbd {
     padding: 2px 8px;
     margin: 2px 0;
     border-radius: 4px;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 12.5px;
     line-height: 1.5;
 }
@@ -1957,7 +1960,7 @@ kbd {
     color: var(--text-primary);
 }
 .eq-var {
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 0.78em;
     color: var(--accent);
     font-weight: 600;
@@ -2216,7 +2219,7 @@ kbd {
 .fp-fds-source code {
     counter-reset: line;
     display: block;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     line-height: 1.35;
     color: var(--code-fg);
@@ -2275,7 +2278,7 @@ kbd {
     border-radius: 4px;
     padding: 5px 10px;
     font-size: 12px;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     color: var(--text-primary);
     transition: border-color 0.15s;
 }
@@ -2415,7 +2418,7 @@ kbd {
 }
 
 .info-xb {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     color: var(--text-primary);
     white-space: normal;
@@ -2513,7 +2516,7 @@ kbd {
 .clip-num-input {
     width: 44px;
     font-size: 12px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     color: var(--text-secondary);
     background: transparent;
     border: none;
@@ -2649,7 +2652,7 @@ kbd {
 .fp-edit-highlight {
     grid-area: 1 / 1;
     padding: 14px 16px;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     line-height: 1.35;
     tab-size: 4;
@@ -2688,7 +2691,7 @@ kbd {
     width: 100%;
     height: 100%;
     min-height: 60vh;
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     line-height: 1.35;
     tab-size: 4;
@@ -2843,7 +2846,7 @@ kbd {
 #output-colorbar-max {
     font-size: 10px;
     color: var(--text-primary);
-    font-family: monospace;
+    font-family: var(--font-mono);
     order: 1;
 }
 #output-colorbar-canvas {
@@ -2856,7 +2859,7 @@ kbd {
 #output-colorbar-min {
     font-size: 10px;
     color: var(--text-primary);
-    font-family: monospace;
+    font-family: var(--font-mono);
     order: 3;
 }
 
@@ -2899,7 +2902,7 @@ kbd {
 .vp-time {
     font-size: 11px;
     color: var(--text-secondary);
-    font-family: monospace;
+    font-family: var(--font-mono);
     white-space: nowrap;
     width: 72px;
     text-align: right;
@@ -2965,7 +2968,7 @@ kbd {
 .metadata dd {
     margin: 0;
     color: var(--text-primary);
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
 }
 
 /* Detected-files lists under folder loaders */
@@ -2975,7 +2978,7 @@ kbd {
     padding: 0 0 0 4px;
     max-height: 160px;
     overflow-y: auto;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--text-secondary);
 }
@@ -3008,7 +3011,7 @@ kbd {
     cursor: pointer;
 }
 .frame-readout {
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-secondary);
 }
@@ -3055,7 +3058,7 @@ kbd {
     padding: 3px 6px;
     border-radius: 3px;
     font-size: 11px;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
 }
 
 /* Vismap waypoint / visual-region cards */
@@ -3112,7 +3115,7 @@ kbd {
     padding: 3px 6px;
     border-radius: 3px;
     font-size: 11px;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
 }
 .vismap-grid input.vismap-invalid {
     border-color: var(--accent);
@@ -3136,7 +3139,7 @@ kbd {
     min-width: 32px;
     text-align: right;
     font-size: 11px;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-mono);
     color: var(--text-secondary);
 }
 
@@ -3302,7 +3305,7 @@ kbd {
 
 /* Line style dropdown */
 .charts-ch-style {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     background: var(--bg-card);
     border: 1px solid var(--control-border);
@@ -3737,7 +3740,7 @@ kbd {
     color: var(--text-primary);
     font-size: 12px;
     padding: 3px 6px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     min-width: 0;
 }
 
