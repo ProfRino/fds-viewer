@@ -1589,6 +1589,7 @@ kbd {
     border-radius: var(--radius-pill);
     font-size: var(--fs-xs);
     font-weight: 600;
+    white-space: nowrap;
     letter-spacing: 0;
     text-transform: none;
 }
