@@ -6,7 +6,7 @@
     <title>FDS Viewer</title>
     <!-- Inline SVG favicon (no extra file to ship). Stylised box/wireframe. -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e94560' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="css/style.css?v=20261008c">
+    <link rel="stylesheet" href="css/style.css?v=20261008d">
 </head>
 <body>
     <!-- Top Bar -->
@@ -560,6 +560,15 @@
 
                     <h4>Boundary &mdash; surface heatmaps on OBSTs</h4>
                     <p>Open a folder containing <code>.bf</code> files. Each surface patch is rendered as a textured quad over the corresponding OBST face. Same play/colour/range controls as slices.</p>
+
+                    <h4>Vismap &mdash; visibility of safety signs</h4>
+                    <p>Assesses from where the safety signs along the routes of egress can be seen, and for how long &mdash; the waypoint-based method of <a href="https://doi.org/10.1016/j.firesaf.2024.104269" target="_blank" rel="noopener">B&ouml;rger, Belt &amp; Arnold (2024)</a>, a port of <a href="https://github.com/FireDynamics/fdsvismap" target="_blank" rel="noopener">fdsvismap</a> 0.3.2. Open the simulation folder: the horizontal <code>SOOT EXTINCTION COEFFICIENT</code> (or <code>SOOT OPTICAL DENSITY</code>) slice closest to the <strong>Height</strong> is read, and the obstructions FDS wrote to the <code>.smv</code> block the sight lines where their height range includes it. Without smoke data, <em>Uniform extinction</em> evaluates the geometry of the loaded FDS file in clear air or uniform smoke, before the simulation has run.</p>
+                    <ul>
+                        <li><strong>Signs</strong> &mdash; position, contrast factor <code>C</code> (3 reflecting, 8 light-emitting) and viewing direction <code>&alpha;</code>, measured clockwise from the positive y-axis; leave <code>&alpha;</code> empty for a sign that is visible from all directions. Add them by form or by click in the 3D view.</li>
+                        <li><strong>Routes</strong> &mdash; a line of waypoints (one <code>x, y</code> per line, or clicked in the 3D view) with the signs that guide along it. A route does not have to pass its signs, it is enough to see them.</li>
+                        <li><strong>Visual obstructions</strong> &mdash; rectangles that block the sight lines in addition to the FDS geometry, or holes that open it; they apply in the order of the list.</li>
+                        <li><strong>Result</strong> &mdash; the map <em>at a selected time</em>, <em>visible at all times</em>, or as <em>ASET</em> (first time without a visible sign), for all signs, the signs of one route or a single sign. A route is drawn with the sections a sign is visible from, and with the share of its length they make up.</li>
+                    </ul>
 
                     <h4>Agents &mdash; JuPedSim trajectories</h4>
                     <p>In the <strong>Agents</strong> panel, load a JuPedSim <code>.sqlite</code> trajectory to overlay evacuation agents on the scene. Agents are coloured by <strong>Speed</strong>, or by <strong>FED</strong> dose when the file carries an optional <code>agent_scalars(frame, id, fed, speed)</code> table. The colorbar shows the scale &mdash; Speed in m/s (0&ndash;1.5), FED as a dimensionless dose (0&ndash;1, where 1 is the incapacitation threshold). The overlay is <em>persistent</em> &mdash; it stays visible across the Soot/Slice/Boundary modes &mdash; and is time-synced to them: agents and smoke always show the same simulation second.</p>
@@ -1196,20 +1205,42 @@
                             <label class="file-button primary-file-button" for="output-vismap-folder">Open simulation folder</label>
                         </div>
                         <input id="output-vismap-folder" type="file" webkitdirectory multiple hidden>
-                        <label class="field-label" for="output-vismap-quantity" title="Slice quantity used as smoke data. Extinction coefficient is used directly; optical density is converted with K = OD·ln(10).">Smoke data</label>
-                        <select id="output-vismap-quantity" disabled>
-                            <option value="">No slice data loaded</option>
+                        <label class="field-label" for="output-vismap-source" title="The smoke the visibility is evaluated in: the horizontal slice of the quantity closest to the height, one slice chosen by itself, or one extinction coefficient everywhere, which needs no simulation">Smoke data</label>
+                        <select id="output-vismap-source" class="vismap-select">
+                            <option value="uniform">Uniform extinction (no smoke data)</option>
                         </select>
+                        <div class="range-grid" style="margin-top:8px;">
+                            <label for="output-vismap-height" title="Height at which the visibility is evaluated: the slice closest to it is read, obstructions count where their z range includes it, and the map is drawn there">Height / m</label>
+                            <input id="output-vismap-height" type="number" step="any" value="2">
+                            <label for="output-vismap-quantity" title="What the slice holds. Extinction coefficient is used directly; optical density is converted with K = OD·ln(10)">Quantity</label>
+                            <select id="output-vismap-quantity">
+                                <option value="ext_coef_C" selected>Extinction coefficient</option>
+                                <option value="OD_C">Optical density</option>
+                            </select>
+                            <label for="output-vismap-extco" title="Extinction coefficient in every cell; 0 is clear air">K / m⁻¹</label>
+                            <input id="output-vismap-extco" type="number" step="any" min="0" value="0">
+                            <label for="output-vismap-cellsize" title="Cell size of the grid the visibility is evaluated on, over the footprint of the meshes">Cell size / m</label>
+                            <input id="output-vismap-cellsize" type="number" step="any" min="0">
+                        </div>
                         <div class="status-line" id="output-vismap-status">Ready</div>
                     </div>
 
                     <div class="sidebar-section">
-                        <h3>Waypoints</h3>
-                        <div id="output-vismap-waypoints"></div>
-                        <p class="vismap-empty-hint" id="output-vismap-wp-hint">No waypoints yet — exit signs along the escape route.</p>
+                        <h3>Signs</h3>
+                        <div id="output-vismap-signs"></div>
+                        <p class="vismap-empty-hint" id="output-vismap-sign-hint">No signs yet — the safety signs whose visibility is evaluated.</p>
                         <div class="output-file-actions" style="margin-top:6px;">
-                            <button id="output-vismap-add-wp" class="file-button" type="button">+ Add waypoint</button>
-                            <button id="output-vismap-pick-wp" class="file-button" type="button" title="Add a waypoint by clicking a position in the 3D view">+ By click</button>
+                            <button id="output-vismap-add-sign" class="file-button" type="button">+ Add sign</button>
+                            <button id="output-vismap-pick-sign" class="file-button" type="button" title="Add a sign by clicking a position in the 3D view">+ By click</button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Routes</h3>
+                        <div id="output-vismap-routes"></div>
+                        <p class="vismap-empty-hint" id="output-vismap-route-hint" title="A route of egress is a line of waypoints together with the signs that guide along it. It shows from which share of its length a sign is visible.">None — the maps cover all signs.</p>
+                        <div class="output-file-actions" style="margin-top:6px;">
+                            <button id="output-vismap-add-route" class="file-button" type="button">+ Add route</button>
                         </div>
                     </div>
 
@@ -1223,7 +1254,7 @@
                         </div>
                     </div>
 
-                    <div class="sidebar-section">
+                    <div class="sidebar-section" id="output-vismap-times-section">
                         <h3>Times</h3>
                         <div class="range-grid">
                             <label for="output-vismap-t0">Start / s</label>
@@ -1251,18 +1282,27 @@
                             <input id="output-vismap-viewangle" type="checkbox" checked>
                             <span>Consider view angle</span>
                         </label>
+                        <label class="checkbox-row" title="Checks the sight lines against obstructions with anti-aliased lines, which also take in the cells beside a line (fdsvismap: aa)">
+                            <input id="output-vismap-aa" type="checkbox" checked>
+                            <span>Anti-aliased sight lines</span>
+                        </label>
                         <button id="output-vismap-compute" class="file-button primary-file-button" style="margin-top:8px;" type="button">Compute visibility maps</button>
                     </div>
 
                     <div class="sidebar-section">
                         <h3>Result</h3>
                         <label class="field-label" for="output-vismap-mapmode">Map</label>
-                        <select id="output-vismap-mapmode" disabled>
-                            <option value="aggregated" selected>Visible at all times</option>
+                        <select id="output-vismap-mapmode" class="vismap-select" disabled>
+                            <option value="agg" selected>Visible at all times</option>
                             <option value="aset">ASET (first time not visible)</option>
                             <option value="time">At selected time</option>
+                            <option value="none">Routes and signs only</option>
                         </select>
-                        <label class="field-label" for="output-vismap-time-slider" style="margin-top:6px;" title="Steps through the computed time points — only used by the 'At selected time' map">Time</label>
+                        <label class="field-label" for="output-vismap-scope" title="The signs the map counts: all of them, those of one route — which is then drawn with the sections a sign is visible from — or a single sign at a time">Signs</label>
+                        <select id="output-vismap-scope" class="vismap-select" disabled>
+                            <option value="all">All signs</option>
+                        </select>
+                        <label class="field-label" for="output-vismap-time-slider" style="margin-top:6px;" title="Steps through the computed time points: the time of the 'At selected time' map, and the time up to which the other two are evaluated">Time</label>
                         <div class="inline-controls">
                             <button id="output-vismap-play" class="icon-button" disabled>
                                 <span id="output-vismap-play-label">Play</span>
@@ -1270,6 +1310,14 @@
                             <div class="frame-readout" id="output-vismap-time-readout">-- s</div>
                         </div>
                         <input id="output-vismap-time-slider" type="range" min="0" max="0" value="0" disabled>
+                        <label class="field-label" for="output-vismap-opacity">Opacity</label>
+                        <input id="output-vismap-opacity" type="range" min="0.05" max="1" step="0.05" value="0.7">
+                        <label class="checkbox-row">
+                            <input id="output-vismap-show-obst" type="checkbox" checked>
+                            <span>Show obstructed cells</span>
+                        </label>
+                        <div class="vismap-legend" id="output-vismap-legend"></div>
+                        <div class="status-line" id="output-vismap-summary" style="display:none;"></div>
                     </div>
                 </div>
                 <!-- /Vismap controls -->
@@ -1380,13 +1428,14 @@
     <!-- Application Scripts -->
     <script src="js/sample-data.js?v=20260517p"></script>
     <script src="js/fds-parser.js?v=20260517p"></script>
-    <script src="js/viewer.js?v=20261007f"></script>
+    <script src="js/viewer.js?v=20261007g"></script>
     <script src="js/fds-linter.js?v=20260517p"></script>
     <script src="js/fire-panel.js?v=20260519AE"></script>
     <script src="js/mesh-panel.js?v=20260517p"></script>
     <script src="js/slice-reader.js?v=20260517p"></script>
     <script src="js/slice-renderer.js?v=20261007h"></script>
-    <script src="js/vismap.js?v=20261002a"></script>
+    <script src="js/vismap.js?v=20261007a"></script>
+    <script src="js/vismap-overlay.js?v=20261007a"></script>
     <script src="js/smoke3d-reader.js?v=20260517p"></script>
     <script src="js/smoke3d-overlay.js?v=20261002a"></script>
     <script src="js/boundary-reader.js?v=20260518a"></script>
@@ -1394,7 +1443,8 @@
     <script src="js/charts-panel.js?v=20261007f"></script>
     <script src="js/trajectory-reader.js?v=20260607a"></script>
     <script src="js/agent-overlay.js?v=20261002a"></script>
-    <script src="js/output-page.js?v=20261007g"></script>
+    <script src="js/vismap-panel.js?v=20261007a"></script>
+    <script src="js/output-page.js?v=20261007h"></script>
     <script src="js/app.js?v=20261007f"></script>
 </body>
 </html>

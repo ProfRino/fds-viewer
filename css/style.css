@@ -3125,6 +3125,7 @@ kbd {
     color: var(--text-secondary);
 }
 .vismap-grid input {
+    min-width: 0;
     width: 100%;
     box-sizing: border-box;
     background: var(--bg-tertiary);
@@ -3135,7 +3136,10 @@ kbd {
     font-size: 11px;
     font-family: 'Consolas', monospace;
 }
-.vismap-grid input.vismap-invalid {
+.vismap-grid input.vismap-wide {
+    grid-column: 2 / -1;
+}
+.vismap-card .vismap-invalid {
     border-color: var(--accent);
     box-shadow: 0 0 0 1px var(--accent);
 }
@@ -3144,6 +3148,86 @@ kbd {
     color: var(--text-secondary);
     font-style: italic;
     margin: 6px 0 0;
+}
+/* Route card: waypoints, picking them in the 3D view, choice of signs */
+.vismap-sub-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin: 6px 0 3px;
+}
+.vismap-rt-points {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+}
+.vismap-rt-pick {
+    width: 100%;
+    margin-top: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+}
+.vismap-rt-signs {
+    padding-left: 18px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.vismap-rt-signs .checkbox-row { margin: 3px 0; }
+/* A button whose click into the 3D view is being awaited */
+#output-vismap-controls .file-button.active {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+/* Legend of a map: its colors, then the signs with their parameters */
+.vismap-legend:not(:empty) {
+    margin-top: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--text-primary);
+}
+.vismap-legend-title {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+}
+.vismap-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 3px 0;
+}
+.vismap-swatch {
+    flex: 0 0 18px;
+    height: 12px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+}
+.vismap-swatch.vismap-swatch-line {
+    height: 4px;
+    border: none;
+}
+.vismap-sign-badge {
+    flex: 0 0 auto;
+    min-width: 18px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 16px;
+    border: 1.5px solid;
+    border-radius: 9px;
+    background: #fff;
+    font-weight: 600;
 }
 
 .smoke-slider-row {
@@ -3207,8 +3291,7 @@ kbd {
     margin-bottom: 6px;
 }
 #output-slice-set-select,
-#output-vismap-quantity,
-#output-vismap-mapmode {
+.vismap-select {
     width: 100%;
     max-width: 100%;
     background: var(--bg-tertiary);
@@ -3217,6 +3300,15 @@ kbd {
     padding: 5px 8px;
     border-radius: 3px;
     font-size: 12px;
+}
+.range-grid select {
+    min-width: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 11px;
 }
 
 /* ═══════════════════════════════════════════

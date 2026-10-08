@@ -74,7 +74,7 @@ Point the **Output** page at a simulation folder once — the viewer auto-detect
 - **Smoke** (`.s3d`) — WebGL2 volume rendering with Basic and Solid-aware (depth-sampled) modes; user-tunable transfer functions for soot and HRRPUV
 - **Slices** (`.sf`) — multi-mesh stitching with shared colormap
 - **Boundary patches** (`.bf`) — per-frame auto-range colorbar
-- **Visibility maps** — exit-sign visibility computed from extinction-coefficient slices — see [Visibility maps (Vismap)](#visibility-maps-vismap) below
+- **Visibility maps** — visibility of safety signs along routes of egress, computed from extinction-coefficient slices — see [Visibility maps (Vismap)](#visibility-maps-vismap) below
 
 The Output page also accepts a JuPedSim `.sqlite` to overlay evacuation agents on the same scene — see [JuPedSim Output](#jupedsim-output) below.
 
@@ -82,19 +82,21 @@ The Output page also accepts a JuPedSim `.sqlite` to overlay evacuation agents o
 
 ### Visibility maps (Vismap)
 
-The Output page **Vismap** mode computes the visibility of escape-route
-signage over time, following the waypoint-based method of
+The Output page **Vismap** mode assesses the visibility of safety signs along
+routes of egress over time, following the waypoint-based method of
 [Börger, Belt & Arnold (2024)](https://doi.org/10.1016/j.firesaf.2024.104269)
 and its Python reference implementation
-[fdsvismap](https://github.com/FireDynamics/fdsvismap) — no scripting required:
+[fdsvismap](https://github.com/FireDynamics/fdsvismap) (v0.3.2) — no scripting required:
 
-- **Input** — a `SOOT EXTINCTION COEFFICIENT` (or `SOOT OPTICAL DENSITY`) slice from the simulation folder
-- **Waypoints** — exit signs placed via form or by clicking in the 3D view, each with position, orientation angle α and contrast factor C (Jin's visibility model)
-- **Sight lines** — each map position is checked against each sign along a straight line of sight: walls from the FDS geometry block the view, the smoke along the line reduces the visible distance (mean extinction coefficient, per Jin), and a sign only counts as visible from the side it faces (view-angle weighting by α). Additional visual obstructions (e.g. curtains) or see-through openings (e.g. windows) can be defined and are shown in the scene
-- **Results** — three map views rendered on the evaluation plane: sign visible / not visible at a selected time (with playback, side by side with the smoke), aggregated over all times, and an **ASET map** showing the first time each position loses sight of any sign
+- **Smoke data** — the horizontal `SOOT EXTINCTION COEFFICIENT` (or `SOOT OPTICAL DENSITY`) slice of the simulation folder closest to the evaluation height, or any slice picked by itself. Without smoke data, one extinction coefficient everywhere evaluates the geometry in clear air or uniform smoke — also before the simulation has run
+- **Signs** — safety signs placed via form or by clicking in the 3D view, each with position, contrast factor C (Jin's visibility model) and one viewing direction α, or none for a sign that is visible from all directions
+- **Routes** — routes of egress as lines of waypoints, each with the signs that guide along it; a route does not have to pass its signs, it is enough to see them
+- **Sight lines** — each map position is checked against each sign along a straight line of sight: obstructions of the simulation at the evaluation height block the view, the smoke along the line reduces the visible distance (mean extinction coefficient, per Jin), and a sign only counts as visible from the side it faces (view-angle weighting by α). Additional visual obstructions (e.g. curtains) or see-through openings (e.g. windows) can be defined and are shown in the scene
+- **Results** — rendered on the plane at the evaluation height, for all signs, the signs of one route or a single sign: sign visible / not visible at a selected time (with playback), aggregated over all times, and an **ASET map** showing the first time each position loses sight of every sign. A route is drawn with the sections a sign is visible from and the share of its length they make up
 
-> The visibility computation is a port of fdsvismap; results should be
-> independently verified before use in any design or regulatory context.
+> The visibility computation is a port of fdsvismap and is tested against
+> its results (`tests/vismap.test.mjs`); results should be independently
+> verified before use in any design or regulatory context.
 
 ### JuPedSim Output
 
@@ -169,7 +171,8 @@ inputs for the viewer - they are **not** intended as validated design fires.
 │   ├── smoke3d-*.js        .s3d reader + WebGL2 volume overlay
 │   ├── slice-*.js          .sf reader + multi-mesh slice overlay
 │   ├── boundary-*.js       .bf reader + boundary patch overlay
-│   ├── vismap.js           Visibility map engine + overlay (fdsvismap port)
+│   ├── vismap.js           Visibility maps: port of fdsvismap
+│   ├── vismap-*.js         Vismap 3D overlay + sidebar panel
 │   └── sample-data.js      Embedded sample (for offline Load Sample)
 ├── examples/*.fds      Sample inputs (also editable on disk)
 ├── assets/             Demo GIFs used by this README
