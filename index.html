@@ -6,7 +6,7 @@
     <title>FDS Viewer</title>
     <!-- Inline SVG favicon (no extra file to ship). Stylised box/wireframe. -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e94560' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="css/style.css?v=20261008d">
+    <link rel="stylesheet" href="css/style.css?v=20261008e">
 </head>
 <body>
     <!-- Top Bar -->
@@ -914,11 +914,11 @@
                 <div class="sidebar-section">
                     <h3>Data</h3>
                     <div class="view-grid output-mode-grid">
-                        <button class="view-btn active" id="output-mode-smoke">Soot</button>
-                        <button class="view-btn" id="output-mode-slice">Slice</button>
-                        <button class="view-btn" id="output-mode-boundary">Boundary</button>
-                        <button class="view-btn" id="output-mode-vismap">Vismap</button>
-                        <button class="view-btn" id="output-mode-charts">Charts</button>
+                        <button class="view-btn active" id="output-mode-smoke" data-label="Soot" aria-pressed="true">Soot</button>
+                        <button class="view-btn" id="output-mode-slice" data-label="Slice" aria-pressed="false">Slice</button>
+                        <button class="view-btn" id="output-mode-boundary" data-label="Boundary" aria-pressed="false">Boundary</button>
+                        <button class="view-btn" id="output-mode-vismap" data-label="Vismap" aria-pressed="false">Vismap</button>
+                        <button class="view-btn" id="output-mode-charts" data-label="Charts" aria-pressed="false">Charts</button>
                     </div>
                 </div>
 
@@ -1293,7 +1293,7 @@
                 <div id="output-agents-panel" class="sidebar-section">
                     <h3>Agents</h3>
                     <input type="file" id="output-agents-file" accept=".sqlite,.db" />
-                    <button type="button" id="output-agents-reload" disabled>Reload</button>
+                    <button type="button" id="output-agents-reload" class="icon-button" disabled>Reload</button>
                     <div id="output-agents-status">No trajectory loaded.</div>
                     <label class="field-label" for="output-agents-colorby">Colour by</label>
                     <select id="output-agents-colorby">
@@ -1394,7 +1394,7 @@
     <script src="js/charts-panel.js?v=20261007f"></script>
     <script src="js/trajectory-reader.js?v=20260607a"></script>
     <script src="js/agent-overlay.js?v=20261002a"></script>
-    <script src="js/output-page.js?v=20261007g"></script>
+    <script src="js/output-page.js?v=20261008a"></script>
     <script src="js/app.js?v=20261007f"></script>
 </body>
 </html>
