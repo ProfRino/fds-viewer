@@ -502,7 +502,7 @@ a.footer-link:active {
 .layer-item input[type="checkbox"]:checked::after {
     content: '✓';
     position: absolute;
-    color: white;
+    color: var(--on-accent);
     font-size: var(--fs-xs);
     top: -1px;
     left: 2px;
