@@ -3,7 +3,6 @@
 :root {
     --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --font-mono: 'Consolas', ui-monospace, 'SF Mono', Menlo, 'Liberation Mono', 'Courier New', monospace;
-    --font-math: 'Cambria Math', 'STIX Two Math', 'Georgia', serif;
 
     /* Type scale */
     --fs-2xs: 10px;
@@ -201,32 +200,11 @@ body.has-data .footer-bar { display: none !important; }
     gap: 16px;
 }
 
-.credit-bar {
-    font-size: var(--fs-xs);
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
-    text-align: center;
-}
-
-.credit-bar em {
-    font-style: italic;
-}
-
 .footer-credit {
     font-size: var(--fs-xs);
     font-weight: 600;
     color: var(--accent);
     white-space: nowrap;
-}
-
-.footer-disclaimer {
-    font-size: var(--fs-xs);
-    color: var(--text-muted);
-    white-space: nowrap;
-    font-style: italic;
 }
 
 /* Right-aligned licence + GitHub links in the footer */
@@ -748,15 +726,6 @@ input:not([type="range"]):disabled {
 
 /* ─── Info Panel ────────────────────────── */
 
-#info-content {
-    font-size: var(--fs-sm);
-}
-
-#info-content .hint {
-    color: var(--text-muted);
-    font-style: italic;
-}
-
 .info-item {
     display: flex;
     align-items: baseline;
@@ -786,12 +755,6 @@ input:not([type="range"]):disabled {
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
 }
-
-.type-MESH { color: var(--mesh-color); font-weight: 700; }
-.type-OBST { color: var(--obst-color); font-weight: 700; }
-.type-VENT { color: var(--vent-color); font-weight: 700; }
-.type-HOLE { color: var(--hole-color); font-weight: 700; }
-.type-DEVC { color: var(--devc-color); font-weight: 700; }
 
 /* ─── Main Viewer Area ──────────────────── */
 
@@ -1106,14 +1069,6 @@ kbd {
     .fp-code-split {
         flex-direction: column;
     }
-    #fp-debug-results {
-        position: static;
-        flex: none;
-        max-width: 100%;
-        border-left: none;
-        border-top: 1px solid var(--border);
-        max-height: 260px;
-    }
     /* Layer controls larger touch target */
     .layer-item {
         padding: 9px 8px;
@@ -1129,7 +1084,6 @@ kbd {
     }
     .clip-slider { width: 40px; }
     .shortcuts { display: none; }
-    .footer-disclaimer { display: none; }
 }
 
 /* ═══════════════════════════════════════════
@@ -1945,100 +1899,6 @@ kbd {
     letter-spacing: 0;
 }
 
-/* ── Structured equation cards (help → Output) ───────────────────────── */
-.help-equation {
-    margin: 18px 0;
-    padding: 14px 18px 16px;
-    background: var(--bg-tertiary);
-    border-left: 3px solid var(--accent);
-    border-radius: var(--radius-lg);
-}
-.help-equation > figcaption {
-    margin: 0 0 8px;
-    font-size: var(--fs-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--accent);
-    font-weight: 700;
-}
-.help-equation-body {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 4px 6px;
-    margin: 6px 0;
-    padding: 12px 6px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    font-family: var(--font-math);
-    font-size: var(--fs-2xl);
-    line-height: 1.4;
-    color: var(--text-primary);
-}
-.help-equation-sub { font-size: var(--fs-lg); padding: 8px 6px; }
-.help-equation-body sup, .help-equation-body sub {
-    font-family: inherit;
-    font-size: 0.65em;
-    line-height: 0;
-}
-.eq-sym {
-    font-style: italic;
-    color: var(--text-primary);
-}
-.eq-var {
-    font-family: var(--font-mono);
-    font-size: 0.78em;
-    color: var(--accent);
-    font-weight: 600;
-    font-style: normal;
-    cursor: help;
-}
-.eq-fn {
-    font-style: normal;
-    color: var(--text-secondary);
-    margin: 0 2px;
-}
-.eq-num { font-family: inherit; color: var(--text-secondary); }
-.eq-op  { color: var(--text-muted); margin: 0 1px; }
-.eq-paren { color: var(--text-muted); }
-.eq-caption {
-    margin: 8px 2px 0;
-    color: var(--text-secondary);
-    font-size: var(--fs-md);
-    line-height: 1.55;
-    text-align: left;
-}
-/* "where" reference table beneath the equation body */
-.eq-where {
-    margin: 10px 0 0;
-    border-collapse: collapse;
-    width: 100%;
-    font-size: var(--fs-md);
-}
-.eq-where td {
-    padding: 4px 10px 4px 0;
-    vertical-align: top;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border);
-}
-.eq-where tr:last-child td { border-bottom: none; }
-.eq-where td:first-child { width: 110px; }
-.eq-where td:nth-child(2) { color: var(--text-primary); font-weight: 600; width: 160px; }
-.eq-where em { color: var(--text-muted); font-style: normal; }
-
-/* Inline fraction — used for the `t = (raw - thr) / (1 - thr)` line */
-.eq-frac {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0 4px;
-    line-height: 1.05;
-    font-size: 0.95em;
-}
-.eq-frac-top { padding: 0 6px 2px; border-bottom: 1px solid var(--text-secondary); }
-.eq-frac-bot { padding: 2px 6px 0; }
-
 /* ── Card button group (right-aligned) ── */
 .fp-card-btns {
     margin-left: auto;
@@ -2048,14 +1908,6 @@ kbd {
     flex-shrink: 0;
 }
 .fp-card-btns .fp-copy-btn { margin-left: 0; }
-
-/* ── Debug button ── */
-.fp-debug-btn {
-    background: rgba(99,102,241,0.12);
-    color: var(--accent);
-    border: 1px solid var(--accent);
-}
-.fp-debug-btn:hover { background: rgba(99,102,241,0.25); }
 
 /* ── Split layout: code + debug sidebar ── */
 .fp-code-split {
@@ -2073,18 +1925,6 @@ kbd {
 }
 
 /* ── Debug results panel ── */
-.fp-debug-results {
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border);
-    flex-direction: column;
-    overflow-y: auto;
-    position: sticky;
-    top: 54px;
-    align-self: flex-start;
-    max-height: calc(100vh - 80px);
-    flex: 0 0 300px;
-    max-width: 42%;
-}
 
 .fp-debug-header {
     display: flex;
@@ -2095,54 +1935,6 @@ kbd {
 }
 
 .fp-debug-badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-
-/* .out file summary banner (top of Debug panel) */
-.fp-out-summary {
-    padding: 8px 14px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.fp-out-summary-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-.fp-out-meta {
-    font-size: var(--fs-xs);
-    color: var(--text-muted);
-    background: rgba(255,255,255,0.04);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-}
-.fp-out-source {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: var(--fs-xs);
-    color: var(--text-muted);
-}
-.fp-out-source code {
-    background: rgba(255,255,255,0.04);
-    padding: 1px 5px;
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
-}
-.fp-out-reload {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--accent);
-    cursor: pointer;
-    font-size: var(--fs-xs);
-    padding: 3px 8px;
-    border-radius: var(--radius-md);
-    transition: background 0.1s;
-}
-.fp-out-reload:hover { background: rgba(99,102,241,0.10); }
 
 .fp-debug-close {
     cursor: pointer;
@@ -2172,10 +1964,6 @@ kbd {
 }
 .fp-finding:last-child { border-bottom: none; }
 .fp-finding:hover { background: rgba(99,102,241,0.07); }
-.fp-finding.fp-finding-active {
-    background: rgba(99,102,241,0.14);
-    border-left-color: var(--accent);
-}
 
 .fp-finding-top {
     display: flex;
@@ -2382,7 +2170,6 @@ kbd {
 
 .fp-badge-fire    { background: rgba(233,69,96,.2);  color: #e94560; border: 1px solid rgba(233,69,96,.4); }
 .fp-badge-mat     { background: rgba(68,136,255,.2); color: #4488ff; border: 1px solid rgba(68,136,255,.4); }
-.fp-badge-exp     { background: rgba(180,80,220,.2); color: #c050e0; border: 1px solid rgba(180,80,220,.3); }
 
 /* Mesh resolution quality badges (D*/dx): red → orange → teal → green */
 .fp-badge-res-bad    { background: rgba(255,51,0,.15);   color: #ff3300; border: 1px solid rgba(255,51,0,.3); }   /* Below coarse */
@@ -2609,10 +2396,6 @@ kbd {
 #clip-reset-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
-}
-
-[data-theme="light"] #clip-panel {
-    background: rgba(244, 245, 248, 0.92);
 }
 
 /* ─── FDS Code Edit Mode ────────────────── */
@@ -3424,29 +3207,6 @@ kbd {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-}
-
-.charts-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.charts-canvas-wrap {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--bg-card);
-}
-
-#charts-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
 }
 
 /* Hover tooltip */
