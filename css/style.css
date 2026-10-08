@@ -66,6 +66,7 @@
     /* Theme-invariant palette: same value in both themes. The -rgb
        triplets feed rgba() tints. */
     --on-accent: #fff;
+    --hud-accent: #ff6b81;  /* accent text on the always-dark walk HUD */
     --rose: #e94560;
     --rose-rgb: 233, 69, 96;
     --amber: #f59e0b;
@@ -333,6 +334,8 @@ a.footer-link:active {
     color: var(--accent-text);
     white-space: nowrap;
 }
+
+.top-bar .logo svg { color: var(--accent); }
 
 .top-bar .logo svg {
     width: 24px;
@@ -659,7 +662,7 @@ input:not([type="range"]):disabled {
     font-size: var(--fs-lg);
     font-weight: 700;
     margin-bottom: 8px;
-    color: var(--accent-text);
+    color: var(--hud-accent);
     letter-spacing: 0.5px;
 }
 #walk-hud-instructions, #output-walk-hud-instructions { color: rgba(255,255,255,0.85); }
@@ -849,7 +852,7 @@ input:not([type="range"]):disabled {
 .drop-logo svg {
     width: 48px;
     height: 48px;
-    color: var(--accent-text);
+    color: var(--accent);
 }
 
 .drop-content p {
@@ -1498,7 +1501,7 @@ kbd {
 }
 
 .fp-note a:hover {
-    color: var(--accent-hover);
+    color: var(--accent-text);
 }
 
 .fp-table-wrap {
@@ -2201,7 +2204,7 @@ kbd {
     border-radius: var(--radius-lg);
 }
 
-.fp-badge-fire    { background: rgba(var(--rose-rgb), .2);  color: var(--rose); border: 1px solid rgba(var(--rose-rgb), .4); }
+.fp-badge-fire    { background: rgba(var(--rose-rgb), .2);  color: var(--accent-text); border: 1px solid rgba(var(--rose-rgb), .4); }
 .fp-badge-mat     { background: rgba(68,136,255,.2); color: #4488ff; border: 1px solid rgba(68,136,255,.4); }
 
 /* Mesh resolution quality badges (D*/dx): red → orange → teal → green */
@@ -3607,13 +3610,13 @@ kbd {
     letter-spacing: .5px;
 }
 .fp-burn-chip {
-    background: rgba(var(--rose-rgb), .2);
-    color: var(--accent-text);
+    background: var(--accent-fill);
+    color: var(--on-accent);
     font-size: var(--fs-2xs);
     font-weight: 700;
     padding: 2px 7px;
     border-radius: var(--radius-xl);
-    border: 1px solid rgba(var(--rose-rgb), .4);
+    border: 1px solid var(--accent-fill);
     letter-spacing: .5px;
 }
 .fp-layer.fp-layer-chip { padding: 3px 10px; margin: 0; display: inline-flex; }
