@@ -3022,6 +3022,7 @@ div.fp-finding { cursor: default; }
     color: var(--text-secondary);
 }
 .vismap-grid input {
+    min-width: 0;
     width: 100%;
     box-sizing: border-box;
     background: var(--bg-tertiary);
@@ -3032,7 +3033,10 @@ div.fp-finding { cursor: default; }
     font-size: var(--fs-xs);
     font-family: var(--font-mono);
 }
-.vismap-grid input.vismap-invalid {
+.vismap-grid input.vismap-wide {
+    grid-column: 2 / -1;
+}
+.vismap-card .vismap-invalid {
     border-color: var(--accent);
     box-shadow: 0 0 0 1px var(--accent);
 }
@@ -3041,6 +3045,86 @@ div.fp-finding { cursor: default; }
     color: var(--text-secondary);
     font-style: italic;
     margin: 6px 0 0;
+}
+/* Route card: waypoints, picking them in the 3D view, choice of signs */
+.vismap-sub-label {
+    display: block;
+    font-size: var(--fs-xs);
+    color: var(--text-secondary);
+    margin: 6px 0 3px;
+}
+.vismap-rt-points {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--control-border);
+    color: var(--text-primary);
+    padding: 3px 6px;
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-xs);
+    font-family: var(--font-mono);
+}
+.vismap-rt-pick {
+    width: 100%;
+    margin-top: 6px;
+    padding: 4px 10px;
+    font-size: var(--fs-xs);
+}
+.vismap-rt-signs {
+    padding-left: 18px;
+    font-size: var(--fs-xs);
+    color: var(--text-secondary);
+}
+.vismap-rt-signs .checkbox-row { margin: 3px 0; }
+/* A button whose click into the 3D view is being awaited */
+#output-vismap-controls .file-button.active {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+/* Legend of a map: its colors, then the signs with their parameters */
+.vismap-legend:not(:empty) {
+    margin-top: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-xs);
+    color: var(--text-primary);
+}
+.vismap-legend-title {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+}
+.vismap-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 3px 0;
+}
+.vismap-swatch {
+    flex: 0 0 18px;
+    height: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.vismap-swatch.vismap-swatch-line {
+    height: 4px;
+    border: none;
+}
+.vismap-sign-badge {
+    flex: 0 0 auto;
+    min-width: 18px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 16px;
+    border: 1.5px solid;
+    border-radius: var(--radius-pill);
+    background: #fff; /* the white of the sign's ID badge, in both themes */
+    font-weight: 600;
 }
 
 .smoke-slider-row {
@@ -3087,10 +3171,14 @@ div.fp-finding { cursor: default; }
     margin-bottom: 6px;
 }
 #output-slice-set-select,
-#output-vismap-quantity,
-#output-vismap-mapmode {
+.vismap-select {
     width: 100%;
     max-width: 100%;
+}
+.range-grid select {
+    min-width: 0;
+    padding: 3px 6px;
+    font-size: var(--fs-xs);
 }
 
 /* ═══════════════════════════════════════════

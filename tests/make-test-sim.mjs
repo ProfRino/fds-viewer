@@ -93,27 +93,35 @@ export function buildSliceFile(mesh) {
     return out.buffer;
 }
 
-/** Binary slice file with arbitrary header and a constant value per frame.
- *  `indices` is [i1, i2, j1, j2, k1, k2]; values are written node-based,
- *  (i2-i1+1)*(j2-j1+1)*(k2-k1+1) per frame. */
-export function buildConstantSliceFile(quantity, shortName, units, indices, times, value) {
+/** Binary slice file with arbitrary header and values. `indices` is
+ *  [i1, i2, j1, j2, k1, k2]; `valueAt(i, j, k, timeIndex)` gives the value of
+ *  a grid node, (i2-i1+1)*(j2-j1+1)*(k2-k1+1) of them per frame. */
+export function buildSliceFileWith(quantity, shortName, units, indices, times, valueAt) {
     const [i1, i2, j1, j2, k1, k2] = indices;
-    const count = (i2 - i1 + 1) * (j2 - j1 + 1) * (k2 - k1 + 1);
     const chunks = [
         stringRecord(quantity),
         stringRecord(shortName),
         stringRecord(units),
         int32Record(indices),
     ];
-    for (const t of times) {
-        chunks.push(float32Record([t]));
-        chunks.push(float32Record(new Array(count).fill(value)));
-    }
+    times.forEach((time, t) => {
+        const values = [];
+        for (let k = k1; k <= k2; k++)
+            for (let j = j1; j <= j2; j++)
+                for (let i = i1; i <= i2; i++) values.push(valueAt(i, j, k, t));
+        chunks.push(float32Record([time]));
+        chunks.push(float32Record(values));
+    });
     const total = chunks.reduce((s, c) => s + c.length, 0);
     const out = new Uint8Array(total);
     let offset = 0;
     for (const c of chunks) { out.set(c, offset); offset += c.length; }
     return out.buffer;
+}
+
+/** Binary slice file with arbitrary header and a constant value per frame. */
+export function buildConstantSliceFile(quantity, shortName, units, indices, times, value) {
+    return buildSliceFileWith(quantity, shortName, units, indices, times, () => value);
 }
 
 // ── .smv / .end / .fds output ─────────────────────────────────────────────

@@ -2049,14 +2049,13 @@ class FDSViewer {
                     if (n._isSliceOverlay) n.visible = visible;
                 });
                 break;
-            // Vismap's manual visual obstruction / hole markers. The overlay
-            // additionally tracks whether its Output mode is active via
-            // _vismapModeVisible, so re-ticking the layer in another mode
-            // doesn't pop the markers back in.
+            // Vismap's manual visual obstruction / hole markers. They sit in
+            // the overlay's group, which is only shown in the Vismap mode, so
+            // re-ticking the layer in another mode doesn't pop them back in.
             case 'vismapRegions':
                 this.scene.userData.vismapRegionsVisible = visible;
                 this.scene.traverse(n => {
-                    if (n._isVisualRegion) n.visible = visible && n._vismapModeVisible !== false;
+                    if (n._isVisualRegion) n.visible = visible;
                 });
                 break;
         }
