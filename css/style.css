@@ -271,7 +271,7 @@ a.footer-link:active {
 .license-modal-body {
     padding: 14px 18px 18px;
     overflow-y: auto;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     line-height: 1.55;
 }
 .license-modal-body p { margin: 0 0 10px; }
@@ -1208,7 +1208,7 @@ kbd {
 
 .fp-ov-item { display: flex; flex-direction: column; gap: 4px; }
 .fp-ov-lbl  { font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; }
-.fp-ov-val  { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+.fp-ov-val  { font-size: var(--fs-2xl); font-weight: 700; color: var(--text-primary); }
 
 /* ── Grids ── */
 .fp-grid-2 {
@@ -1606,7 +1606,7 @@ kbd {
 
 .fp-code > summary::before {
     content: "▶";
-    font-size: 9px;
+    font-size: var(--fs-2xs);
     color: var(--text-muted);
     transition: transform 0.15s;
     display: inline-block;
@@ -1750,7 +1750,7 @@ kbd {
 }
 .help-article h3 {
     margin: 28px 0 10px;
-    font-size: 17px;
+    font-size: var(--fs-2xl);
     color: var(--text-primary);
     border-bottom: 1px solid var(--border);
     padding-bottom: 6px;
@@ -1770,7 +1770,7 @@ kbd {
     color: var(--accent);
     padding: 1px 5px;
     border-radius: 3px;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
 }
 .help-article kbd {
     background: var(--bg-tertiary);
@@ -1784,7 +1784,7 @@ kbd {
 }
 .help-article em { font-style: italic; color: var(--text-secondary); }
 .help-lede {
-    font-size: 14.5px;
+    font-size: var(--fs-lg);
     color: var(--text-secondary);
     margin: 6px 0 18px;
 }
@@ -1812,7 +1812,7 @@ kbd {
     padding-top: 18px;
     border-top: 1px solid var(--border);
     color: var(--text-muted);
-    font-size: 12.5px;
+    font-size: var(--fs-md);
 }
 .help-footer a { color: var(--accent); text-decoration: none; }
 .help-footer a:hover { text-decoration: underline; }
@@ -1846,11 +1846,11 @@ kbd {
     font-weight: 600;
     text-decoration: none;
     font-family: var(--font-mono);
-    font-size: 13.5px;
+    font-size: var(--fs-base);
     display: inline-block;
 }
 .help-callout-cta:hover { text-decoration: underline; }
-.help-callout-hint { color: var(--text-secondary); font-size: 12.5px; }
+.help-callout-hint { color: var(--text-secondary); font-size: var(--fs-md); }
 
 /* FDS external links list (Troubleshooting page) */
 .help-fds-links { margin: 8px 0 4px; padding-left: 22px; }
@@ -1868,7 +1868,7 @@ kbd {
 .help-fds-hint {
     margin: 6px 0 14px;
     color: var(--text-muted);
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     font-style: italic;
 }
 
@@ -1881,14 +1881,14 @@ kbd {
     margin-top: 14px;
     color: var(--accent);
     font-weight: 700;
-    font-size: 13.5px;
+    font-size: var(--fs-base);
 }
 .help-control-ref dd {
     margin: 4px 0 0 0;
     padding-left: 14px;
     border-left: 2px solid var(--border);
     color: var(--text-secondary);
-    font-size: 13.5px;
+    font-size: var(--fs-base);
     line-height: 1.55;
 }
 .help-control-ref dd ul.help-eq-list {
@@ -1906,7 +1906,7 @@ kbd {
     margin: 2px 0;
     border-radius: 4px;
     font-family: var(--font-mono);
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     line-height: 1.5;
 }
 .help-eq-block {
@@ -1914,7 +1914,7 @@ kbd {
     margin: 10px 0;
     padding: 10px 14px;
     text-align: center;
-    font-size: 13.5px;
+    font-size: var(--fs-base);
     border-left: 3px solid var(--accent);
 }
 .help-eq sub, .help-eq sup, .help-eq-block sub, .help-eq-block sup {
@@ -1925,7 +1925,7 @@ kbd {
 .help-article h5 {
     margin: 18px 0 6px;
     color: var(--text-primary);
-    font-size: 13.5px;
+    font-size: var(--fs-base);
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
@@ -1991,7 +1991,7 @@ kbd {
 .eq-caption {
     margin: 8px 2px 0;
     color: var(--text-secondary);
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     line-height: 1.55;
     text-align: left;
 }
@@ -2000,7 +2000,7 @@ kbd {
     margin: 10px 0 0;
     border-collapse: collapse;
     width: 100%;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
 }
 .eq-where td {
     padding: 4px 10px 4px 0;
@@ -2552,7 +2552,7 @@ kbd {
     justify-content: center;
     width: 18px;
     min-width: 18px;
-    font-size: 9px;
+    font-size: var(--fs-2xs);
     padding: 0;
     background: transparent;
     border: none;
@@ -3173,7 +3173,7 @@ kbd {
 .thresh-preset-btn {
     flex: 0 1 auto;
     padding: 3px 8px;
-    font-size: 10.5px;
+    font-size: var(--fs-2xs);
     border: 1px solid var(--border);
     border-radius: 4px;
     cursor: pointer;
@@ -3240,7 +3240,7 @@ kbd {
     line-height: 1.5;
 }
 .charts-hint code {
-    font-size: 10.5px;
+    font-size: var(--fs-2xs);
     background: var(--bg-tertiary);
     padding: 1px 4px;
     border-radius: 3px;
