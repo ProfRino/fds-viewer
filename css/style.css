@@ -250,10 +250,8 @@ a.footer-link:active {
 }
 .license-modal-header h3 { margin: 0; font-size: 15px; }
 .license-close {
-    background: none; border: none; color: var(--text-secondary);
     font-size: 22px; line-height: 1; cursor: pointer;
 }
-.license-close:hover { color: var(--accent); }
 .license-modal-body {
     padding: 14px 18px 18px;
     overflow-y: auto;
@@ -426,17 +424,10 @@ a.footer-link:active {
     flex: 1;
     padding: 4px 6px;
     font-size: 11px;
-    background: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 4px;
-    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
-}
-.layer-bulk-btn:hover {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border-color: var(--accent);
 }
 
 .layer-item {
@@ -530,20 +521,13 @@ a.footer-link:active {
 .view-btn {
     padding: 6px 4px;
     font-size: 11px;
-    background: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 4px;
-    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
     text-align: center;
 }
 
-.view-btn:hover {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border-color: var(--accent);
-}
 
 .view-btn.active {
     background: var(--accent-tint);
@@ -593,16 +577,10 @@ input:not([type="range"]):disabled {
     padding: 8px 12px;
     font-size: 13px;
     font-weight: 600;
-    background: var(--accent-fill);
-    color: #fff;
     border: 1px solid var(--accent-fill);
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
-}
-.walk-btn:hover {
-    background: var(--accent-fill-hover);
-    border-color: var(--accent-fill-hover);
 }
 .walk-btn.active {
     background: var(--bg-tertiary);
@@ -879,24 +857,8 @@ input:not([type="range"]):disabled {
     font-family: inherit;
 }
 
-.btn-primary {
-    background: var(--accent-fill);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--accent-fill-hover);
-}
-
 .btn-secondary {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
     border: 1px solid var(--border);
-}
-
-.btn-secondary:hover {
-    background: var(--bg-card);
-    color: var(--text-primary);
 }
 
 .btn-sm {
@@ -2065,13 +2027,6 @@ kbd {
 }
 .fp-debug-btn:hover { background: rgba(99,102,241,0.25); }
 
-.fp-save-btn {
-    background: rgba(34,197,94,0.12);
-    color: #22c55e;
-    border: 1px solid #22c55e;
-}
-.fp-save-btn:hover { background: rgba(34,197,94,0.28); }
-
 /* ── Split layout: code + debug sidebar ── */
 .fp-code-split {
     display: flex;
@@ -2160,16 +2115,12 @@ kbd {
 .fp-out-reload:hover { background: rgba(99,102,241,0.10); }
 
 .fp-debug-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
     cursor: pointer;
     font-size: 13px;
     padding: 2px 6px;
     line-height: 1;
     margin-left: auto;
 }
-.fp-debug-close:hover { color: var(--accent); }
 
 .fp-findings-list {
     margin: 0;
@@ -2298,8 +2249,6 @@ kbd {
     padding: 5px 14px;
     font-size: 12px;
     font-weight: 500;
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
     border: 1px solid var(--border);
     border-radius: 4px;
     cursor: pointer;
@@ -2308,11 +2257,6 @@ kbd {
     flex-shrink: 0;
 }
 
-.fp-copy-btn:hover {
-    background: var(--accent-fill);
-    color: #fff;
-    border-color: var(--accent-fill);
-}
 
 /* ── Code panel search bar ── */
 .fp-code-search {
@@ -2979,19 +2923,7 @@ kbd {
     font-size: 12px;
     font-weight: 500;
     border: 1px solid var(--border);
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
     transition: background 0.15s, border-color 0.15s;
-}
-.file-button:hover { background: var(--bg-hover); }
-.file-button.primary-file-button {
-    background: var(--accent-fill);
-    color: #fff;
-    border-color: var(--accent-fill);
-}
-.file-button.primary-file-button:hover:not(:disabled) {
-    background: var(--accent-fill-hover);
-    border-color: var(--accent-fill-hover);
 }
 
 .status-line {
@@ -3072,12 +3004,9 @@ kbd {
     padding: 4px 10px;
     border-radius: 3px;
     border: 1px solid var(--border);
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
     font-size: 12px;
     cursor: pointer;
 }
-.icon-button:hover:not(:disabled) { background: var(--bg-hover); }
 .frame-readout {
     font-family: 'Consolas', monospace;
     font-size: 12px;
@@ -3103,14 +3032,11 @@ kbd {
 .range-auto-btn {
     font-size: 11px;
     padding: 2px 8px;
-    background: transparent;
     border: 1px solid var(--border);
-    color: var(--text-secondary);
     border-radius: 3px;
     cursor: pointer;
     line-height: 1.4;
 }
-.range-auto-btn:hover { color: var(--text-primary); border-color: var(--accent); }
 .range-grid {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -3232,17 +3158,10 @@ kbd {
     flex: 0 1 auto;
     padding: 3px 8px;
     font-size: 10.5px;
-    background: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 4px;
-    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s, outline 0s, outline-offset 0s;
-}
-.thresh-preset-btn:hover:not(:disabled) {
-    background: var(--bg-card);
-    color: var(--accent);
-    border-color: var(--accent);
 }
 
 #output-color-map {
@@ -3346,9 +3265,6 @@ kbd {
     text-overflow: ellipsis;
 }
 .charts-ds-remove {
-    background: none;
-    border: none;
-    color: var(--text-muted);
     cursor: pointer;
     font-size: 11px;
     padding: 2px 4px;
@@ -3356,7 +3272,6 @@ kbd {
     flex-shrink: 0;
     line-height: 1;
 }
-.charts-ds-remove:hover { color: var(--accent); background: var(--bg-tertiary); }
 
 .charts-ds-bulk {
     display: flex;
@@ -3367,14 +3282,11 @@ kbd {
     flex: 1;
     font-size: 10px;
     padding: 2px 6px;
-    background: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 3px;
-    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.12s, outline 0s, outline-offset 0s;
 }
-.charts-bulk-btn:hover { color: var(--text-primary); border-color: var(--accent); }
 
 /* Individual channel row */
 .charts-ch-item {
@@ -3831,4 +3743,50 @@ kbd {
 
 .ccp-hex-input:focus {
     border-color: var(--accent);
+}
+
+/* ─── Button variants ─────────────────────── */
+/* Colours and hover only; families keep their own size, spacing and
+   radius. Secondary rest uses :where() so variant classes such as
+   .fp-edit-btn win; primary rest is a plain class list so it beats
+   the family border it is combined with (.file-button). Hovers use
+   :where() to stay below .active states, and sit last in the file to
+   override the families' border colour. */
+:where(button) {
+    font-family: inherit;
+}
+
+:where(.view-btn, .file-button, .icon-button, .fp-copy-btn,
+       .layer-bulk-btn, .charts-bulk-btn, .thresh-preset-btn,
+       .range-auto-btn, .btn-secondary) {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+:where(.view-btn, .file-button, .icon-button, .fp-copy-btn,
+       .layer-bulk-btn, .charts-bulk-btn, .thresh-preset-btn,
+       .range-auto-btn, .btn-secondary):hover:where(:not(:disabled)) {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+.btn-primary, .walk-btn, .primary-file-button {
+    background: var(--accent-fill);
+    color: #fff;
+    border-color: var(--accent-fill);
+}
+:where(.btn-primary, .walk-btn, .primary-file-button):hover:where(:not(:disabled)) {
+    background: var(--accent-fill-hover);
+    color: #fff;
+    border-color: var(--accent-fill-hover);
+}
+
+:where(.fp-debug-close, .charts-ds-remove, .license-close) {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+}
+:where(.fp-debug-close, .charts-ds-remove, .license-close):hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
