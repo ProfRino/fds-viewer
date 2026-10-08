@@ -24,6 +24,7 @@
     --radius-lg: 6px;
     --radius-xl: 8px;
     --radius-round: 50%;
+    --radius-pill: 999px;
 
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
@@ -120,7 +121,7 @@
 :where(input[type="range"])::-webkit-slider-runnable-track {
     height: 4px;
     background: var(--range-track);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 :where(input[type="range"])::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -135,7 +136,7 @@
 :where(input[type="range"])::-moz-range-track {
     height: 4px;
     background: var(--range-track);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 :where(input[type="range"])::-moz-range-thumb {
     width: 14px;
@@ -502,7 +503,7 @@ a.footer-link:active {
 .layer-color {
     width: 12px;
     height: 12px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
 }
 
@@ -1306,7 +1307,7 @@ kbd {
     gap: 10px;
     font-size: var(--fs-md);
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     border-left: 4px solid;
 }
 
@@ -1557,7 +1558,7 @@ kbd {
 .fp-devc-card {
     padding: 9px 12px;
     background: var(--bg-tertiary);
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     border-left: 3px solid #cc66ff;
     overflow: hidden;
 }
@@ -1585,7 +1586,7 @@ kbd {
 .fp-badge {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-pill);
     font-size: var(--fs-xs);
     font-weight: 600;
     letter-spacing: 0;
@@ -1724,7 +1725,7 @@ kbd {
     background: none;
     border: none;
     padding: 7px 10px;
-    border-radius: 5px;
+    border-radius: var(--radius-md);
     color: var(--text-secondary);
     font: inherit;
     cursor: pointer;
@@ -2876,7 +2877,7 @@ kbd {
 }
 #output-colorbar-canvas {
     order: 2;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     display: block;
     width: 18px;
     height: 180px;
@@ -3453,7 +3454,7 @@ kbd {
     pointer-events: none;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     padding: 7px 10px;
     font-size: var(--fs-xs);
     line-height: 1.5;
