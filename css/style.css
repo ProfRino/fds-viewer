@@ -3745,6 +3745,14 @@ kbd {
     border-color: var(--accent);
 }
 
+/* Load buttons sit on their own line under the quantity select,
+   independent of how wide the font renders the label */
+#output-smoke-load,
+#output-boundary-load {
+    display: flex;
+    width: fit-content;
+}
+
 /* ─── Button variants ─────────────────────── */
 /* Colours and hover only; families keep their own size, spacing and
    radius. Secondary rest uses :where() so variant classes such as
@@ -3786,7 +3794,7 @@ kbd {
     border: none;
     color: var(--text-secondary);
 }
-:where(.fp-debug-close, .charts-ds-remove, .license-close):hover {
+:where(.fp-debug-close, .charts-ds-remove, .license-close):hover:where(:not(:disabled)) {
     background: var(--bg-tertiary);
     color: var(--text-primary);
 }
