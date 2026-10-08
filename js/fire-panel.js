@@ -67,7 +67,7 @@ function buildOverview(data) {
         </div>
         ${title ? `<div class="fp-ov-item">
             <span class="fp-ov-lbl">Title</span>
-            <span class="fp-ov-val" style="font-size:12px;color:var(--text-secondary);max-width:420px;white-space:normal">${esc(title)}</span>
+            <span class="fp-ov-val fp-ov-title">${esc(title)}</span>
         </div>` : ''}
         <div class="fp-ov-item">
             <span class="fp-ov-lbl">T_END</span>
@@ -87,7 +87,7 @@ function buildOverview(data) {
         </div>` : ''}
         ${surfDef ? `<div class="fp-ov-item">
             <span class="fp-ov-lbl">SURF_DEFAULT</span>
-            <span class="fp-ov-val" style="${surfDef !== 'INERT' ? 'color:var(--warning);font-weight:800' : ''}"
+            <span class="fp-ov-val${surfDef !== 'INERT' ? ' fp-text-warn-strong' : ''}"
                   title="${surfDef !== 'INERT' ? 'Non-default SURF_DEFAULT: all unspecified surfaces use ' + surfDef : ''}">
                 ${esc(surfDef)}${surfDef !== 'INERT' ? ' ⚠' : ''}
             </span>
@@ -110,7 +110,7 @@ function buildReacSection(data) {
         const fuelId  = reac.fuel || p.FUEL || '—';
         const spec    = data.specs && data.specs[fuelId];
         const formula = spec ? spec.formula : null;
-        const fuelDisplay = esc(fuelId) + (formula ? ` <span style="color:var(--text-muted)">(${formatFormula(formula)})</span>` : '');
+        const fuelDisplay = esc(fuelId) + (formula ? ` <span class="fp-text-muted">(${formatFormula(formula)})</span>` : '');
 
         // Coerce — parser may leave numeric params as strings on unusual inputs,
         // and toFixed() on a string throws. Falls back to null for NaN.
@@ -126,14 +126,14 @@ function buildReacSection(data) {
         const eqn = formula ? buildCombustionEquation(formula) : null;
 
         if (eqn) {
-            html += `<div style="background:rgba(233,69,96,.06);border:1px solid rgba(233,69,96,.2);border-radius:6px;padding:12px 16px;margin-bottom:14px;font-family:monospace;font-size:14px;color:var(--text-primary);text-align:center;letter-spacing:.5px">${eqn}</div>`;
+            html += `<div class="fp-reac-eq">${eqn}</div>`;
         }
 
         html += `<table class="fp-prop-table">
-            <tr><td>Fuel Species</td><td><strong style="color:var(--accent)">${fuelDisplay}</strong></td></tr>
-            ${hoc   != null ? `<tr><td>Heat of Combustion</td><td>${hoc.toLocaleString()} kJ/kg &nbsp;<span style="color:var(--text-muted);font-size:11px">(${(hoc/1000).toFixed(0)} MJ/kg)</span></td></tr>` : ''}
-            ${soot  != null ? `<tr><td>Soot Yield</td><td>${soot} kg/kg &nbsp;<span style="color:var(--text-muted);font-size:11px">(${(soot*100).toFixed(1)} %)</span></td></tr>` : ''}
-            ${co    != null ? `<tr><td>CO Yield</td><td>${co} kg/kg &nbsp;<span style="color:var(--text-muted);font-size:11px">(${(co*100).toFixed(2)} %)</span></td></tr>` : ''}
+            <tr><td>Fuel Species</td><td><strong class="fp-text-accent">${fuelDisplay}</strong></td></tr>
+            ${hoc   != null ? `<tr><td>Heat of Combustion</td><td>${hoc.toLocaleString()} kJ/kg &nbsp;<span class="fp-note-sm">(${(hoc/1000).toFixed(0)} MJ/kg)</span></td></tr>` : ''}
+            ${soot  != null ? `<tr><td>Soot Yield</td><td>${soot} kg/kg &nbsp;<span class="fp-note-sm">(${(soot*100).toFixed(1)} %)</span></td></tr>` : ''}
+            ${co    != null ? `<tr><td>CO Yield</td><td>${co} kg/kg &nbsp;<span class="fp-note-sm">(${(co*100).toFixed(2)} %)</span></td></tr>` : ''}
             ${co2   != null ? `<tr><td>CO₂ Yield</td><td>${co2} kg/kg</td></tr>` : ''}
             ${radFrac != null ? `<tr><td>Radiative Fraction</td><td>${(radFrac*100).toFixed(0)} %</td></tr>` : ''}
             ${eatm  != null ? `<tr><td>Heat Release / O₂ (EPUMO2)</td><td>${eatm} kJ/kg</td></tr>` : ''}
@@ -221,7 +221,7 @@ function buildFireSourcesSection(data, fireSurfs) {
         );
 
         html += `<tr>
-            <td><strong style="color:var(--vent-color)">${esc(surf.id)}</strong>${fyiNote(p.FYI)}</td>
+            <td><strong class="fp-text-vent">${esc(surf.id)}</strong>${fyiNote(p.FYI)}</td>
             <td>${hrrStr}</td>
             <td>${growthHtml}</td>
             <td>${fireSourceValue(peakStr)}</td>
@@ -231,7 +231,7 @@ function buildFireSourcesSection(data, fireSurfs) {
 
     html += '</tbody></table>';
     html += buildHrrPreviewSection(data, fireSurfs);
-    html += `<p class="fp-note" style="margin:12px 0 0">Switch to the <strong>Mesh</strong> tab for D*/dx resolution analysis — peak HRR from these fire sources is used automatically.</p>`;
+    html += `<p class="fp-note fp-note-after">Switch to the <strong>Mesh</strong> tab for D*/dx resolution analysis — peak HRR from these fire sources is used automatically.</p>`;
     html += codeBlock('FDS &SURF code (fire sources)', fireSurfs.map(rawOf));
 
     // Collect any &RAMP records referenced by fire SURFs and include them too
@@ -508,11 +508,11 @@ function buildSpeciesSection(data, specs) {
         });
 
         html += `<tr>
-            <td><strong style="color:#4488ff">${esc(spec.id)}</strong></td>
+            <td><strong class="fp-text-spec">${esc(spec.id)}</strong></td>
             <td>
-                <span style="font-family:monospace">${formula}</span>
-                ${mw ? `<br><span style="font-size:10px;color:var(--text-muted)">MW ≈ ${mw}</span>` : ''}
-                ${usedBy.length ? `<br><span style="font-size:10px;color:var(--text-muted)">${esc(usedBy.join(' · '))}</span>` : ''}
+                <span class="fp-mono">${formula}</span>
+                ${mw ? `<br><span class="fp-note-xs">MW ≈ ${mw}</span>` : ''}
+                ${usedBy.length ? `<br><span class="fp-note-xs">${esc(usedBy.join(' · '))}</span>` : ''}
             </td>
         </tr>`;
     });
@@ -544,7 +544,7 @@ function buildMaterialsSection(data, materials) {
 
         html += `<div class="fp-mat-card">
             <div class="fp-mat-name">
-                <span class="fp-layer fp-layer-${layerCls}" style="padding:3px 10px;margin:0;display:inline-flex">${esc(matl.id)}</span>
+                <span class="fp-layer fp-layer-${layerCls} fp-layer-chip">${esc(matl.id)}</span>
             </div>
             <table class="fp-prop-table">
                 ${p.DENSITY        != null ? row('Density',        p.DENSITY        + ' kg/m³')    : ''}
@@ -559,12 +559,12 @@ function buildMaterialsSection(data, materials) {
             html += `<div class="fp-pyro-box">
                 <div class="fp-pyro-title">Pyrolysis Parameters</div>
                 <table class="fp-prop-table">
-                    ${p.REFERENCE_TEMPERATURE != null ? row('Ref. Temperature', `<strong style="color:var(--accent)">${p.REFERENCE_TEMPERATURE} °C</strong>`) : ''}
+                    ${p.REFERENCE_TEMPERATURE != null ? row('Ref. Temperature', `<strong class="fp-text-accent">${p.REFERENCE_TEMPERATURE} °C</strong>`) : ''}
                     ${p.HEAT_OF_REACTION      != null ? row('Heat of Reaction',  p.HEAT_OF_REACTION + ' kJ/kg') : ''}
                     ${p.A   != null ? row('Pre-exp. Factor (A)', fmtExp(p.A) + ' 1/s') : ''}
                     ${p.E   != null ? row('Activation Energy (E)', fmtExp(p.E) + ' J/mol') : ''}
                     ${p.N_S != null ? row('Reaction Order (n)', p.N_S) : ''}
-                    ${p.SPEC_ID   != null ? row('Gas Product', `<span style="color:#4488ff">${esc(arrStr(p.SPEC_ID))}</span>`) : ''}
+                    ${p.SPEC_ID   != null ? row('Gas Product', `<span class="fp-text-spec">${esc(arrStr(p.SPEC_ID))}</span>`) : ''}
                     ${p.NU_SPEC   != null ? row('Gas Yield (ν)', arrStr(p.NU_SPEC)) : ''}
                     ${p.MATL_ID  != null ? row('Solid Residue', esc(arrStr(p.MATL_ID))) : ''}
                     ${p.NU_MATL  != null ? row('Residue Fraction', arrStr(p.NU_MATL)) : ''}
@@ -635,15 +635,15 @@ function buildSurfacesSection(data, surfs) {
             const cls = guessLayerClass(mid);
             html += `<div class="fp-layer fp-layer-${cls}">
                 <span class="fp-layer-name">${esc(mid)}</span>
-                ${hasPyro ? '<span style="background:rgba(233,69,96,.2);color:var(--accent);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;border:1px solid rgba(233,69,96,.4);letter-spacing:.5px">BURN</span>' : ''}
+                ${hasPyro ? '<span class="fp-burn-chip">BURN</span>' : ''}
                 ${thick != null ? `<span class="fp-layer-thick">${(thick*1000).toFixed(1)} mm</span>` : ''}
             </div>`;
         });
 
         html += `</div>
-            <table class="fp-prop-table" style="margin-top:6px">
+            <table class="fp-prop-table fp-prop-table-spaced">
                 ${row('Backing', backing)}
-                ${burnAway    ? row('Burn Away',     '<span style="color:var(--accent)">&#10003; Yes</span>') : ''}
+                ${burnAway    ? row('Burn Away',     '<span class="fp-text-accent">&#10003; Yes</span>') : ''}
                 ${usedByObst > 0 ? row('On Obstructions', usedByObst) : ''}
                 ${usedByVent > 0 ? row('On Vents',         usedByVent) : ''}
             </table>
@@ -675,9 +675,9 @@ function buildOutputsSection(data) {
         slcfs.forEach(s => {
             const plane = s.pbx != null ? `PBX=${s.pbx}` : s.pby != null ? `PBY=${s.pby}` : s.pbz != null ? `PBZ=${s.pbz}` : 'XB';
             const spec  = s.spec_id ? ` [${esc(s.spec_id)}]` : '';
-            const vec   = s.vector  ? ' <span style="color:var(--text-muted)">(vector)</span>' : '';
+            const vec   = s.vector  ? ' <span class="fp-text-muted">(vector)</span>' : '';
             html += `<tr>
-                <td style="color:#22dd88;width:22%" class="fp-out-tag">${esc(plane)}</td>
+                <td class="fp-out-tag fp-out-slcf">${esc(plane)}</td>
                 <td>${esc(s.quantity || '—')}${spec}${vec}</td>
             </tr>`;
         });
@@ -687,11 +687,11 @@ function buildOutputsSection(data) {
 
     // ── Boundary Files: items then FDS code ──
     if (bndfs.length) {
-        html += `<div class="fp-section-label" style="margin-top:18px">Boundary Files (${bndfs.length})</div>`;
+        html += `<div class="fp-section-label fp-section-spaced">Boundary Files (${bndfs.length})</div>`;
         html += '<table class="fp-prop-table">';
         bndfs.forEach(b => {
             html += `<tr>
-                <td style="color:#ff8800;width:22%" class="fp-out-tag">BNDF</td>
+                <td class="fp-out-tag fp-out-bndf">BNDF</td>
                 <td>${esc(b.quantity || '—')}</td>
             </tr>`;
         });
@@ -701,7 +701,7 @@ function buildOutputsSection(data) {
 
     // ── Devices: grouped by QUANTITY then FDS code ──
     if (devcs.length) {
-        html += `<div class="fp-section-label" style="margin-top:18px">Devices (${devcs.length})</div>`;
+        html += `<div class="fp-section-label fp-section-spaced">Devices (${devcs.length})</div>`;
 
         // Group by QUANTITY — sort alphabetically for a stable layout
         const devcGroups = {};
@@ -716,7 +716,7 @@ function buildOutputsSection(data) {
             .forEach(([qty, group]) => {
                 html += `<div class="fp-devc-group-label">
                     ${esc(qty)}
-                    <span class="fp-badge fp-badge-mat" style="font-size:10px">${group.length}</span>
+                    <span class="fp-badge fp-badge-mat fp-badge-sm">${group.length}</span>
                 </div>`;
                 html += '<div class="fp-devc-grid">';
                 group.forEach(d => {
@@ -777,7 +777,9 @@ function buildCodePanel(text, filename) {
         </div>`;
 
     // Highlight the whole file in one pass (comments + namelists)
-    const highlighted = highlightFds(text);
+    // Split on the same line endings as the linter (CRLF, CR or LF) so
+    // data-line matches the line numbers in its findings.
+    const highlighted = highlightFds(text.replace(/\r\n?/g, '\n'));
     // Wrap each line in a span so CSS counters render line numbers.
     // IMPORTANT: don't join with "\n" — the spans are display:block and
     // <pre> would render the newline as an extra blank line between them.
@@ -790,6 +792,8 @@ function buildCodePanel(text, filename) {
             <div class="fp-card-title">
                 Source Code
                 <div class="fp-card-btns" id="fp-view-btns">
+                    <button type="button" class="fp-copy-btn fp-lint-toggle" id="fp-lint-toggle"
+                        aria-controls="fp-debug-results" aria-expanded="false" hidden>Issues</button>
                     <button class="fp-copy-btn" id="fp-copy-fds">Copy all</button>
                     <button class="fp-copy-btn fp-save-btn" id="fp-save-annotated">&#x2913; Save annotated</button>
                     <button class="fp-copy-btn fp-edit-btn" id="fp-edit-fds">&#x270E; Edit</button>
@@ -816,6 +820,8 @@ function buildCodePanel(text, filename) {
                             autocomplete="off"></textarea>
                     </div>
                 </div>
+                <div class="fp-debug-results" id="fp-debug-results"
+                    role="region" aria-label="Linter findings" hidden></div>
             </div>
         </div>`;
 
@@ -824,8 +830,64 @@ function buildCodePanel(text, filename) {
     // ── Edit mode ─────────────────────────────────────────────────────────────
     let liveText = text;
 
+    // ── Linter: findings sidebar + highlighted source lines ──────────────────
+    let lintFindings = [];
+    let lintPanelClosed = false;
+    const lintPanel  = document.getElementById('fp-debug-results');
+    const lintToggle = document.getElementById('fp-lint-toggle');
+
+    function setLintPanelOpen(open) {
+        if (lintPanel) lintPanel.hidden = !open;
+        if (lintToggle) lintToggle.setAttribute('aria-expanded', String(open));
+    }
+
+    function runLint() {
+        lintFindings = (typeof fdsLint === 'function') ? fdsLint(liveText) : [];
+        if (lintPanel) lintPanel.innerHTML = _renderLintResults(lintFindings);
+        _applyLintHighlights(lintFindings);
+        if (lintToggle) {
+            const n = lintFindings.length;
+            lintToggle.textContent = n ? `${n} issue${n !== 1 ? 's' : ''}` : 'No issues';
+            lintToggle.hidden = false;
+        }
+        setLintPanelOpen(lintFindings.length > 0 && !lintPanelClosed);
+    }
+
+    if (lintToggle) lintToggle.addEventListener('click', () => {
+        const open = !!(lintPanel && lintPanel.hidden);
+        lintPanelClosed = !open;
+        setLintPanelOpen(open);
+        // On narrow screens the panel stacks below the code; bring it into view
+        const split = document.getElementById('fp-code-split');
+        if (open && split && getComputedStyle(split).flexDirection === 'column') {
+            lintPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+    });
+
+    if (lintPanel) lintPanel.addEventListener('click', e => {
+        if (e.target.closest('#fp-debug-close')) {
+            lintPanelClosed = true;
+            setLintPanelOpen(false);
+            if (lintToggle) lintToggle.focus();
+            return;
+        }
+        const row = e.target.closest('.fp-finding[data-line]');
+        if (!row) return;
+        lintPanel.querySelectorAll('.fp-finding-active')
+            .forEach(el => el.classList.remove('fp-finding-active'));
+        row.classList.add('fp-finding-active');
+        const code = document.getElementById('fp-fds-source-code');
+        if (!code) return;
+        code.querySelectorAll('.fp-lint-active').forEach(el => el.classList.remove('fp-lint-active'));
+        const lineEl = code.querySelector(`.fp-fds-line[data-line="${row.dataset.line}"]`);
+        if (lineEl) {
+            lineEl.classList.add('fp-lint-active');
+            lineEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    });
+
     function renderSource(t) {
-        const h = highlightFds(t);
+        const h = highlightFds(t.replace(/\r\n?/g, '\n'));
         const lh = h.split('\n')
             .map((l, i) => `<span class="fp-fds-line" data-line="${i + 1}">${l || ' '}</span>`)
             .join('');
@@ -848,6 +910,7 @@ function buildCodePanel(text, filename) {
         const cc = document.getElementById('fp-code-card');
         if (cc) cc.classList.add('fp-edit-mode');
         _clearLintHighlights();
+        setLintPanelOpen(false);
         const ea = document.getElementById('fp-fds-edit-area');
         if (ea) ea.value = liveText;
         const hl = document.getElementById('fp-edit-highlight');
@@ -883,6 +946,7 @@ function buildCodePanel(text, filename) {
         if (vb) vb.style.display = 'flex';
         const eb = document.getElementById('fp-edit-btns');
         if (eb) eb.style.display = 'none';
+        runLint();
     }
 
     const editBtn = document.getElementById('fp-edit-fds');
@@ -952,8 +1016,7 @@ function buildCodePanel(text, filename) {
     const saveBtn = document.getElementById('fp-save-annotated');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
-            const findings = (typeof fdsLint === 'function') ? fdsLint(liveText) : [];
-            _doSaveAnnotated(findings);
+            _doSaveAnnotated(lintFindings);
             saveBtn.textContent = '✓ Saved!';
             setTimeout(() => { saveBtn.innerHTML = '&#x2913; Save annotated'; }, 1500);
         });
@@ -982,12 +1045,14 @@ function buildCodePanel(text, filename) {
             if (firstMatch) firstMatch.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         });
     }
+
+    runLint();
 }
 
 // ─── Linter UI helpers ────────────────────────────────────────────────────────
 
-function _applyLintHighlights(findings) {
-    _clearLintHighlights();
+// Map each source line to the most severe finding that covers it.
+function _lintLineMap(findings) {
     const lineMap = {};
     const rank = { ERROR: 3, WARNING: 2, INFO: 1 };
     for (const f of findings) {
@@ -997,14 +1062,23 @@ function _applyLintHighlights(findings) {
             if (!lineMap[ln] || rank[f.severity] > rank[lineMap[ln]]) lineMap[ln] = f.severity;
         }
     }
-    for (const [lineNum, sev] of Object.entries(lineMap)) {
-        const el = document.querySelector(`.fp-fds-line[data-line="${lineNum}"]`);
+    return lineMap;
+}
+
+function _applyLintHighlights(findings) {
+    _clearLintHighlights();
+    const root = document.getElementById('fp-fds-source-code');
+    if (!root) return;
+    for (const [lineNum, sev] of Object.entries(_lintLineMap(findings))) {
+        const el = root.querySelector(`.fp-fds-line[data-line="${lineNum}"]`);
         if (el) el.classList.add(`fp-lint-${sev.toLowerCase()}`);
     }
 }
 
 function _clearLintHighlights() {
-    document.querySelectorAll('.fp-fds-line.fp-lint-error, .fp-fds-line.fp-lint-warning, .fp-fds-line.fp-lint-info, .fp-fds-line.fp-lint-active')
+    const root = document.getElementById('fp-fds-source-code');
+    if (!root) return;
+    root.querySelectorAll('.fp-fds-line.fp-lint-error, .fp-fds-line.fp-lint-warning, .fp-fds-line.fp-lint-info, .fp-fds-line.fp-lint-active')
         .forEach(el => el.classList.remove('fp-lint-error', 'fp-lint-warning', 'fp-lint-info', 'fp-lint-active'));
 }
 
@@ -1019,7 +1093,7 @@ function _renderLintResults(findings) {
 
     if (!findings.length) {
         return `<div class="fp-debug-clean">
-            <button class="fp-debug-close" id="fp-debug-close" title="Close">&#x2715;</button>
+            <button type="button" class="fp-debug-close" id="fp-debug-close" title="Close" aria-label="Close findings">&#x2715;</button>
             <div class="fp-no-issues">&#x2713; No issues found — file looks clean.</div>
         </div>`;
     }
@@ -1031,22 +1105,24 @@ function _renderLintResults(findings) {
             ? (f.lineEnd && f.lineEnd > f.line ? `lines ${f.line}–${f.lineEnd}` : `line ${f.line}`)
             : '';
         const lineLabel = lineRange ? `<span class="fp-finding-line">${lineRange}</span>` : '';
-        const hint = f.hint ? `<div class="fp-finding-hint">→ ${esc(f.hint)}</div>` : '';
-        return `<div class="fp-finding"${lineAttr}>
-            <div class="fp-finding-top">
+        const hint = f.hint ? `<span class="fp-finding-hint">→ ${esc(f.hint)}</span>` : '';
+        const tag = f.line > 0 ? 'button' : 'div';
+        const typeAttr = f.line > 0 ? ' type="button"' : '';
+        return `<${tag}${typeAttr} class="fp-finding"${lineAttr}>
+            <span class="fp-finding-top">
                 <span class="fp-sev-badge fp-sev-${sc}">${f.severity}</span>
                 ${lineLabel}
-            </div>
-            <div class="fp-finding-text">
-                <div class="fp-finding-msg">${esc(f.message)}</div>
+            </span>
+            <span class="fp-finding-text">
+                <span class="fp-finding-msg">${esc(f.message)}</span>
                 ${hint}
-            </div>
-        </div>`;
+            </span>
+        </${tag}>`;
     }).join('');
 
     return `<div class="fp-debug-header">
         <div class="fp-debug-badges">${badges.join('')}</div>
-        <button class="fp-debug-close" id="fp-debug-close" title="Close">&#x2715;</button>
+        <button type="button" class="fp-debug-close" id="fp-debug-close" title="Close" aria-label="Close findings">&#x2715;</button>
     </div>
     <div class="fp-findings-list">${rows}</div>`;
 }

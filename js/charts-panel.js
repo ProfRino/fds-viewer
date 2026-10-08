@@ -812,7 +812,8 @@
         const tw = 180, th = ds.tipEl.offsetHeight || 80;
         let ttx = mx + 14, tty = my - 10;
         if (ttx + tw > W - 4) ttx = mx - tw - 8;
-        if (tty + th > H - 4) tty = H - th - 4;
+        // Keep room below for the tooltip shadow; the chart clips overflow
+        if (tty + th > H - 24) tty = H - th - 24;
         if (tty < 4) tty = 4;
         ds.tipEl.style.left = ttx + 'px';
         ds.tipEl.style.top  = tty + 'px';

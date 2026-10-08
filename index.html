@@ -6,7 +6,7 @@
     <title>FDS Viewer</title>
     <!-- Inline SVG favicon (no extra file to ship). Stylised box/wireframe. -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e94560' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="css/style.css?v=20261008d">
+    <link rel="stylesheet" href="css/style.css?v=20261009a">
 </head>
 <body>
     <!-- Top Bar -->
@@ -436,6 +436,7 @@
                     <h3>Code</h3>
                     <p>Full source of the loaded <code>.fds</code> file with line numbers, comment/namelist syntax highlighting and a search bar.</p>
                     <ul>
+                        <li><strong>Issues</strong> &mdash; the built-in linter checks the file when it loads. Lines with findings are marked (red error, amber warning), and a side panel lists each finding with its line and a fix hint; click a finding to jump to its line. The <em>N issues</em> button in the card header shows or hides the panel; it reads <em>No issues</em> for a clean file.</li>
                         <li><strong>Copy all</strong> &mdash; copy the whole file to clipboard.</li>
                         <li><strong>Save annotated</strong> &mdash; export a copy with <code>! &#9888; &hellip;</code> comments inline for every static-linter finding (helpful for sharing reviews).</li>
                         <li><strong>Edit</strong> &mdash; switch the source pane to a text editor, edit, then click <em>Apply &amp; reload</em> to re-parse the modified file in place.</li>
@@ -923,11 +924,11 @@
                 <div class="sidebar-section">
                     <h3>Data</h3>
                     <div class="view-grid output-mode-grid">
-                        <button class="view-btn active" id="output-mode-smoke">Soot</button>
-                        <button class="view-btn" id="output-mode-slice">Slice</button>
-                        <button class="view-btn" id="output-mode-boundary">Boundary</button>
-                        <button class="view-btn" id="output-mode-vismap">Vismap</button>
-                        <button class="view-btn" id="output-mode-charts">Charts</button>
+                        <button class="view-btn active" id="output-mode-smoke" data-label="Soot" aria-pressed="true">Soot</button>
+                        <button class="view-btn" id="output-mode-slice" data-label="Slice" aria-pressed="false">Slice</button>
+                        <button class="view-btn" id="output-mode-boundary" data-label="Boundary" aria-pressed="false">Boundary</button>
+                        <button class="view-btn" id="output-mode-vismap" data-label="Vismap" aria-pressed="false">Vismap</button>
+                        <button class="view-btn" id="output-mode-charts" data-label="Charts" aria-pressed="false">Charts</button>
                     </div>
                 </div>
 
@@ -1025,7 +1026,7 @@
                             <div><dt>HRRPUV</dt><dd id="output-smoke-meta-hrr">--</dd></div>
                         </dl>
                         <details id="output-smoke-files-details" style="margin-top:6px;display:none;">
-                            <summary class="field-label" style="cursor:pointer;">Files in folder</summary>
+                            <summary class="field-label folder-files-summary">Files in folder</summary>
                             <ul id="output-smoke-files-list" class="file-list"></ul>
                         </details>
                     </div>
@@ -1038,7 +1039,7 @@
                             <option value="soot">SOOT DENSITY</option>
                             <option value="hrrpuv">HRRPUV</option>
                         </select>
-                        <button id="output-smoke-load" class="file-button primary-file-button" disabled style="margin-top:6px;">Load selected data</button>
+                        <button id="output-smoke-load" class="file-button primary-file-button" disabled>Load selected data</button>
 
                         <label class="field-label" for="output-smoke-render" title="Basic: smoke always wins (can bleed through walls). Solid-aware: scene depth is sampled inside the ray-march so OBSTs correctly hide the smoke behind them.">Rendering</label>
                         <select id="output-smoke-render">
@@ -1150,7 +1151,7 @@
                         <select id="output-boundary-set" disabled>
                             <option value="">No boundary data loaded</option>
                         </select>
-                        <button id="output-boundary-load" class="file-button primary-file-button" disabled style="margin-top:6px;">Load selected data</button>
+                        <button id="output-boundary-load" class="file-button primary-file-button" disabled>Load selected data</button>
 
                         <div class="inline-controls" style="margin-top:8px;">
                             <button id="output-boundary-play" class="icon-button" disabled>
@@ -1341,7 +1342,7 @@
                 <div id="output-agents-panel" class="sidebar-section">
                     <h3>Agents</h3>
                     <input type="file" id="output-agents-file" accept=".sqlite,.db" />
-                    <button type="button" id="output-agents-reload" disabled>Reload</button>
+                    <button type="button" id="output-agents-reload" class="icon-button" disabled>Reload</button>
                     <div id="output-agents-status">No trajectory loaded.</div>
                     <label class="field-label" for="output-agents-colorby">Colour by</label>
                     <select id="output-agents-colorby">
@@ -1349,7 +1350,7 @@
                         <option value="fed">FED</option>
                     </select>
                     <canvas id="output-agents-colorbar" width="160" height="14"></canvas>
-                    <div class="inline-controls" style="justify-content:space-between; font-size:11px; opacity:0.85;">
+                    <div class="inline-controls agents-legend-row">
                         <span id="output-agents-cbar-min">0</span>
                         <span id="output-agents-cbar-max">1.5 m/s</span>
                     </div>
@@ -1430,8 +1431,8 @@
     <script src="js/fds-parser.js?v=20260517p"></script>
     <script src="js/viewer.js?v=20261007g"></script>
     <script src="js/fds-linter.js?v=20260517p"></script>
-    <script src="js/fire-panel.js?v=20260519AE"></script>
-    <script src="js/mesh-panel.js?v=20260517p"></script>
+    <script src="js/fire-panel.js?v=20261008e"></script>
+    <script src="js/mesh-panel.js?v=20261008a"></script>
     <script src="js/slice-reader.js?v=20260517p"></script>
     <script src="js/slice-renderer.js?v=20261007h"></script>
     <script src="js/vismap.js?v=20261007a"></script>
@@ -1440,11 +1441,11 @@
     <script src="js/smoke3d-overlay.js?v=20261002a"></script>
     <script src="js/boundary-reader.js?v=20260518a"></script>
     <script src="js/boundary-overlay.js?v=20261002a"></script>
-    <script src="js/charts-panel.js?v=20261007f"></script>
+    <script src="js/charts-panel.js?v=20261008a"></script>
     <script src="js/trajectory-reader.js?v=20260607a"></script>
     <script src="js/agent-overlay.js?v=20261002a"></script>
     <script src="js/vismap-panel.js?v=20261007a"></script>
-    <script src="js/output-page.js?v=20261007h"></script>
+    <script src="js/output-page.js?v=20261009a"></script>
     <script src="js/app.js?v=20261007f"></script>
 </body>
 </html>
