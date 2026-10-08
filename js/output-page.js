@@ -486,7 +486,7 @@
         const el = document.getElementById('output-status-line');
         if (!el) return;
         el.textContent = msg;
-        el.style.color = isError ? '#e94560' : '';
+        el.style.color = isError ? 'var(--red-text)' : '';
     }
 
     // ── Colorbar helpers ──────────────────────────────────────────────────
@@ -965,7 +965,7 @@
         const el = document.getElementById('output-smoke-status');
         if (!el) return;
         el.textContent = msg;
-        el.style.color = isError ? '#e94560' : '';
+        el.style.color = isError ? 'var(--red-text)' : '';
     }
 
     function ensureSmokeOverlay(viewer) {
@@ -1343,7 +1343,7 @@
         const el = document.getElementById('output-boundary-status');
         if (!el) return;
         el.textContent = msg;
-        el.style.color = isError ? '#e94560' : '';
+        el.style.color = isError ? 'var(--red-text)' : '';
     }
 
     function ensureBoundaryOverlay(viewer) {
@@ -1661,7 +1661,7 @@
         const el = document.getElementById('output-vismap-status');
         if (!el) return;
         el.textContent = msg;
-        el.style.color = isError ? '#e94560' : '';
+        el.style.color = isError ? 'var(--red-text)' : '';
     }
 
     function ensureVismapOverlay(viewer) {

@@ -154,8 +154,8 @@
     --vent-text: #c63500;
     --devc-text: #8e35bd;
     --spec-text: #0050dd;
-    --amber-text: #8a5906;
-    --green-text: #147237;
+    --amber-text: #835405;
+    --green-text: #126a32;
     --red-text: #bd1010;
     --res-bad-text: #b22400;
     --res-coarse-text: #945100;
@@ -2238,7 +2238,7 @@ kbd {
 .fp-badge-fire    { background: rgba(var(--rose-rgb), .2);  color: var(--accent-text); border: 1px solid rgba(var(--rose-rgb), .4); }
 .fp-badge-mat     { background: rgba(68,136,255,.2); color: var(--spec-text); border: 1px solid rgba(68,136,255,.4); }
 
-/* Mesh resolution quality badges (D*/dx): red → orange → teal → green */
+/* Mesh resolution quality badges (D* / dx): red → orange → teal → green */
 .fp-badge-res-bad    { background: rgba(255,51,0,.15);   color: var(--res-bad-text); border: 1px solid rgba(255,51,0,.3); }   /* Below coarse */
 .fp-badge-res-coarse { background: rgba(255,140,0,.15);  color: var(--res-coarse-text); border: 1px solid rgba(255,140,0,.3); }  /* Coarse        */
 .fp-badge-res-medium { background: rgba(0,180,180,.15);  color: var(--res-medium-text); border: 1px solid rgba(0,180,180,.3); }  /* Medium        */
