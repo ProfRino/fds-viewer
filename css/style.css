@@ -25,6 +25,17 @@
     --radius-round: 50%;
     --radius-pill: 999px;
 
+    /* Stacking order, lowest to highest */
+    --z-drop-zone: 10;
+    --z-viewer-overlay: 20;
+    --z-clip-panel: 25;
+    --z-floating: 30;
+    --z-panel: 50;
+    --z-chrome: 100;
+    --z-popover: 200;
+    --z-toast: 300;
+    --z-modal: 1000;
+
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
@@ -196,7 +207,7 @@ body.has-data .footer-bar { display: none !important; }
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    z-index: 100;
+    z-index: var(--z-chrome);
     gap: 16px;
 }
 
@@ -232,7 +243,7 @@ a.footer-link:active {
 .footer-link:hover { text-decoration: underline; }
 
 /* Licence modal */
-.license-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.license-modal { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; }
 .license-modal-backdrop {
     position: absolute; inset: 0;
     background: rgba(0, 0, 0, 0.55);
@@ -287,7 +298,7 @@ a.footer-link:active {
     display: flex;
     align-items: center;
     padding: 0 16px;
-    z-index: 100;
+    z-index: var(--z-chrome);
     gap: 16px;
 }
 
@@ -605,7 +616,7 @@ input:not([type="range"]):disabled {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 50;
+    z-index: var(--z-panel);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -672,7 +683,7 @@ input:not([type="range"]):disabled {
     font-weight: 600;
     letter-spacing: 0.04em;
     cursor: pointer;
-    z-index: 30; /* above clip-panel (z:25) so it stays clickable */
+    z-index: var(--z-floating); /* above clip-panel (z:25) so it stays clickable */
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1141,7 +1152,7 @@ kbd {
     overflow-y: auto;
     background: var(--bg-primary);
     padding: 24px 32px;
-    z-index: 50;
+    z-index: var(--z-panel);
 }
 
 #mesh-panel.active,
@@ -1622,7 +1633,7 @@ kbd {
     overflow-y: auto;
     background: var(--bg-primary);
     padding: 24px 32px;
-    z-index: 50;
+    z-index: var(--z-panel);
 }
 
 #fds-code-panel.active { display: block; }
@@ -1637,7 +1648,7 @@ kbd {
     right: 0;
     overflow-y: auto;
     background: var(--bg-primary);
-    z-index: 50;
+    z-index: var(--z-panel);
 }
 #help-panel.active { display: block; }
 .help-scroll {
@@ -2189,7 +2200,7 @@ kbd {
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    z-index: 20;
+    z-index: var(--z-viewer-overlay);
     overflow: hidden;
 }
 
@@ -2278,7 +2289,7 @@ kbd {
     background: rgba(15, 15, 26, 0.90);
     backdrop-filter: blur(6px);
     border-top: 1px solid var(--border);
-    z-index: 25;
+    z-index: var(--z-clip-panel);
     overflow-x: auto;
 }
 /* Light-theme override — the hard-coded rgba above is dark-only;
@@ -2533,7 +2544,7 @@ kbd {
     font-weight: 700;
     padding: 7px 18px;
     border-radius: var(--radius-lg);
-    z-index: 300;
+    z-index: var(--z-toast);
     opacity: 0;
     pointer-events: none;
     white-space: nowrap;
@@ -2553,7 +2564,7 @@ kbd {
     left: 0;
     right: 0;
     background: var(--bg-primary);
-    z-index: 50;
+    z-index: var(--z-panel);
     overflow: hidden;
 }
 #output-panel.active { display: block; }
@@ -2597,7 +2608,7 @@ kbd {
     color: var(--text-secondary);
     text-align: center;
     background: var(--bg-secondary);
-    z-index: 10;
+    z-index: var(--z-drop-zone);
 }
 .output-drop-zone .drop-content {
     max-width: 360px;
@@ -2621,7 +2632,7 @@ kbd {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 20;
+    z-index: var(--z-viewer-overlay);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -3222,7 +3233,7 @@ kbd {
     box-shadow: 0 3px 12px rgba(0,0,0,0.35);
     min-width: 120px;
     max-width: 220px;
-    z-index: 30;
+    z-index: var(--z-floating);
 }
 .chart-tip-time {
     font-weight: 700;
@@ -3463,7 +3474,7 @@ kbd {
 
 .chart-color-picker {
     position: absolute;
-    z-index: 200;
+    z-index: var(--z-popover);
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
