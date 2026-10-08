@@ -3,6 +3,7 @@
 :root {
     --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --font-mono: 'Consolas', ui-monospace, 'SF Mono', Menlo, 'Liberation Mono', 'Courier New', monospace;
+    --font-math: 'Cambria Math', 'STIX Two Math', 'Georgia', serif;
 
     /* Type scale */
     --fs-2xs: 10px;
@@ -148,6 +149,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+:where(code, kbd, samp, pre) {
+    font-family: var(--font-mono);
 }
 
 html, body {
@@ -1957,7 +1962,7 @@ kbd {
     padding: 12px 6px;
     background: var(--bg-secondary);
     border-radius: 4px;
-    font-family: 'Cambria Math', 'STIX Two Math', 'Georgia', serif;
+    font-family: var(--font-math);
     font-size: var(--fs-2xl);
     line-height: 1.4;
     color: var(--text-primary);
