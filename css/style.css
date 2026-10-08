@@ -36,6 +36,11 @@
     --z-toast: 300;
     --z-modal: 1000;
 
+    /* Elevation, by role */
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
@@ -259,7 +264,7 @@ a.footer-link:active {
     width: calc(100% - 40px);
     max-height: calc(100vh - 80px);
     display: flex; flex-direction: column;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    box-shadow: var(--shadow-lg);
 }
 .license-modal-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -631,7 +636,7 @@ input:not([type="range"]):disabled {
     max-width: 380px;
     font-size: var(--fs-md);
     line-height: 1.6;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: var(--shadow-lg);
 }
 #walk-hud-title, #output-walk-hud-title {
     font-size: var(--fs-lg);
@@ -688,7 +693,7 @@ input:not([type="range"]):disabled {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-sm);
     transition: background 0.12s ease, transform 0.05s ease;
 }
 /* Main viewer: sit above the clip panel (full-width bar at bottom:0,
@@ -2199,7 +2204,7 @@ kbd {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-md);
     z-index: var(--z-viewer-overlay);
     overflow: hidden;
 }
@@ -3230,7 +3235,7 @@ kbd {
     padding: 7px 10px;
     font-size: var(--fs-xs);
     line-height: 1.5;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+    box-shadow: var(--shadow-md);
     min-width: 120px;
     max-width: 220px;
     z-index: var(--z-floating);
@@ -3479,7 +3484,7 @@ kbd {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+    box-shadow: var(--shadow-md);
     width: 184px;
 }
 
