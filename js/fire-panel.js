@@ -1008,49 +1008,6 @@ function _clearLintHighlights() {
         .forEach(el => el.classList.remove('fp-lint-error', 'fp-lint-warning', 'fp-lint-info', 'fp-lint-active'));
 }
 
-function _renderLintResults(findings) {
-    const counts = { ERROR: 0, WARNING: 0, INFO: 0 };
-    for (const f of findings) counts[f.severity] = (counts[f.severity] || 0) + 1;
-
-    const badges = [];
-    if (counts.ERROR)   badges.push(`<span class="fp-sev-badge fp-sev-error">${counts.ERROR} error${counts.ERROR   !== 1 ? 's' : ''}</span>`);
-    if (counts.WARNING) badges.push(`<span class="fp-sev-badge fp-sev-warning">${counts.WARNING} warning${counts.WARNING !== 1 ? 's' : ''}</span>`);
-    if (counts.INFO)    badges.push(`<span class="fp-sev-badge fp-sev-info">${counts.INFO} info</span>`);
-
-    if (!findings.length) {
-        return `<div class="fp-debug-clean">
-            <button class="fp-debug-close" id="fp-debug-close" title="Close">&#x2715;</button>
-            <div class="fp-no-issues">&#x2713; No issues found — file looks clean.</div>
-        </div>`;
-    }
-
-    const rows = findings.map(f => {
-        const sc = f.severity.toLowerCase();
-        const lineAttr = f.line > 0 ? ` data-line="${f.line}"` : '';
-        const lineRange = f.line > 0
-            ? (f.lineEnd && f.lineEnd > f.line ? `lines ${f.line}–${f.lineEnd}` : `line ${f.line}`)
-            : '';
-        const lineLabel = lineRange ? `<span class="fp-finding-line">${lineRange}</span>` : '';
-        const hint = f.hint ? `<div class="fp-finding-hint">→ ${esc(f.hint)}</div>` : '';
-        return `<div class="fp-finding"${lineAttr}>
-            <div class="fp-finding-top">
-                <span class="fp-sev-badge fp-sev-${sc}">${f.severity}</span>
-                ${lineLabel}
-            </div>
-            <div class="fp-finding-text">
-                <div class="fp-finding-msg">${esc(f.message)}</div>
-                ${hint}
-            </div>
-        </div>`;
-    }).join('');
-
-    return `<div class="fp-debug-header">
-        <div class="fp-debug-badges">${badges.join('')}</div>
-        <button class="fp-debug-close" id="fp-debug-close" title="Close">&#x2715;</button>
-    </div>
-    <div class="fp-findings-list">${rows}</div>`;
-}
-
 function _annotatedFds(text, findings, filename) {
     const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
     const counts = { ERROR: 0, WARNING: 0, INFO: 0 };
