@@ -1139,8 +1139,10 @@ kbd {
     .fp-code-split {
         flex-direction: column;
     }
+    .fp-code-body { align-self: stretch; }
     #fp-debug-results {
         position: static;
+        align-self: stretch;
         flex: none;
         max-width: 100%;
         border-left: none;
