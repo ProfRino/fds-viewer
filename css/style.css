@@ -3570,7 +3570,7 @@ kbd {
 .fp-text-spec { color: #4488ff; }
 .fp-note-sm { color: var(--text-muted); font-size: var(--fs-xs); }
 .fp-note-xs { color: var(--text-muted); font-size: var(--fs-2xs); }
-.fp-mono { font-family: monospace; }
+.fp-mono { font-family: var(--font-mono); }
 .fp-ov-val.fp-ov-title {
     font-size: var(--fs-sm);
     color: var(--text-secondary);
@@ -3583,7 +3583,7 @@ kbd {
     border-radius: var(--radius-lg);
     padding: 12px 16px;
     margin-bottom: 14px;
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: var(--fs-base);
     color: var(--text-primary);
     text-align: center;
