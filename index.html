@@ -6,7 +6,7 @@
     <title>FDS Viewer</title>
     <!-- Inline SVG favicon (no extra file to ship). Stylised box/wireframe. -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e94560' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="css/style.css?v=20261008t">
+    <link rel="stylesheet" href="css/style.css?v=20261008u">
 </head>
 <body>
     <!-- Top Bar -->
@@ -436,6 +436,7 @@
                     <h3>Code</h3>
                     <p>Full source of the loaded <code>.fds</code> file with line numbers, comment/namelist syntax highlighting and a search bar.</p>
                     <ul>
+                        <li><strong>Issues</strong> &mdash; the built-in linter checks the file when it loads. Lines with findings are marked (red error, amber warning), and a side panel lists each finding with its line and a fix hint; click a finding to jump to its line. The <em>N issues</em> button in the card header shows or hides the panel; it reads <em>No issues</em> for a clean file.</li>
                         <li><strong>Copy all</strong> &mdash; copy the whole file to clipboard.</li>
                         <li><strong>Save annotated</strong> &mdash; export a copy with <code>! &#9888; &hellip;</code> comments inline for every static-linter finding (helpful for sharing reviews).</li>
                         <li><strong>Edit</strong> &mdash; switch the source pane to a text editor, edit, then click <em>Apply &amp; reload</em> to re-parse the modified file in place.</li>
@@ -1382,7 +1383,7 @@
     <script src="js/fds-parser.js?v=20260517p"></script>
     <script src="js/viewer.js?v=20261007f"></script>
     <script src="js/fds-linter.js?v=20260517p"></script>
-    <script src="js/fire-panel.js?v=20261008d"></script>
+    <script src="js/fire-panel.js?v=20261008e"></script>
     <script src="js/mesh-panel.js?v=20261008a"></script>
     <script src="js/slice-reader.js?v=20260517p"></script>
     <script src="js/slice-renderer.js?v=20261007h"></script>

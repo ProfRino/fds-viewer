@@ -777,7 +777,9 @@ function buildCodePanel(text, filename) {
         </div>`;
 
     // Highlight the whole file in one pass (comments + namelists)
-    const highlighted = highlightFds(text);
+    // Split on the same line endings as the linter (CRLF, CR or LF) so
+    // data-line matches the line numbers in its findings.
+    const highlighted = highlightFds(text.replace(/\r\n?/g, '\n'));
     // Wrap each line in a span so CSS counters render line numbers.
     // IMPORTANT: don't join with "\n" — the spans are display:block and
     // <pre> would render the newline as an extra blank line between them.
@@ -855,6 +857,11 @@ function buildCodePanel(text, filename) {
         const open = !!(lintPanel && lintPanel.hidden);
         lintPanelClosed = !open;
         setLintPanelOpen(open);
+        // On narrow screens the panel stacks below the code; bring it into view
+        const split = document.getElementById('fp-code-split');
+        if (open && split && getComputedStyle(split).flexDirection === 'column') {
+            lintPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
     });
 
     if (lintPanel) lintPanel.addEventListener('click', e => {
@@ -880,7 +887,7 @@ function buildCodePanel(text, filename) {
     });
 
     function renderSource(t) {
-        const h = highlightFds(t);
+        const h = highlightFds(t.replace(/\r\n?/g, '\n'));
         const lh = h.split('\n')
             .map((l, i) => `<span class="fp-fds-line" data-line="${i + 1}">${l || ' '}</span>`)
             .join('');
@@ -903,7 +910,7 @@ function buildCodePanel(text, filename) {
         const cc = document.getElementById('fp-code-card');
         if (cc) cc.classList.add('fp-edit-mode');
         _clearLintHighlights();
-        if (lintPanel) lintPanel.hidden = true;
+        setLintPanelOpen(false);
         const ea = document.getElementById('fp-fds-edit-area');
         if (ea) ea.value = liveText;
         const hl = document.getElementById('fp-edit-highlight');

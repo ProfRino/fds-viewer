@@ -108,7 +108,7 @@
     --code-str: #a5e075;
     --code-num: #f48fb1;
     --code-cmt: #7d8c9c;
-    --code-line-num: #7a839a;
+    --code-line-num: #7d869c;
     --code-line-sep: rgba(255,255,255,.06);
     --code-line-hover: rgba(255,255,255,.03);
 
@@ -138,12 +138,12 @@
 
     --code-bg:  #f3f4f8;
     --code-fg:  #1a1a2e;
-    --code-kw:  #0f6cb5;
-    --code-key: #b85000;
-    --code-str: #2a7a40;
+    --code-kw:  #0f69b0;
+    --code-key: #a94900;
+    --code-str: #28743d;
     --code-num: #a82a5a;
-    --code-cmt: #616878;
-    --code-line-num: #626977;
+    --code-cmt: #5f6675;
+    --code-line-num: #5f6573;
     --code-line-sep: rgba(0,0,0,.08);
     --code-line-hover: rgba(0,0,0,.03);
 
@@ -1058,6 +1058,9 @@ kbd {
     }
     .fp-card-btns {
         flex-wrap: wrap;
+        flex-shrink: 1;
+        min-width: 0;
+        max-width: 100%;
     }
     .fp-overview {
         gap: 12px;
@@ -2225,20 +2228,20 @@ div.fp-finding { cursor: default; }
 
 /* Lint line highlights */
 .fp-fds-line.fp-lint-error {
-    background: rgba(var(--red-rgb), 0.10);
-    border-left: 3px solid var(--red);
+    background: rgba(var(--red-rgb), 0.06);
+    box-shadow: inset 3px 0 0 var(--red);
 }
 .fp-fds-line.fp-lint-warning {
-    background: rgba(var(--amber-rgb), 0.10);
-    border-left: 3px solid var(--amber);
+    background: rgba(var(--amber-rgb), 0.06);
+    box-shadow: inset 3px 0 0 var(--amber);
 }
 .fp-fds-line.fp-lint-info {
-    background: rgba(var(--indigo-rgb), 0.08);
-    border-left: 3px solid var(--accent);
+    background: rgba(var(--indigo-rgb), 0.05);
+    box-shadow: inset 3px 0 0 var(--accent);
 }
 .fp-fds-line.fp-lint-active {
-    background: rgba(var(--indigo-rgb), 0.22) !important;
-    border-left: 3px solid var(--accent) !important;
+    background: rgba(var(--indigo-rgb), 0.10) !important;
+    box-shadow: inset 3px 0 0 var(--accent) !important;
     outline: 1px solid rgba(var(--indigo-rgb), 0.4);
 }
 
