@@ -434,7 +434,7 @@ a.footer-link:active {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.15s, outline 0s, outline-offset 0s;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
 }
 
 .layer-item {
@@ -531,7 +531,7 @@ a.footer-link:active {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.15s, outline 0s, outline-offset 0s;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
     text-align: center;
 }
 
@@ -845,7 +845,7 @@ input:not([type="range"]):disabled {
     border: none;
     border-radius: var(--radius-xl);
     cursor: pointer;
-    transition: all 0.15s, outline 0s, outline-offset 0s;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
     font-family: inherit;
 }
 
@@ -1108,7 +1108,7 @@ kbd {
     border-radius: var(--radius-md);
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s, outline 0s, outline-offset 0s;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
     font-family: inherit;
     white-space: nowrap;
 }
@@ -2071,7 +2071,7 @@ kbd {
     border-radius: var(--radius-md);
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.15s, outline 0s, outline-offset 0s;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
     flex-shrink: 0;
 }
 
@@ -2974,7 +2974,7 @@ kbd {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.15s, outline 0s, outline-offset 0s;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
 }
 
 #output-color-map {
@@ -3098,7 +3098,7 @@ kbd {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.12s, outline 0s, outline-offset 0s;
+    transition: background-color 0.12s, border-color 0.12s, color 0.12s, opacity 0.12s;
 }
 
 /* Individual channel row */
